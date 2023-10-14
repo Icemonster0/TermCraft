@@ -81,11 +81,13 @@ vector<fragment> Render::rasterize(mesh m) {
                 // TODO: optimize, depth checking
                 if (x_1 < x_2) {
                     for (float x = x_1; x < x_2; x++) {
-                        frag_list.emplace_back(static_cast<int>(x), y);
+                        if (x >= 0 && x < X_size && y >= 0 && y < Y_size)
+                            frag_list.emplace_back(static_cast<int>(x), y);
                     }
                 } else {
                     for (float x = x_2; x > x_1; x--) {
-                        frag_list.emplace_back(static_cast<int>(x), y);
+                        if (x >= 0 && x < X_size && y >= 0 && y < Y_size)
+                            frag_list.emplace_back(static_cast<int>(x), y);
                     }
                 }
                 x_1 += inv_slope_1;
