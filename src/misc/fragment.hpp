@@ -6,8 +6,7 @@
 namespace tc {
 
 struct fragment {
-    glm::vec2 pos;
-    glm::vec3 col;
+    glm::ivec2 pos;
 };
 
 } /* end of namespace tc */

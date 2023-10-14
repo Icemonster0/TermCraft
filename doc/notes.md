@@ -31,6 +31,7 @@
     - view transform
     - perspective transform
     - depth division
+    - view clipping
     - screen transform
 - rasterization w/ depth checking
 - fragment shader

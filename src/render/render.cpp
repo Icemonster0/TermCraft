@@ -4,10 +4,14 @@
 #include "buffer.hpp"
 #include "draw_util.hpp"
 #include "../misc/mesh.hpp"
+#include "../shaders/vert_shaders.hpp"
 
 #include <string>
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
+#include <algorithm>
+#include <array>
 
 using namespace std;
 
@@ -21,10 +25,9 @@ void Render::render() {
     clear_buffers();
 
     mesh m;
-    m.tri_list.emplace_back(vertex(-0.5, -0.5, 0.0), vertex(0.5, -0.5, 0.0), vertex(0.0, 0.5, 0.0));
+    m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
 
-
-    screen_transform(&m);
+    execute_vertex_shader(&m, vert_shaders::default);
     vector<fragment> frag_list = rasterize(m);
 
     draw_fbuf();
@@ -35,27 +38,42 @@ void Render::clear_buffers() {
     zbuf.clear(X_size, Y_size, 0.0f);
 }
 
-void Render::execute_vertex_shader(mesh *m) {
-    for (auto &triangle : m.tri_list) {
+void Render::execute_vertex_shader(mesh *m, vertex (*vert_shader)(vertex)) {
+    for (tri &triangle : m.tri_list) {
         for (vertex &v : triangle.vertices) {
-            // TODO
+            v = vert_shader(v);
+
+            // screen_transform
+            v.pos = v.pos * 0.5f + 0.5f;
+            v.pos.x *= X_size;
+            v.pos.y *= Y_size;
         }
     }
 }
 
-void Render::screen_transform(mesh *m) {
-    for (auto &triangle : m.tri_list) {
-}
-
 vector<fragment> Render::rasterize(mesh m) {
-    vector<fragment> frag_list;
+    for (tri triangle : m.tri_list) {
+        if (triangle[0].pos.y != triangle[1].pos.y &&
+            triangle[0].pos.y != triangle[2].pos.y &&
+            triangle[1].pos.y != triangle[2].pos.y) {
 
-    for (auto triangle : m.tri_list) {
-        float
-        for (int y = )
+            array<glm::vec2, 3> points = {triangle[0].pos.xy, triangle[1].pos.xy, triangle[2].pos.xy};
+            sort(points.begin(), points.end(), [](glm::vec2 a, glm::vec2 b) {return a.y > b.y});
+
+            float inv_slope_1 = (points[1].x - points[0].x) / (points[1].y - points[0].y);
+            float inv_slope_2 = (points[2].x - points[0].x) / (points[2].y - points[0].y);
+
+            float x_1 = points[0].x;
+            float x_2 = points[0].x;
+
+            for (int y = points[0].y; y < points[2].y; y++) {
+                for (int x = x_1; x < x_2; x++) {
+
+                }
+            }
+        }
     }
 }
-
 
 void Render::draw_fbuf() {
     string printbuf = "";
