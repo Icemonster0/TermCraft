@@ -5,11 +5,17 @@
 
 #include "../misc/vertex.hpp"
 
+#include <cmath>
+
 namespace tc {
 
 struct vert_shaders {
-    static vertex default(vertex v) {
+    static vertex VERT_default(vertex v, float global_time) {
         return v;
+    }
+
+    static vertex VERT_fun(vertex v, float global_time) {
+        return vertex {v.pos * (sin(global_time*3)*0.5+0.5) * 2};
     }
 };
 

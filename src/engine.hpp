@@ -24,6 +24,7 @@ private:
 
     int target_fps;
     float delta_time = 0.0f;
+    float global_time = 0.0f;
 
     std::thread input_thread;
     std::thread render_thread;

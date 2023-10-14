@@ -53,10 +53,11 @@ void Engine::render_loop() {
 
         this_thread::sleep_for(chrono::microseconds(int(1000000.0f / target_fps)));
 
-        render.render();
+        render.render(global_time);
 
         auto timer_end = timer.now();
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;
+        global_time += delta_time;
 
         debug_info(delta_time);
     }

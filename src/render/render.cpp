@@ -21,16 +21,21 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
     clear_buffers();
 }
 
-void Render::render() {
+void Render::render(float time) {
+    global_time = time;
+
     clear_buffers();
 
     mesh m;
     m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
 
-    execute_vertex_shader(&m, vert_shaders::default);
+    execute_vertex_shader(&m, vert_shaders::VERT_fun);
     vector<fragment> frag_list = rasterize(m);
+    // printf("%ld\n", frag_list.size());
+    execute_fragment_shader(&fbuf, frag_list);
 
     draw_fbuf();
+    printf("%f\n", global_time);
 }
 
 void Render::clear_buffers() {
@@ -38,10 +43,10 @@ void Render::clear_buffers() {
     zbuf.clear(X_size, Y_size, 0.0f);
 }
 
-void Render::execute_vertex_shader(mesh *m, vertex (*vert_shader)(vertex)) {
-    for (tri &triangle : m.tri_list) {
+void Render::execute_vertex_shader(mesh *m, vertex (*vert_shader)(vertex, float)) {
+    for (tri &triangle : m->tri_list) {
         for (vertex &v : triangle.vertices) {
-            v = vert_shader(v);
+            v = vert_shader(v, global_time);
 
             // screen_transform
             v.pos = v.pos * 0.5f + 0.5f;
@@ -52,26 +57,49 @@ void Render::execute_vertex_shader(mesh *m, vertex (*vert_shader)(vertex)) {
 }
 
 vector<fragment> Render::rasterize(mesh m) {
-    for (tri triangle : m.tri_list) {
-        if (triangle[0].pos.y != triangle[1].pos.y &&
-            triangle[0].pos.y != triangle[2].pos.y &&
-            triangle[1].pos.y != triangle[2].pos.y) {
+    vector<fragment> frag_list;
 
-            array<glm::vec2, 3> points = {triangle[0].pos.xy, triangle[1].pos.xy, triangle[2].pos.xy};
-            sort(points.begin(), points.end(), [](glm::vec2 a, glm::vec2 b) {return a.y > b.y});
+    for (tri triangle : m.tri_list) {
+        // if (triangle.vertices[0].pos.y != triangle.vertices[1].pos.y &&
+        //     triangle.vertices[0].pos.y != triangle.vertices[2].pos.y &&
+        //     triangle.vertices[1].pos.y != triangle.vertices[2].pos.y) {
+
+            array<glm::vec2, 3> points = {triangle.vertices[0].pos.xy(), triangle.vertices[1].pos.xy(), triangle.vertices[2].pos.xy()};
+            sort(points.begin(), points.end(), [](glm::vec2 a, glm::vec2 b) {return a.y < b.y;});
+            // printf("%f %f %f %f %f %f\n", points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
+
+            // TODO: only flat-bottom triangle supported
 
             float inv_slope_1 = (points[1].x - points[0].x) / (points[1].y - points[0].y);
             float inv_slope_2 = (points[2].x - points[0].x) / (points[2].y - points[0].y);
+            // printf("%f %f\n", inv_slope_1, inv_slope_2);
 
             float x_1 = points[0].x;
             float x_2 = points[0].x;
 
             for (int y = points[0].y; y < points[2].y; y++) {
-                for (int x = x_1; x < x_2; x++) {
-
+                // TODO: optimize, depth checking
+                if (x_1 < x_2) {
+                    for (float x = x_1; x < x_2; x++) {
+                        frag_list.emplace_back(static_cast<int>(x), y);
+                    }
+                } else {
+                    for (float x = x_2; x > x_1; x--) {
+                        frag_list.emplace_back(static_cast<int>(x), y);
+                    }
                 }
+                x_1 += inv_slope_1;
+                x_2 += inv_slope_2;
             }
-        }
+        // }
+    }
+
+    return frag_list;
+}
+
+void Render::execute_fragment_shader(buffer<glm::vec3> *write_buf, vector<fragment> frag_list) {
+    for (fragment frag : frag_list) {
+        write_buf->buf[frag.pos.x][frag.pos.y] = glm::vec3(1.0f);
     }
 }
 
