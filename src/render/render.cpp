@@ -3,8 +3,9 @@
 #include "render.hpp"
 #include "buffer.hpp"
 #include "draw_util.hpp"
-#include "../misc/mesh.hpp"
+#include "mesh.hpp"
 #include "../shaders/vert_shaders.hpp"
+#include "../shaders/frag_shaders.hpp"
 
 #include <string>
 #include <cstdio>
@@ -12,6 +13,7 @@
 #include <cmath>
 #include <algorithm>
 #include <array>
+#include <optional>
 
 using namespace std;
 
@@ -21,87 +23,118 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
     clear_buffers();
 }
 
-void Render::render(float time) {
-    global_time = time;
-
+void Render::render() {
     clear_buffers();
 
     mesh m;
     m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
+    m.tri_list[0].vertices[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
+    m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
+    m.tri_list[0].vertices[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
 
     execute_vertex_shader(&m, vert_shaders::VERT_fun);
-    vector<fragment> frag_list = rasterize(m);
-    // printf("%ld\n", frag_list.size());
-    execute_fragment_shader(&fbuf, frag_list);
+    rasterize(&m);
+    execute_fragment_shader(frag_shaders::FRAG_fun);
 
     draw_fbuf();
-    printf("%f\n", global_time);
+}
+
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time) {
+    X_size = p_X_size;
+    Y_size = p_Y_size;
+    global_time = p_global_time;
 }
 
 void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, glm::vec3(0.0f));
-    zbuf.clear(X_size, Y_size, 0.0f);
+    zbuf.clear(X_size, Y_size, 1.0f);
+    frag_buf.clear(X_size, Y_size, optional<fragment>{});
 }
 
-void Render::execute_vertex_shader(mesh *m, vertex (*vert_shader)(vertex, float)) {
+void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, float)) {
     for (tri &triangle : m->tri_list) {
         for (vertex &v : triangle.vertices) {
-            v = vert_shader(v, global_time);
+            // programmable shader
+            vert_shader(&v, global_time);
 
-            // screen_transform
-            v.pos = v.pos * 0.5f + 0.5f;
-            v.pos.x *= X_size;
-            v.pos.y *= Y_size;
+            // depth division
+            v.pos = glm::vec4(v.pos.xyz() / v.pos.w, v.pos.w);
+
+            // screen transform
+            v.screenpos = v.pos * 0.5f + 0.5f;
+            v.screenpos.x *= X_size;
+            v.screenpos.y *= Y_size;
         }
     }
 }
 
-vector<fragment> Render::rasterize(mesh m) {
-    vector<fragment> frag_list;
+void Render::rasterize(mesh *m) {
+    for (tri &triangle : m->tri_list) {
+        // find bounding box
+        int min_x = max(min(min(triangle.vertices[0].screenpos.x,
+                                triangle.vertices[1].screenpos.x),
+                            triangle.vertices[2].screenpos.x),
+                        0.0f);
+        int max_x = min(max(max(triangle.vertices[0].screenpos.x,
+                                triangle.vertices[1].screenpos.x),
+                            triangle.vertices[2].screenpos.x),
+                        static_cast<float>(X_size));
+        int min_y = max(min(min(triangle.vertices[0].screenpos.y,
+                                triangle.vertices[1].screenpos.y),
+                            triangle.vertices[2].screenpos.y),
+                        0.0f);
+        int max_y = min(max(max(triangle.vertices[0].screenpos.y,
+                                triangle.vertices[1].screenpos.y),
+                            triangle.vertices[2].screenpos.y),
+                        static_cast<float>(Y_size));
 
-    for (tri triangle : m.tri_list) {
-        // if (triangle.vertices[0].pos.y != triangle.vertices[1].pos.y &&
-        //     triangle.vertices[0].pos.y != triangle.vertices[2].pos.y &&
-        //     triangle.vertices[1].pos.y != triangle.vertices[2].pos.y) {
+        /* pre-calculate things for the barycentric coordinates
+         * method from: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
+        glm::vec2 v0 = triangle.vertices[1].screenpos.xy() - triangle.vertices[0].screenpos.xy();
+        glm::vec2 v1 = triangle.vertices[2].screenpos.xy() - triangle.vertices[0].screenpos.xy();
+        float d00 = glm::dot(v0, v0);
+        float d01 = glm::dot(v0, v1);
+        float d11 = glm::dot(v1, v1);
+        float denom = d00 * d11 - d01 * d01;
 
-            array<glm::vec2, 3> points = {triangle.vertices[0].pos.xy(), triangle.vertices[1].pos.xy(), triangle.vertices[2].pos.xy()};
-            sort(points.begin(), points.end(), [](glm::vec2 a, glm::vec2 b) {return a.y < b.y;});
-            // printf("%f %f %f %f %f %f\n", points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
+        // iterate through pixels
+        for (int x = min_x; x < max_x; ++x) {
+            for (int y = min_y; y < max_y; ++y) {
+                glm::vec2 p {x, y};
 
-            // TODO: only flat-bottom triangle supported
+                /* calculate barycentric coordinates
+                 * method from: see above */
+                glm::vec2 v2 = p - triangle.vertices[0].screenpos.xy();
+                float d20 = glm::dot(v2, v0);
+                float d21 = glm::dot(v2, v1);
+                float w0 = (d11 * d20 - d01 * d21) / denom;
+                float w1 = (d00 * d21 - d01 * d20) / denom;
+                float w2 = 1.0f - w0 - w1;
 
-            float inv_slope_1 = (points[1].x - points[0].x) / (points[1].y - points[0].y);
-            float inv_slope_2 = (points[2].x - points[0].x) / (points[2].y - points[0].y);
-            // printf("%f %f\n", inv_slope_1, inv_slope_2);
+                if (w0 > 0 && w1 > 0 && w2 > 0) {
+                    // interpolate depth
+                    float z = w0 * triangle.vertices[0].pos.z
+                            + w1 * triangle.vertices[1].pos.z
+                            + w2 * triangle.vertices[2].pos.z;
 
-            float x_1 = points[0].x;
-            float x_2 = points[0].x;
-
-            for (int y = points[0].y; y < points[2].y; y++) {
-                // TODO: optimize, depth checking
-                if (x_1 < x_2) {
-                    for (float x = x_1; x < x_2; x++) {
-                        if (x >= 0 && x < X_size && y >= 0 && y < Y_size)
-                            frag_list.emplace_back(static_cast<int>(x), y);
-                    }
-                } else {
-                    for (float x = x_2; x > x_1; x--) {
-                        if (x >= 0 && x < X_size && y >= 0 && y < Y_size)
-                            frag_list.emplace_back(static_cast<int>(x), y);
+                    // create fragment if depth test passes
+                    if(z < zbuf.buf[x][y]) {
+                        frag_buf.buf[x][y] = fragment(&triangle, w0, w1, w2);
+                        zbuf.buf[x][y] = z;
                     }
                 }
-                x_1 += inv_slope_1;
-                x_2 += inv_slope_2;
             }
-        // }
+        }
     }
-
-    return frag_list;
 }
 
-void Render::execute_fragment_shader(buffer<glm::vec3> *write_buf, vector<fragment> frag_list) {
-    for (fragment frag : frag_list) {
-        write_buf->buf[frag.pos.x][frag.pos.y] = glm::vec3(1.0f);
+void Render::execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float)) {
+    for (int x = 0; x < X_size; ++x) {
+        for (int y = 0; y < Y_size; ++y) {
+            if (frag_buf.buf[x][y].has_value()) {
+                fbuf.buf[x][y] = frag_shader(frag_buf.buf[x][y].value(), global_time);
+            }
+        }
     }
 }
 
@@ -117,7 +150,6 @@ void Render::draw_fbuf() {
         }
     }
 
-    system("tput cup 0 0");
     printf("%s", printbuf.c_str());
     fflush(stdout);
 }

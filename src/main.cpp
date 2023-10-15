@@ -8,5 +8,5 @@ int main(int argc, char const *argv[]) {
     int result = engine.run();
     printf("Engine exited with return value %d\n", result);
 
-    return 0;
+    return result;
 }

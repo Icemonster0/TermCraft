@@ -5,12 +5,14 @@
 #include <chrono>
 #include <thread>
 #include <cstdio>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
 namespace tc {
 
-Engine::Engine(int X_size, int Y_size, int p_target_fps) : target_fps(p_target_fps) {
+Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
 }
 
@@ -29,21 +31,20 @@ int Engine::run() {
     system("stty echo -cbreak");
     system("tput clear");
 
-    return 0;
+    return status;
 }
 
 void Engine::input_loop() {
     char key = 0;
 
-    while(key != 27) { // 27 = escape
+    while(!process_should_stop) {
         key = getchar();
 
         switch (key) {
+            case 'q': process_should_stop = true; break;
             default: break;
         }
     }
-
-    process_should_stop = true;
 }
 
 void Engine::render_loop() {
@@ -53,21 +54,56 @@ void Engine::render_loop() {
 
         this_thread::sleep_for(chrono::microseconds(int(1000000.0f / target_fps)));
 
-        render.render(global_time);
+        update_window_size();
+        render.set_params(X_size, Y_size, global_time);
+
+        system_catch_error("tput cup 0 0", 4);
+        render.render();
 
         auto timer_end = timer.now();
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;
         global_time += delta_time;
 
-        debug_info(delta_time);
+        debug_info();
     }
 }
 
-void Engine::debug_info(float delta_time) {
-    system("tput cup 0 0");
+void Engine::debug_info() {
+    system_catch_error("tput cup 0 0", 4);
     printf("Debug info\n");
 
     printf("fps: %d\n", (int)(1.0f / delta_time));
+    printf("time: %.2f\n", global_time);
+}
+
+void Engine::update_window_size() {
+    system_catch_error("mkdir -p tmp", 1);
+    system_catch_error("tput cols >> tmp/term-size.tmp", 2);
+    system_catch_error("tput lines >> tmp/term-size.tmp", 2);
+
+    ifstream file("tmp/term-size.tmp");
+    if (!file.is_open()) {
+        crash(5);
+        return;
+    }
+
+    file >> X_size;
+    file >> Y_size;
+
+    file.close();
+
+    system_catch_error("rm tmp/term-size.tmp", 3);
+}
+
+void Engine::system_catch_error(string command, int code) {
+    if (system(command.c_str())) {
+        crash(code);
+    }
+}
+
+void Engine::crash(int code) {
+    status = code;
+    process_should_stop = true;
 }
 
 } /* end of namespace tc */

@@ -22,6 +22,8 @@ struct vertex {
     }
 
     glm::vec4 pos;
+    glm::vec2 screenpos {0.0f};
+    glm::vec3 color {0.0f};
 };
 
 } /* end of namespace tc */

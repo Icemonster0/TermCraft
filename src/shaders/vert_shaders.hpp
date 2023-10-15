@@ -3,22 +3,21 @@
 
 #include "../glm.hpp"
 
-#include "../misc/vertex.hpp"
+#include "../render/vertex.hpp"
 
 #include <cmath>
 
 namespace tc {
 
 struct vert_shaders {
-    static vertex VERT_default(vertex v, float global_time) {
-        return v;
+    static void VERT_default(vertex *v, float global_time) {
     }
 
-    static vertex VERT_fun(vertex v, float global_time) {
+    static void VERT_fun(vertex *v, float global_time) {
         glm::mat4 transform(1.0f);
-        transform = glm::rotate(transform, glm::radians(10.0f*global_time), glm::vec3(0, 0, 1));
-        // transform = glm::scale(transform, glm::vec3((sin(global_time*3)*0.5+0.5) * 2));
-        return vertex {transform * v.pos};
+        transform = glm::rotate(transform, glm::radians(90.0f*global_time), glm::vec3(0, 0, 1));
+        transform = glm::scale(transform, glm::vec3((sin(global_time)) * 2));
+        v->pos = transform * v->pos;
     }
 };
 
