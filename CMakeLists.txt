@@ -3,6 +3,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 project(TermCraft VERSION 1.0)
 
-set(SOURCE_FILES src/main.cpp src/engine.cpp src/render/render.cpp)
+add_library(libs_module
+    src/engine.cpp
+    src/render/render.cpp
+)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(libs_module -lpthread)
+endif()
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} libs_module)
