@@ -72,8 +72,15 @@ void Engine::debug_info() {
     system_catch_error("tput cup 0 0", 4);
     printf("Debug info\n");
 
+    int n_tris;
+    int n_active_tris;
+    render.get_params(&n_tris, &n_active_tris);
+
     printf("fps: %d\n", (int)(1.0f / delta_time));
+    printf("screen: %dx%d\n", X_size, Y_size);
     printf("time: %.2f\n", global_time);
+    printf("tris: %d\n", n_tris);
+    printf("active tris: %d\n", n_active_tris);
 }
 
 void Engine::update_window_size() {

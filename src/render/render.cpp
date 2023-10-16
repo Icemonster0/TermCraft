@@ -45,6 +45,11 @@ void Render::set_params(int p_X_size, int p_Y_size, float p_global_time) {
     global_time = p_global_time;
 }
 
+void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
+    *n_tris_ptr = n_tris;
+    *n_active_tris_ptr = n_active_tris;
+}
+
 void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, glm::vec3(0.0f));
     zbuf.clear(X_size, Y_size, 1.0f);
@@ -52,20 +57,40 @@ void Render::clear_buffers() {
 }
 
 void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, float)) {
-    for (tri &triangle : m->tri_list) {
+    n_tris = m->tri_list.size(); // for debug info
+
+    for (int i = 0; i < m->tri_list.size(); ++i) {
+        tri &triangle = m->tri_list[i];
+
         for (vertex &v : triangle.vertices) {
             // programmable shader
             vert_shader(&v, global_time);
 
             // depth division
             v.pos = glm::vec4(v.pos.xyz() / v.pos.w, v.pos.w);
+        }
 
+        /* view clipping
+         * If every vertex is outside of NDC space, the triangle
+         * is deleted. */
+        if (glm::any(glm::greaterThan(glm::abs(triangle.vertices[0].pos.xyz()), glm::vec3(1.0f))) &&
+            glm::any(glm::greaterThan(glm::abs(triangle.vertices[1].pos.xyz()), glm::vec3(1.0f))) &&
+            glm::any(glm::greaterThan(glm::abs(triangle.vertices[2].pos.xyz()), glm::vec3(1.0f)))) {
+
+            m->tri_list.erase(m->tri_list.begin() + i);
+            i--;
+
+        } else {
             // screen transform
-            v.screenpos = v.pos * 0.5f + 0.5f;
-            v.screenpos.x *= X_size;
-            v.screenpos.y *= Y_size;
+            for (vertex &v : triangle.vertices) {
+                v.screenpos = v.pos * 0.5f + 0.5f;
+                v.screenpos.x *= X_size;
+                v.screenpos.y *= Y_size;
+            }
         }
     }
+
+    n_active_tris = m->tri_list.size(); // for debug info
 }
 
 void Render::rasterize(mesh *m) {

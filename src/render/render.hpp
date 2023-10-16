@@ -19,6 +19,7 @@ public:
 
     void render();
     void set_params(int p_X_size, int p_Y_size, float p_global_time);
+    void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 
 private:
     void clear_buffers();
@@ -30,6 +31,9 @@ private:
     int X_size;
     int Y_size;
     float global_time;
+
+    int n_tris = 0;
+    int n_active_tris = 0;
 
     buffer<glm::vec3> fbuf;
     buffer<float> zbuf;
