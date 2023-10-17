@@ -6,6 +6,8 @@ project(TermCraft VERSION 1.0)
 add_library(libs_module
     src/engine.cpp
     src/render/render.cpp
+    src/controller/controller.cpp
+    src/controller/camera.cpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

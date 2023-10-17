@@ -2,6 +2,7 @@
 #define ENGINE_HPP
 
 #include "render/render.hpp"
+#include "controller/controller.hpp"
 
 #include <thread>
 #include <string>
@@ -24,6 +25,7 @@ private:
     void crash(int code);
 
     Render render;
+    Controller controller;
     // World world; TODO
 
     int X_size;

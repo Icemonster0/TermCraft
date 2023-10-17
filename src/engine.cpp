@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "render/render.hpp"
+#include "controller/controller.hpp"
 
 #include <cstdlib>
 #include <chrono>
@@ -14,6 +15,7 @@ namespace tc {
 
 Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
+    controller = Controller(static_cast<float>(X_size) / static_cast<float>(Y_size), 0.0f, 0.1f, 2.0f);
 }
 
 int Engine::run() {
@@ -42,7 +44,7 @@ void Engine::input_loop() {
 
         switch (key) {
             case 'q': process_should_stop = true; break;
-            default: break;
+            default: controller.input_event(key);
         }
     }
 }
@@ -55,7 +57,7 @@ void Engine::render_loop() {
         this_thread::sleep_for(chrono::microseconds(int(1000000.0f / target_fps)));
 
         update_window_size();
-        render.set_params(X_size, Y_size, global_time);
+        render.set_params(X_size, Y_size, global_time, controller.get_VP_matrix());
 
         system_catch_error("tput cup 0 0", 4);
         render.render();
@@ -76,9 +78,16 @@ void Engine::debug_info() {
     int n_active_tris;
     render.get_params(&n_tris, &n_active_tris);
 
+    glm::vec3 pos;
+    glm::vec2 look;
+    controller.get_params(&pos, &look);
+
     printf("fps: %d\n", (int)(1.0f / delta_time));
     printf("screen: %dx%d\n", X_size, Y_size);
     printf("time: %.2f\n", global_time);
+    printf("coords: %.2f %.2f %.2f\n", pos.x, pos.y, pos.z);
+    printf("yaw: %.2f°\n", look.x);
+    printf("pitch: %.2f°\n", look.y);
     printf("tris: %d\n", n_tris);
     printf("active tris: %d\n", n_active_tris);
 }
@@ -100,6 +109,8 @@ void Engine::update_window_size() {
     file.close();
 
     system_catch_error("rm tmp/term-size.tmp", 3);
+
+    controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
 }
 
 void Engine::system_catch_error(string command, int code) {

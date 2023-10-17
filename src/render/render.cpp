@@ -32,17 +32,18 @@ void Render::render() {
     m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
     m.tri_list[0].vertices[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
 
-    execute_vertex_shader(&m, vert_shaders::VERT_fun);
+    execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
     execute_fragment_shader(frag_shaders::FRAG_fun);
 
     draw_fbuf();
 }
 
-void Render::set_params(int p_X_size, int p_Y_size, float p_global_time) {
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_VP) {
     X_size = p_X_size;
     Y_size = p_Y_size;
     global_time = p_global_time;
+    VP = p_VP;
 }
 
 void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
@@ -56,7 +57,7 @@ void Render::clear_buffers() {
     frag_buf.clear(X_size, Y_size, optional<fragment>{});
 }
 
-void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, float)) {
+void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, float)) {
     n_tris = m->tri_list.size(); // for debug info
 
     for (int i = 0; i < m->tri_list.size(); ++i) {
@@ -64,7 +65,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, float))
 
         for (vertex &v : triangle.vertices) {
             // programmable shader
-            vert_shader(&v, global_time);
+            vert_shader(&v, VP, global_time);
 
             // depth division
             v.pos = glm::vec4(v.pos.xyz() / v.pos.w, v.pos.w);

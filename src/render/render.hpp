@@ -18,12 +18,12 @@ public:
     Render() {}
 
     void render();
-    void set_params(int p_X_size, int p_Y_size, float p_global_time);
+    void set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_VP);
     void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 
 private:
     void clear_buffers();
-    void execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, float));
+    void execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, float));
     void rasterize(mesh *m);
     void execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float));
     void draw_fbuf();
@@ -31,6 +31,7 @@ private:
     int X_size;
     int Y_size;
     float global_time;
+    glm::mat4 VP;
 
     int n_tris = 0;
     int n_active_tris = 0;
