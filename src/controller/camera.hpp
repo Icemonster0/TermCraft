@@ -3,6 +3,8 @@
 
 #include "../glm.hpp"
 
+namespace tc {
+
 class Camera {
 public:
     Camera(float p_fov, float p_aspect, float p_near, float p_far);
@@ -30,5 +32,7 @@ private:
     glm::mat4 P {1.0f};
     glm::mat4 VP {1.0f};
 };
+
+} /* end of namespace tc */
 
 #endif /* end of include guard: CAMERA_H */

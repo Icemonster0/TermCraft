@@ -15,7 +15,7 @@ namespace tc {
 
 Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
-    controller = Controller(static_cast<float>(X_size) / static_cast<float>(Y_size), 0.0f, 0.1f, 2.0f);
+    controller = Controller {static_cast<float>(X_size) / static_cast<float>(Y_size), 1.0f, 2.0f, 60.0f};
 }
 
 int Engine::run() {
@@ -57,6 +57,7 @@ void Engine::render_loop() {
         this_thread::sleep_for(chrono::microseconds(int(1000000.0f / target_fps)));
 
         update_window_size();
+        controller.simulation_step(delta_time);
         render.set_params(X_size, Y_size, global_time, controller.get_VP_matrix());
 
         system_catch_error("tput cup 0 0", 4);

@@ -11,7 +11,7 @@ add_library(libs_module
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(libs_module -lpthread)
+    target_link_libraries(libs_module pthread)
 endif()
 
 add_executable(${PROJECT_NAME} src/main.cpp)

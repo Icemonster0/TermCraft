@@ -2,6 +2,8 @@
 
 #include "camera.hpp"
 
+namespace tc {
+
 Camera::Camera(float p_fov, float p_aspect, float p_near, float p_far)
  : fov(p_fov), aspect(p_aspect), near(p_near), far(p_far), pos(glm::vec3(0.0f)), yaw(0.0f), pitch(0.0f) {
      calc_V_matrix();
@@ -36,3 +38,5 @@ void Camera::calc_P_matrix() {
 void Camera::calc_VP_matrix() {
     VP = P * V;
 }
+
+} /* end of namespace tc */
