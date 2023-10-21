@@ -15,7 +15,10 @@ namespace tc {
 
 Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
-    controller = Controller {static_cast<float>(X_size) / static_cast<float>(Y_size), 1.0f, 2.0f, 60.0f};
+    world = World {0};
+    controller = Controller {glm::vec3(0.0f, world.get_spawn_height(), 0.0f),
+                             static_cast<float>(X_size) / static_cast<float>(Y_size),
+                             1.0f, 2.0f, 60.0f};
 }
 
 int Engine::run() {
@@ -61,7 +64,7 @@ void Engine::render_loop() {
         render.set_params(X_size, Y_size, global_time, controller.get_VP_matrix());
 
         system_catch_error("tput cup 0 0", 4);
-        render.render();
+        render.render(world.get_mesh());
 
         auto timer_end = timer.now();
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;

@@ -10,8 +10,8 @@ namespace tc {
 
 // public:
 
-Controller::Controller(float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity)
- : move_speed(p_move_speed), look_sensitivity(p_look_sensitivity), height(p_height) {
+Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity)
+ : pos(p_pos), move_speed(p_move_speed), look_sensitivity(p_look_sensitivity), height(p_height) {
     camera = Camera {45.0f, p_aspect, 0.01f, 100.0f};
     input_state = Input_State {};
 
@@ -27,9 +27,9 @@ void Controller::input_event(char key) {
 }
 
 void Controller::simulation_step(float delta_time) {
-    input_state.time_step(delta_time);
-
     evaluate_inputs(delta_time);
+
+    input_state.time_step(delta_time);
 }
 
 void Controller::update_aspect(float value) {

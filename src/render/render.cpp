@@ -23,18 +23,18 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
     clear_buffers();
 }
 
-void Render::render() {
+void Render::render(mesh m) {
     clear_buffers();
 
-    mesh m;
-    m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
-    m.tri_list[0].vertices[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
-    m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
-    m.tri_list[0].vertices[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
+    // mesh m;
+    // m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
+    // m.tri_list[0].vertices[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
+    // m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
+    // m.tri_list[0].vertices[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
 
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
-    execute_fragment_shader(frag_shaders::FRAG_fun);
+    execute_fragment_shader(frag_shaders::FRAG_default);
 
     draw_fbuf();
 }

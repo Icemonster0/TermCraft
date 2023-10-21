@@ -10,7 +10,7 @@ namespace tc {
 
 class Controller {
 public:
-    Controller(float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity);
+    Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity);
     Controller() {}
 
     glm::mat4 get_VP_matrix();

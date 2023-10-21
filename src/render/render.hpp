@@ -17,7 +17,7 @@ public:
     Render(int p_X_size, int p_Y_size);
     Render() {}
 
-    void render();
+    void render(mesh m);
     void set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_VP);
     void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 

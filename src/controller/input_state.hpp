@@ -1,5 +1,5 @@
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#ifndef INPUT_STATE_HPP
+#define INPUT_STATE_HPP
 
 #define KEY_TIMEOUT_DURATION 0.1f
 #include "key_state.hpp"
@@ -53,4 +53,4 @@ private:
 
 } /* end of namespace tc */
 
-#endif /* end of include guard: INPUT_HPP */
+#endif /* end of include guard: INPUT_STATE_HPP */

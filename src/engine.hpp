@@ -3,6 +3,7 @@
 
 #include "render/render.hpp"
 #include "controller/controller.hpp"
+#include "world/world.hpp"
 
 #include <thread>
 #include <string>
@@ -25,8 +26,8 @@ private:
     void crash(int code);
 
     Render render;
+    World world;
     Controller controller;
-    // World world; TODO
 
     int X_size;
     int Y_size;
