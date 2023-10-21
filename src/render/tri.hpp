@@ -20,6 +20,7 @@ struct tri {
 
     vertex vertices[3];
     glm::vec3 normal {0.0f};
+    bool marked_for_death = false;
 
     void calc_normal() {
         normal = glm::cross(vertices[1].pos.xyz() - vertices[0].pos.xyz(),

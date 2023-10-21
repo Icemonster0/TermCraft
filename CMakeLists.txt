@@ -12,12 +12,13 @@ add_library(libs_module
     src/world/chunk.cpp
 )
 
+target_compile_options(libs_module BEFORE PUBLIC "-O3")
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libs_module pthread)
 endif()
 
-target_compile_options(libs_module BEFORE PUBLIC "-O3")
+target_link_libraries(libs_module -fopenmp)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} libs_module)
-# target_compile_options(${PROJECT_NAME} BEFORE PUBLIC "-O3")

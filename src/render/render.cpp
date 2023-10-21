@@ -60,6 +60,7 @@ void Render::clear_buffers() {
 void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, float)) {
     n_tris = m->tri_list.size(); // for debug info
 
+    #pragma omp parallel for schedule(static)
     for (int i = 0; i < m->tri_list.size(); ++i) {
         tri &triangle = m->tri_list[i];
 
@@ -73,13 +74,12 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 
         /* view clipping
          * If every vertex is outside of NDC space, the triangle
-         * is deleted. */
+         * is marked for death. */
         if (glm::any(glm::greaterThan(glm::abs(triangle.vertices[0].pos.xyz()), glm::vec3(1.0f))) &&
             glm::any(glm::greaterThan(glm::abs(triangle.vertices[1].pos.xyz()), glm::vec3(1.0f))) &&
             glm::any(glm::greaterThan(glm::abs(triangle.vertices[2].pos.xyz()), glm::vec3(1.0f)))) {
 
-            m->tri_list.erase(m->tri_list.begin() + i);
-            i--;
+            triangle.marked_for_death = true;
 
         } else {
             // screen transform
@@ -91,10 +91,22 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
         }
     }
 
+    /* view clipping
+     * build a new mesh without marked-for-death triangles
+     * (faster than erasing individually) */
+    mesh tmp;
+    for (int i = 0; i < m->tri_list.size(); ++i) {
+        if (!m->tri_list[i].marked_for_death) {
+            tmp.tri_list.push_back(m->tri_list[i]);
+        }
+    }
+    *m = tmp;
+
     n_active_tris = m->tri_list.size(); // for debug info
 }
 
 void Render::rasterize(mesh *m) {
+    #pragma omp parallel for schedule(static)
     for (tri &triangle : m->tri_list) {
         // find bounding box
         int min_x = max(min(min(triangle.vertices[0].screenpos.x,
@@ -145,8 +157,11 @@ void Render::rasterize(mesh *m) {
 
                     // create fragment if depth test passes
                     if(z < zbuf.buf[x][y]) {
-                        frag_buf.buf[x][y] = fragment(&triangle, w0, w1, w2);
-                        zbuf.buf[x][y] = z;
+                        #pragma omp critical
+                        {
+                            frag_buf.buf[x][y] = fragment(&triangle, w0, w1, w2);
+                            zbuf.buf[x][y] = z;
+                        }
                     }
                 }
             }
@@ -155,6 +170,7 @@ void Render::rasterize(mesh *m) {
 }
 
 void Render::execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float)) {
+    #pragma omp parallel for schedule(static) collapse(2)
     for (int x = 0; x < X_size; ++x) {
         for (int y = 0; y < Y_size; ++y) {
             if (frag_buf.buf[x][y].has_value()) {
