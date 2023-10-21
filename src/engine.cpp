@@ -18,7 +18,7 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
     world = World {0};
     controller = Controller {glm::vec3(0.0f, world.get_spawn_height(), 0.0f),
                              static_cast<float>(X_size) / static_cast<float>(Y_size),
-                             1.0f, 2.0f, 60.0f};
+                             1.0f, 5.0f, 60.0f};
 }
 
 int Engine::run() {

@@ -12,7 +12,7 @@ namespace tc {
 
 Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity)
  : pos(p_pos), move_speed(p_move_speed), look_sensitivity(p_look_sensitivity), height(p_height) {
-    camera = Camera {45.0f, p_aspect, 0.01f, 100.0f};
+    camera = Camera {45.0f, p_aspect, 0.01f, 100.0f, p_pos};
     input_state = Input_State {};
 
     add_input_keys();

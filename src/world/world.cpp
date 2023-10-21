@@ -24,6 +24,7 @@ block* World::get_block(glm::ivec3 coord) {
 
         return &chunks[chunk_coord.x][chunk_coord.y].blocks[coord.x % chunk_size::width][coord.y][coord.z % chunk_size::depth];
     } else {
+        null_block = block {};
         return &null_block;
     }
 }

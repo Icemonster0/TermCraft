@@ -4,10 +4,11 @@
 
 namespace tc {
 
-Camera::Camera(float p_fov, float p_aspect, float p_near, float p_far)
- : fov(p_fov), aspect(p_aspect), near(p_near), far(p_far), pos(glm::vec3(0.0f)), yaw(0.0f), pitch(0.0f) {
+Camera::Camera(float p_fov, float p_aspect, float p_near, float p_far, glm::vec3 p_pos)
+ : fov(p_fov), aspect(p_aspect), near(p_near), far(p_far), pos(p_pos), yaw(0.0f), pitch(0.0f) {
      calc_V_matrix();
      calc_P_matrix();
+     calc_VP_matrix();
 }
 
 glm::mat4 Camera::get_VP_matrix() {

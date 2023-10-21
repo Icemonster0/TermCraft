@@ -7,7 +7,7 @@ namespace tc {
 
 class Camera {
 public:
-    Camera(float p_fov, float p_aspect, float p_near, float p_far);
+    Camera(float p_fov, float p_aspect, float p_near, float p_far, glm::vec3 p_pos);
     Camera() {}
 
     glm::mat4 get_VP_matrix();
