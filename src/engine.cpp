@@ -22,9 +22,9 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
 }
 
 int Engine::run() {
-    system("tput civis");
-    system("stty -echo cbreak");
-    system("tput clear");
+    system_catch_error("tput civis", 5);
+    system_catch_error("stty -echo cbreak", 6);
+    system_catch_error("tput clear", 7);
 
     input_thread = thread(&Engine::input_loop, this);
     render_thread = thread(&Engine::render_loop, this);
@@ -32,9 +32,9 @@ int Engine::run() {
     input_thread.join(); // wait until user quits
     render_thread.join(); // ensures clean exit
 
-    system("tput cnorm");
-    system("stty echo -cbreak");
-    system("tput clear");
+    system_catch_error("tput cnorm", 8);
+    system_catch_error("stty echo -cbreak", 9);
+    system_catch_error("tput clear", 7);
 
     return status;
 }
