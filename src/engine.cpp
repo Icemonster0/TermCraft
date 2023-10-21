@@ -53,11 +53,13 @@ void Engine::input_loop() {
 }
 
 void Engine::render_loop() {
+    float corrected_fps = target_fps;
+
     while (!process_should_stop) {
         chrono::high_resolution_clock timer;
         auto timer_start = timer.now();
 
-        this_thread::sleep_for(chrono::microseconds(int(1000000.0f / target_fps)));
+        this_thread::sleep_for(chrono::microseconds(int(1000000.0f / corrected_fps)));
 
         update_window_size();
         controller.simulation_step(delta_time);
@@ -69,6 +71,8 @@ void Engine::render_loop() {
         auto timer_end = timer.now();
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;
         global_time += delta_time;
+        fps = 1.0f / delta_time;
+        corrected_fps += static_cast<float>(target_fps) - fps;
 
         debug_info();
     }
@@ -86,7 +90,7 @@ void Engine::debug_info() {
     glm::vec2 look;
     controller.get_params(&pos, &look);
 
-    printf("fps: %d\n", (int)(1.0f / delta_time));
+    printf("fps: %d\n", static_cast<int>(fps));
     printf("screen: %dx%d\n", X_size, Y_size);
     printf("time: %.2f\n", global_time);
     printf("coords: %.2f %.2f %.2f\n", pos.x, pos.y, pos.z);
