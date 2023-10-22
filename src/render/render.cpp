@@ -138,17 +138,20 @@ void Render::rasterize(mesh *m) {
 
         /* pre-calculate area for barycentric coordinates
          * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
-        float area = draw_util::cc_signed_area(triangle.vertices[0].screenpos, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos);
+        float area = draw_util::cc_signed_area(p0, p1, p2);
+        // float area = draw_util::cc_signed_area(triangle.vertices[0].screenpos, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos);
 
         // iterate through pixels
         for (int x = min_x; x < max_x; ++x) {
             for (int y = min_y; y < max_y; ++y) {
-                glm::vec2 p {x, y};
+                glm::ivec2 p {x, y};
 
                 /* calculate barycentric coordinates
                  * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
-                float v = draw_util::cc_signed_area(p, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos) / area;
-                float w = draw_util::cc_signed_area(p, triangle.vertices[2].screenpos, triangle.vertices[0].screenpos) / area;
+                float v = draw_util::cc_signed_area(p, p1, p2) / area;
+                float w = draw_util::cc_signed_area(p, p2, p0) / area;
+                // float v = draw_util::cc_signed_area(p, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos) / area;
+                // float w = draw_util::cc_signed_area(p, triangle.vertices[2].screenpos, triangle.vertices[0].screenpos) / area;
                 float u = 1.0f - v - w;
 
                 /* perspective-corrected barycentric coordinates
@@ -161,11 +164,9 @@ void Render::rasterize(mesh *m) {
                 b1 *= inv_b_sum;
                 b2 *= inv_b_sum;
 
-                /* Not using barycentric coordinates for checking if inside
-                 * triangle to avoid gaps.
-                 * not this:  if (b0 >= 0 && b1 >= 0 && b2 >= 0)
-                 * instead this: */
-                if (draw_util::is_point_in_triangle(p, p0, p1, p2)) {
+                /* checking if point is inside triangle */
+                // if (draw_util::is_point_in_triangle(p, p0, p1, p2)) {
+                if (b0 >= 0 && b1 >= 0 && b2 >= 0) {
                     // interpolate depth
                     float z = b0 * triangle.vertices[0].pos.z
                             + b1 * triangle.vertices[1].pos.z
@@ -175,6 +176,7 @@ void Render::rasterize(mesh *m) {
                     #pragma omp critical
                     {
                         if(z < zbuf.buf[x][y]) {
+                        // if(z < zbuf.buf[x][y] && glm::all(glm::equal(p, p0) || glm::equal(p, p1) || glm::equal(p, p2))) {
                             frag_buf.buf[x][y] = fragment(&triangle, b0, b1, b2);
                             zbuf.buf[x][y] = z;
                         }
