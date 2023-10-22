@@ -1,5 +1,6 @@
 #include "world.hpp"
 #include "block.hpp"
+#include "mesh_util.hpp"
 
 #include <cstdlib>
 #include <cstdio>
@@ -20,7 +21,8 @@ block* World::get_block(glm::ivec3 coord) {
     glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
 
     if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
-        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0)))) {
+        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))) &&
+        glm::all(glm::greaterThanEqual(coord, glm::ivec3(0, 0, 0)))) {
 
         return &chunks[chunk_coord.x][chunk_coord.y].blocks[coord.x % chunk_size::width][coord.y][coord.z % chunk_size::depth];
     } else {
@@ -75,30 +77,65 @@ void World::remesh_block(glm::ivec3 coord) {
     block &b = *get_block(coord);
     b.block_mesh = mesh {};
 
+    // store in array which neighbors exist
+    bool neighbors[3][3][3];
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                neighbors[x][y][z] = get_block(coord + glm::ivec3(x-1, y-1, z-1))->type != block_type::EMPTY;
+            }
+        }
+    }
+
+    // generate faces and set ambient occlusion
     if (b.type != block_type::EMPTY) {
-        if (get_block(coord + glm::ivec3(-1, 0, 0))->type == block_type::EMPTY) { // left
-            b.block_mesh.tri_list.emplace_back(tri {{0, 0, 0}, {0, 1, 1}, {0, 1, 0}});
-            b.block_mesh.tri_list.emplace_back(tri {{0, 0, 0}, {0, 0, 1}, {0, 1, 1}});
+        if (!neighbors[0][1][1]) { // left
+            b.block_mesh.append(mesh_util::left_plane ({
+                (neighbors[0][0][0] || neighbors[0][1][0] || neighbors[0][0][1]),
+                (neighbors[0][0][2] || neighbors[0][1][2] || neighbors[0][0][1]),
+                (neighbors[0][2][2] || neighbors[0][1][2] || neighbors[0][2][1]),
+                (neighbors[0][2][0] || neighbors[0][1][0] || neighbors[0][2][1])}
+            ));
         }
-        if (get_block(coord + glm::ivec3(1, 0, 0))->type == block_type::EMPTY) { // right
-            b.block_mesh.tri_list.emplace_back(tri {{1, 1, 1}, {1, 0, 1}, {1, 0, 0}});
-            b.block_mesh.tri_list.emplace_back(tri {{1, 1, 1}, {1, 0, 0}, {1, 1, 0}});
+        if (!neighbors[2][1][1]) { // right
+            b.block_mesh.append(mesh_util::right_plane ({
+                (neighbors[2][2][2] || neighbors[2][1][2] || neighbors[2][2][1]),
+                (neighbors[2][0][2] || neighbors[2][1][2] || neighbors[2][0][1]),
+                (neighbors[2][0][0] || neighbors[2][1][0] || neighbors[2][0][1]),
+                (neighbors[2][2][0] || neighbors[2][1][0] || neighbors[2][2][1])}
+            ));
         }
-        if (get_block(coord + glm::ivec3(0, -1, 0))->type == block_type::EMPTY) { // top
-            b.block_mesh.tri_list.emplace_back(tri {{0, 0, 0}, {1, 0, 0}, {1, 0, 1}});
-            b.block_mesh.tri_list.emplace_back(tri {{0, 0, 0}, {1, 0, 1}, {0, 0, 1}});
+        if (!neighbors[1][0][1]) { // top
+            b.block_mesh.append(mesh_util::top_plane ({
+                (neighbors[0][0][0] || neighbors[0][0][1] || neighbors[1][0][0]),
+                (neighbors[2][0][0] || neighbors[2][0][1] || neighbors[1][0][0]),
+                (neighbors[2][0][2] || neighbors[2][0][1] || neighbors[1][0][2]),
+                (neighbors[0][0][2] || neighbors[0][0][1] || neighbors[1][0][2])}
+            ));
         }
-        if (get_block(coord + glm::ivec3(0, 1, 0))->type == block_type::EMPTY) { // bottom
-            b.block_mesh.tri_list.emplace_back(tri {{0, 1, 0}, {0, 1, 1}, {1, 1, 1}});
-            b.block_mesh.tri_list.emplace_back(tri {{0, 1, 0}, {1, 1, 1}, {1, 1, 0}});
+        if (!neighbors[1][2][1]) { // bottom
+            b.block_mesh.append(mesh_util::bottom_plane ({
+                (neighbors[0][2][0] || neighbors[0][2][1] || neighbors[1][2][0]),
+                (neighbors[0][2][2] || neighbors[0][2][1] || neighbors[1][2][2]),
+                (neighbors[2][2][2] || neighbors[2][2][1] || neighbors[1][2][2]),
+                (neighbors[2][2][0] || neighbors[2][2][1] || neighbors[1][2][0])}
+            ));
         }
-        if (get_block(coord + glm::ivec3(0, 0, -1))->type == block_type::EMPTY) { // front
-            b.block_mesh.tri_list.emplace_back(tri {{0, 1, 0}, {1, 1, 0}, {1, 0, 0}});
-            b.block_mesh.tri_list.emplace_back(tri {{0, 1, 0}, {1, 0, 0}, {0, 0, 0}});
+        if (!neighbors[1][1][0]) { // front
+            b.block_mesh.append(mesh_util::front_plane ({
+                (neighbors[0][2][0] || neighbors[1][2][0] || neighbors[0][1][0]),
+                (neighbors[2][2][0] || neighbors[1][2][0] || neighbors[2][1][0]),
+                (neighbors[2][0][0] || neighbors[1][0][0] || neighbors[2][1][0]),
+                (neighbors[0][0][0] || neighbors[1][0][0] || neighbors[0][1][0])}
+            ));
         }
-        if (get_block(coord + glm::ivec3(0, 0, 1))->type == block_type::EMPTY) { // back
-            b.block_mesh.tri_list.emplace_back(tri {{1, 0, 1}, {1, 1, 1}, {0, 1, 1}});
-            b.block_mesh.tri_list.emplace_back(tri {{1, 0, 1}, {0, 1, 1}, {0, 0, 1}});
+        if (!neighbors[1][1][2]) { // back
+            b.block_mesh.append(mesh_util::back_plane ({
+                (neighbors[2][0][2] || neighbors[1][0][2] || neighbors[2][1][2]),
+                (neighbors[2][2][2] || neighbors[1][2][2] || neighbors[2][1][2]),
+                (neighbors[0][2][2] || neighbors[1][2][2] || neighbors[0][1][2]),
+                (neighbors[0][0][2] || neighbors[1][0][2] || neighbors[0][1][2])}
+            ));
         }
     }
 }

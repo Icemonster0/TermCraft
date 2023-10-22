@@ -22,6 +22,16 @@ struct frag_shaders {
         // return interp_color(f);
     }
 
+    static glm::vec3 FRAG_shaded(fragment f, float global_time) {
+        float light = glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f;
+        light = light * 0.3f + 0.7f;
+
+        float ao = 1.0f - square_interp(interp_ao(f));
+        ao = ao * 0.2f + 0.8f;
+
+        return glm::vec3(light * ao);
+    }
+
 private:
     static glm::vec3 interp_color(fragment f) {
         return f.weights[0] * f.triangle->vertices[0].color
@@ -41,8 +51,22 @@ private:
              + f.weights[2] * f.triangle->vertices[2].screenpos;
     }
 
+    static float interp_ao(fragment f) {
+        return f.weights[0] * f.triangle->vertices[0].ao
+             + f.weights[1] * f.triangle->vertices[1].ao
+             + f.weights[2] * f.triangle->vertices[2].ao;
+    }
+
     static glm::vec3 face_normal(fragment f) {
         return f.triangle->normal;
+    }
+
+    template <typename T> static T square_interp(T x) {
+        return x < 0.5f ? 2.0f*x*x : 1.0f-2.0f*(x-1.0f)*(x-1.0f);
+    }
+
+    template <typename T> static T cubic_interp(T x) {
+        return x < 0.5f ? 4.0f*x*x*x : 4.0f*(x-1.0f)*(x-1.0f)*(x-1.0f)+1.0f;
     }
 };
 

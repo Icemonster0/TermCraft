@@ -34,7 +34,7 @@ void Render::render(mesh m) {
 
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
-    execute_fragment_shader(frag_shaders::FRAG_fun);
+    execute_fragment_shader(frag_shaders::FRAG_shaded);
 
     draw_fbuf();
 }
