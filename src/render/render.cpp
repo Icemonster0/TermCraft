@@ -161,8 +161,10 @@ void Render::rasterize(mesh *m) {
                 b1 *= inv_b_sum;
                 b2 *= inv_b_sum;
 
-                /* not using barycentric coordinates for checking if inside
-                 * triangle to avoid gaps */
+                /* Not using barycentric coordinates for checking if inside
+                 * triangle to avoid gaps.
+                 * not this:  if (b0 >= 0 && b1 >= 0 && b2 >= 0)
+                 * instead this: */
                 if (draw_util::is_point_in_triangle(p, p0, p1, p2)) {
                     // interpolate depth
                     float z = b0 * triangle.vertices[0].pos.z

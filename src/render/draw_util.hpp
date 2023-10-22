@@ -40,7 +40,7 @@ string ansi_clear_string() {
 }
 
 /* method from here:
-* https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle */
+ * https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle */
 float half_plane(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
