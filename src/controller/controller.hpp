@@ -20,7 +20,7 @@ public:
     void get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr);
 
 private:
-    void add_input_keys();
+    void register_input_keys();
     void evaluate_inputs(float delta_time);
     void move(glm::vec3 dir);
     void turn(glm::vec2 dir);

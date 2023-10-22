@@ -15,7 +15,7 @@ Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_
     camera = Camera {45.0f, p_aspect, 0.01f, 100.0f, p_pos};
     input_state = Input_State {};
 
-    add_input_keys();
+    register_input_keys();
 }
 
 glm::mat4 Controller::get_VP_matrix() {
@@ -46,11 +46,13 @@ void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr) {
 
 // private:
 
-void Controller::add_input_keys() {
+void Controller::register_input_keys() {
     input_state.add_key('w');
     input_state.add_key('a');
     input_state.add_key('s');
     input_state.add_key('d');
+    input_state.add_key(' ');
+    input_state.add_key('c');
     input_state.add_key('8');
     input_state.add_key('2');
     input_state.add_key('4');
@@ -69,6 +71,12 @@ void Controller::evaluate_inputs(float delta_time) {
 
     if(input_state.get_key('d'))
         move(camera.get_right_vector() * move_speed * delta_time);
+
+    if(input_state.get_key(' '))
+        move(glm::vec3(0.0f, -1.0f, 0.0f) * move_speed * delta_time);
+
+    if(input_state.get_key('c'))
+        move(glm::vec3(0.0f, 1.0f, 0.0f) * move_speed * delta_time);
 
     if(input_state.get_key('8'))
         turn(glm::vec2(0.0f, look_sensitivity * delta_time));
