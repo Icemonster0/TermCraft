@@ -94,7 +94,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[0][0][0] || neighbors[0][1][0] || neighbors[0][0][1]),
                 (neighbors[0][0][2] || neighbors[0][1][2] || neighbors[0][0][1]),
                 (neighbors[0][2][2] || neighbors[0][1][2] || neighbors[0][2][1]),
-                (neighbors[0][2][0] || neighbors[0][1][0] || neighbors[0][2][1])}
+                (neighbors[0][2][0] || neighbors[0][1][0] || neighbors[0][2][1])},
+                b.type
             ));
         }
         if (!neighbors[2][1][1]) { // right
@@ -102,7 +103,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[2][2][2] || neighbors[2][1][2] || neighbors[2][2][1]),
                 (neighbors[2][0][2] || neighbors[2][1][2] || neighbors[2][0][1]),
                 (neighbors[2][0][0] || neighbors[2][1][0] || neighbors[2][0][1]),
-                (neighbors[2][2][0] || neighbors[2][1][0] || neighbors[2][2][1])}
+                (neighbors[2][2][0] || neighbors[2][1][0] || neighbors[2][2][1])},
+                b.type
             ));
         }
         if (!neighbors[1][0][1]) { // top
@@ -110,7 +112,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[0][0][0] || neighbors[0][0][1] || neighbors[1][0][0]),
                 (neighbors[2][0][0] || neighbors[2][0][1] || neighbors[1][0][0]),
                 (neighbors[2][0][2] || neighbors[2][0][1] || neighbors[1][0][2]),
-                (neighbors[0][0][2] || neighbors[0][0][1] || neighbors[1][0][2])}
+                (neighbors[0][0][2] || neighbors[0][0][1] || neighbors[1][0][2])},
+                b.type
             ));
         }
         if (!neighbors[1][2][1]) { // bottom
@@ -118,7 +121,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[0][2][0] || neighbors[0][2][1] || neighbors[1][2][0]),
                 (neighbors[0][2][2] || neighbors[0][2][1] || neighbors[1][2][2]),
                 (neighbors[2][2][2] || neighbors[2][2][1] || neighbors[1][2][2]),
-                (neighbors[2][2][0] || neighbors[2][2][1] || neighbors[1][2][0])}
+                (neighbors[2][2][0] || neighbors[2][2][1] || neighbors[1][2][0])},
+                b.type
             ));
         }
         if (!neighbors[1][1][0]) { // front
@@ -126,7 +130,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[0][2][0] || neighbors[1][2][0] || neighbors[0][1][0]),
                 (neighbors[2][2][0] || neighbors[1][2][0] || neighbors[2][1][0]),
                 (neighbors[2][0][0] || neighbors[1][0][0] || neighbors[2][1][0]),
-                (neighbors[0][0][0] || neighbors[1][0][0] || neighbors[0][1][0])}
+                (neighbors[0][0][0] || neighbors[1][0][0] || neighbors[0][1][0])},
+                b.type
             ));
         }
         if (!neighbors[1][1][2]) { // back
@@ -134,7 +139,8 @@ void World::remesh_block(glm::ivec3 coord) {
                 (neighbors[2][0][2] || neighbors[1][0][2] || neighbors[2][1][2]),
                 (neighbors[2][2][2] || neighbors[1][2][2] || neighbors[2][1][2]),
                 (neighbors[0][2][2] || neighbors[1][2][2] || neighbors[0][1][2]),
-                (neighbors[0][0][2] || neighbors[1][0][2] || neighbors[0][1][2])}
+                (neighbors[0][0][2] || neighbors[1][0][2] || neighbors[0][1][2])},
+                b.type
             ));
         }
     }

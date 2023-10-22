@@ -29,7 +29,9 @@ struct frag_shaders {
         float ao = 1.0f - square_interp(interp_ao(f));
         ao = ao * 0.2f + 0.8f;
 
-        return glm::vec3(light * ao);
+        float fac = light * ao;
+
+        return interp_color(f) * fac;
     }
 
 private:
