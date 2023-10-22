@@ -58,6 +58,12 @@ bool is_point_in_triangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3
     return !(has_neg && has_pos);
 }
 
+/* reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
+float cc_signed_area(glm::vec2 a, glm::vec2 b, glm::vec2 c) {
+    // a-b-c has to be counter-clockwise
+    return  glm::cross(glm::vec3(b, 0.0f) - glm::vec3(a, 0.0f), glm::vec3(c, 0.0f) - glm::vec3(a, 0.0f)).z;
+}
+
 } /* end of namespace tc::draw_util */
 
 #endif /* end of include guard: DRAW_UTIL_HPP */

@@ -26,7 +26,7 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
 void Render::render(mesh m) {
     clear_buffers();
 
-    // mesh m;
+    // m = mesh {};
     // m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
     // m.tri_list[0].vertices[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
     // m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -65,14 +65,18 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
         tri &triangle = m->tri_list[i];
 
         for (vertex &v : triangle.vertices) {
-            // programmable shader
+            // Programmable Shader
             vert_shader(&v, VP, global_time);
-
-            // depth division
-            v.pos = glm::vec4(v.pos.xyz() / v.pos.w, v.pos.w);
         }
 
-        /* view clipping
+        for (vertex &v : triangle.vertices) {
+            /* Depth Division
+             * pre-divides w too so that we can simply multiply in perspective
+             * correction (for performance; following OpenGL spec) */
+            v.pos = glm::vec4(v.pos.xyz(), 1.0f) / v.pos.w;
+        }
+
+        /* View Clipping
          * If every vertex is outside of NDC space, the triangle
          * is marked for death. */
         if (glm::any(glm::greaterThan(glm::abs(triangle.vertices[0].pos.xyz()), glm::vec3(1.0f))) &&
@@ -108,6 +112,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 void Render::rasterize(mesh *m) {
     #pragma omp parallel for schedule(static)
     for (tri &triangle : m->tri_list) {
+
         // find bounding box
         int min_x = max(min(min(triangle.vertices[0].screenpos.x,
                                 triangle.vertices[1].screenpos.x),
@@ -131,14 +136,9 @@ void Render::rasterize(mesh *m) {
         glm::ivec2 p1 = triangle.vertices[1].screenpos;
         glm::ivec2 p2 = triangle.vertices[2].screenpos;
 
-        /* pre-calculate things for the barycentric coordinates
-         * method from: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
-        glm::vec2 v0 = triangle.vertices[1].screenpos - triangle.vertices[0].screenpos;
-        glm::vec2 v1 = triangle.vertices[2].screenpos - triangle.vertices[0].screenpos;
-        float d00 = glm::dot(v0, v0);
-        float d01 = glm::dot(v0, v1);
-        float d11 = glm::dot(v1, v1);
-        float denom = d00 * d11 - d01 * d01;
+        /* pre-calculate area for barycentric coordinates
+         * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
+        float area = draw_util::cc_signed_area(triangle.vertices[0].screenpos, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos);
 
         // iterate through pixels
         for (int x = min_x; x < max_x; ++x) {
@@ -146,27 +146,34 @@ void Render::rasterize(mesh *m) {
                 glm::vec2 p {x, y};
 
                 /* calculate barycentric coordinates
-                 * method from: see above */
-                glm::vec2 v2 = p - triangle.vertices[0].screenpos;
-                float d20 = glm::dot(v2, v0);
-                float d21 = glm::dot(v2, v1);
-                float w0 = (d11 * d20 - d01 * d21) / denom;
-                float w1 = (d00 * d21 - d01 * d20) / denom;
-                float w2 = 1.0f - w0 - w1;
+                 * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
+                float v = draw_util::cc_signed_area(p, triangle.vertices[1].screenpos, triangle.vertices[2].screenpos) / area;
+                float w = draw_util::cc_signed_area(p, triangle.vertices[2].screenpos, triangle.vertices[0].screenpos) / area;
+                float u = 1.0f - v - w;
+
+                /* perspective-corrected barycentric coordinates
+                 * reference: https://stackoverflow.com/questions/24441631/how-exactly-does-opengl-do-perspectively-correct-linear-interpolation */
+                float b0 = v * triangle.vertices[0].pos.w;
+                float b1 = w * triangle.vertices[1].pos.w;
+                float b2 = u * triangle.vertices[2].pos.w;
+                float inv_b_sum = 1.0f / (b0 + b1 + b2);
+                b0 *= inv_b_sum;
+                b1 *= inv_b_sum;
+                b2 *= inv_b_sum;
 
                 /* not using barycentric coordinates for checking if inside
                  * triangle to avoid gaps */
                 if (draw_util::is_point_in_triangle(p, p0, p1, p2)) {
                     // interpolate depth
-                    float z = w0 * triangle.vertices[0].pos.z
-                            + w1 * triangle.vertices[1].pos.z
-                            + w2 * triangle.vertices[2].pos.z;
+                    float z = b0 * triangle.vertices[0].pos.z
+                            + b1 * triangle.vertices[1].pos.z
+                            + b2 * triangle.vertices[2].pos.z;
 
                     // create fragment if depth test passes
                     #pragma omp critical
                     {
                         if(z < zbuf.buf[x][y]) {
-                            frag_buf.buf[x][y] = fragment(&triangle, w0, w1, w2);
+                            frag_buf.buf[x][y] = fragment(&triangle, b0, b1, b2);
                             zbuf.buf[x][y] = z;
                         }
                     }

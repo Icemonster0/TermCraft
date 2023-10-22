@@ -16,7 +16,9 @@ struct frag_shaders {
     }
 
     static glm::vec3 FRAG_fun(fragment f, float global_time) {
-        return glm::vec3((glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f);
+        float light = (glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f;
+        // return glm::vec3(sin(interp_color(f).r*25)*0.5f+0.5f) * glm::vec3(sin(interp_color(f).b*25)*0.5f+0.5f);
+        return glm::vec3(light);
         // return interp_color(f);
     }
 

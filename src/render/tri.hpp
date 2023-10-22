@@ -8,7 +8,7 @@
 namespace tc {
 
 struct tri {
-    tri(vertex a, vertex b, vertex c) {
+    tri(const vertex &a, const  vertex &b, const  vertex &c) {
         vertices[0] = a;
         vertices[1] = b;
         vertices[2] = c;
