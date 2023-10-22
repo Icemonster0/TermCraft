@@ -34,7 +34,7 @@ void Render::render(mesh m) {
 
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
-    execute_fragment_shader(frag_shaders::FRAG_default);
+    execute_fragment_shader(frag_shaders::FRAG_fun);
 
     draw_fbuf();
 }
@@ -126,10 +126,15 @@ void Render::rasterize(mesh *m) {
                             triangle.vertices[2].screenpos.y),
                         static_cast<float>(Y_size));
 
+        // integer coordinates
+        glm::ivec2 p0 = triangle.vertices[0].screenpos;
+        glm::ivec2 p1 = triangle.vertices[1].screenpos;
+        glm::ivec2 p2 = triangle.vertices[2].screenpos;
+
         /* pre-calculate things for the barycentric coordinates
          * method from: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
-        glm::vec2 v0 = triangle.vertices[1].screenpos.xy() - triangle.vertices[0].screenpos.xy();
-        glm::vec2 v1 = triangle.vertices[2].screenpos.xy() - triangle.vertices[0].screenpos.xy();
+        glm::vec2 v0 = triangle.vertices[1].screenpos - triangle.vertices[0].screenpos;
+        glm::vec2 v1 = triangle.vertices[2].screenpos - triangle.vertices[0].screenpos;
         float d00 = glm::dot(v0, v0);
         float d01 = glm::dot(v0, v1);
         float d11 = glm::dot(v1, v1);
@@ -142,23 +147,25 @@ void Render::rasterize(mesh *m) {
 
                 /* calculate barycentric coordinates
                  * method from: see above */
-                glm::vec2 v2 = p - triangle.vertices[0].screenpos.xy();
+                glm::vec2 v2 = p - triangle.vertices[0].screenpos;
                 float d20 = glm::dot(v2, v0);
                 float d21 = glm::dot(v2, v1);
                 float w0 = (d11 * d20 - d01 * d21) / denom;
                 float w1 = (d00 * d21 - d01 * d20) / denom;
                 float w2 = 1.0f - w0 - w1;
 
-                if (w0 > 0 && w1 > 0 && w2 > 0) {
+                /* not using barycentric coordinates for checking if inside
+                 * triangle to avoid gaps */
+                if (draw_util::is_point_in_triangle(p, p0, p1, p2)) {
                     // interpolate depth
                     float z = w0 * triangle.vertices[0].pos.z
                             + w1 * triangle.vertices[1].pos.z
                             + w2 * triangle.vertices[2].pos.z;
 
                     // create fragment if depth test passes
-                    if(z < zbuf.buf[x][y]) {
-                        #pragma omp critical
-                        {
+                    #pragma omp critical
+                    {
+                        if(z < zbuf.buf[x][y]) {
                             frag_buf.buf[x][y] = fragment(&triangle, w0, w1, w2);
                             zbuf.buf[x][y] = z;
                         }

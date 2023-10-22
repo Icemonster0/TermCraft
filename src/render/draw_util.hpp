@@ -39,15 +39,23 @@ string ansi_clear_string() {
     return "\e[0m";
 }
 
-bool is_point_in_triangle(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p) {
-    /* method from here:
-     * https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle */
+/* method from here:
+* https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle */
+float half_plane(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3) {
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+bool is_point_in_triangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3) {
+    float d1, d2, d3;
+    bool has_neg, has_pos;
 
-    float area = 0.5 *(-p1.y*p2.x + p0.y*(-p1.x + p2.x) + p0.x*(p1.y - p2.y) + p1.x*p2.y);
-    float s = 1/(2*area)*(p0.y*p2.x - p0.x*p2.y + (p2.y - p0.y)*p.x + (p0.x - p2.x)*p.y);
-    float t = 1/(2*area)*(p0.x*p1.y - p0.y*p1.x + (p0.y - p1.y)*p.x + (p1.x - p0.x)*p.y);
+    d1 = half_plane(pt, v1, v2);
+    d2 = half_plane(pt, v2, v3);
+    d3 = half_plane(pt, v3, v1);
 
-    return (s > 0 && t > 0 && 1-s-t > 0);
+    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(has_neg && has_pos);
 }
 
 } /* end of namespace tc::draw_util */

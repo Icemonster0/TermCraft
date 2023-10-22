@@ -16,7 +16,8 @@ struct frag_shaders {
     }
 
     static glm::vec3 FRAG_fun(fragment f, float global_time) {
-        return interp_color(f);
+        return glm::vec3((glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f);
+        // return interp_color(f);
     }
 
 private:
@@ -36,6 +37,10 @@ private:
         return f.weights[0] * f.triangle->vertices[0].screenpos
              + f.weights[1] * f.triangle->vertices[1].screenpos
              + f.weights[2] * f.triangle->vertices[2].screenpos;
+    }
+
+    static glm::vec3 face_normal(fragment f) {
+        return f.triangle->normal;
     }
 };
 
