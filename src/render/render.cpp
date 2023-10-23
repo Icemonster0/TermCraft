@@ -67,9 +67,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
         for (vertex &v : triangle.vertices) {
             // Programmable Shader
             vert_shader(&v, VP, global_time);
-        }
 
-        for (vertex &v : triangle.vertices) {
             /* Depth Division
              * pre-divides w too so that we can simply multiply in perspective
              * correction (for performance; following OpenGL spec) */
