@@ -2,8 +2,7 @@
 A 3D Minecraft clone running in the terminal.
 
 # Work in progress
-This is a very early version of the project. The following features are still missing:
-- Everything except for render engine lol
+This is a very early version of the project. Many features are still missing.
 
 ---
 
