@@ -3,8 +3,8 @@
 ### Engine
 
 - setup and exit / crashes
-- Render engine
-- voxel engine (World)
+- render engine
+- voxel engine (world)
 - character controller
 - input processor thread
 - render caller thread
