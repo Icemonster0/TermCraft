@@ -39,6 +39,7 @@ private:
     buffer<glm::vec3> fbuf;
     buffer<float> zbuf;
     buffer<std::optional<fragment>> frag_buf;
+    buffer<std::string> hud_buf;
 };
 
 } /* end of namespace tc */

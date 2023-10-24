@@ -27,8 +27,10 @@
     - view clipping
     - screen transform
 - rasterization w/ depth checking and vertex interpolation
-- fragment shader *(programmable)*
-- printing of framebuffer to terminal
+- fragment shader:
+    - process fragments *(programmable)*
+    - construct hud
+- printing of framebuffer and hud to terminal
 
 ---
 

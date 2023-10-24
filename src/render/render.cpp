@@ -55,6 +55,7 @@ void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, glm::vec3(0.0f));
     zbuf.clear(X_size, Y_size, 1.0f);
     frag_buf.clear(X_size, Y_size, optional<fragment>{});
+    hud_buf.clear(X_size, Y_size, " ");
 }
 
 void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, float)) {
@@ -147,7 +148,7 @@ void Render::rasterize(mesh *m) {
                  * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
                 float v = draw_util::cc_signed_area(p, p1, p2) / area;
                 float w = draw_util::cc_signed_area(p, p2, p0) / area;
-                /* This method would be imprecise:
+                /* This method doesn't work well for some reason:
                  *  float u = 1.0f - v - w;
                  * Therefore we calculate it with the standard approach: */
                 float u = draw_util::cc_signed_area(p, p0, p1) / area;
@@ -187,8 +188,17 @@ void Render::execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float)) 
     #pragma omp parallel for schedule(static) collapse(2)
     for (int x = 0; x < X_size; ++x) {
         for (int y = 0; y < Y_size; ++y) {
+            // Programmable Shader
             if (frag_buf.buf[x][y].has_value()) {
                 fbuf.buf[x][y] = frag_shader(frag_buf.buf[x][y].value(), global_time);
+            }
+
+            // Construct HUD
+            // crosshair
+            if (x == X_size / 2 && y == Y_size / 2) {
+                hud_buf.buf[x][y] = string{}
+                                .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
+                                .append("\x1b[1mX");
             }
         }
     }
@@ -201,7 +211,7 @@ void Render::draw_fbuf() {
         if(y) printbuf.append("\n");
         for (size_t x = 0; x < X_size; x++) {
             printbuf.append(draw_util::ansi_color_string(draw_util::BG, fbuf.buf[x][y]));
-            printbuf.append(" ");
+            printbuf.append(hud_buf.buf[x][y]);
             printbuf.append(draw_util::ansi_clear_string());
         }
     }
