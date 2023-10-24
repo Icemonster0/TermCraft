@@ -47,16 +47,27 @@ void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr) {
 // private:
 
 void Controller::register_input_keys() {
+    // movement
     input_state.add_key('w');
     input_state.add_key('a');
     input_state.add_key('s');
     input_state.add_key('d');
+
+    // fly / jump / crouch
     input_state.add_key(' ');
     input_state.add_key('c');
+
+    // look
     input_state.add_key('8');
     input_state.add_key('2');
     input_state.add_key('4');
     input_state.add_key('6');
+
+    // alt look
+    input_state.add_key('i');
+    input_state.add_key('k');
+    input_state.add_key('j');
+    input_state.add_key('l');
 }
 
 void Controller::evaluate_inputs(float delta_time) {
@@ -78,16 +89,16 @@ void Controller::evaluate_inputs(float delta_time) {
     if(input_state.get_key('c'))
         move(glm::vec3(0.0f, 1.0f, 0.0f) * move_speed * delta_time);
 
-    if(input_state.get_key('8'))
+    if(input_state.get_key('8') || input_state.get_key('i'))
         turn(glm::vec2(0.0f, look_sensitivity * delta_time));
 
-    if(input_state.get_key('2'))
+    if(input_state.get_key('2') || input_state.get_key('k'))
         turn(glm::vec2(0.0f, -look_sensitivity * delta_time));
 
-    if(input_state.get_key('4'))
+    if(input_state.get_key('4') || input_state.get_key('j'))
         turn(glm::vec2(look_sensitivity * delta_time, 0.0f));
 
-    if(input_state.get_key('6'))
+    if(input_state.get_key('6') || input_state.get_key('l'))
         turn(glm::vec2(-look_sensitivity * delta_time, 0.0f));
 }
 
