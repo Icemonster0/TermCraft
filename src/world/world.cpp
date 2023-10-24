@@ -48,14 +48,46 @@ int World::get_spawn_height() {
 // private:
 
 void World::update_block(glm::ivec3 coord) {
-    remesh_block(coord);
 
-    remesh_block(coord + glm::ivec3(-1, 0, 0));
-    remesh_block(coord + glm::ivec3( 1, 0, 0));
-    remesh_block(coord + glm::ivec3(0, -1, 0));
-    remesh_block(coord + glm::ivec3(0,  1, 0));
-    remesh_block(coord + glm::ivec3(0, 0, -1));
-    remesh_block(coord + glm::ivec3(0, 0,  1));
+    // use these if ao doesn't matter
+    // remesh_block(coord);
+    // remesh_block(coord + glm::ivec3(-1, 0, 0));
+    // remesh_block(coord + glm::ivec3( 1, 0, 0));
+    // remesh_block(coord + glm::ivec3(0, -1, 0));
+    // remesh_block(coord + glm::ivec3(0,  1, 0));
+    // remesh_block(coord + glm::ivec3(0, 0, -1));
+    // remesh_block(coord + glm::ivec3(0, 0,  1));
+
+    // use these if ao matters
+    remesh_block(coord + glm::ivec3(-1, -1, -1));
+    remesh_block(coord + glm::ivec3(-1,  0, -1));
+    remesh_block(coord + glm::ivec3(-1,  1, -1));
+    remesh_block(coord + glm::ivec3( 0, -1, -1));
+    remesh_block(coord + glm::ivec3( 0,  0, -1));
+    remesh_block(coord + glm::ivec3( 0,  1, -1));
+    remesh_block(coord + glm::ivec3( 1, -1, -1));
+    remesh_block(coord + glm::ivec3( 1,  0, -1));
+    remesh_block(coord + glm::ivec3( 1,  1, -1));
+
+    remesh_block(coord + glm::ivec3(-1, -1,  0));
+    remesh_block(coord + glm::ivec3(-1,  0,  0));
+    remesh_block(coord + glm::ivec3(-1,  1,  0));
+    remesh_block(coord + glm::ivec3( 0, -1,  0));
+    remesh_block(coord + glm::ivec3( 0,  0,  0)); // the block itself
+    remesh_block(coord + glm::ivec3( 0,  1,  0));
+    remesh_block(coord + glm::ivec3( 1, -1,  0));
+    remesh_block(coord + glm::ivec3( 1,  0,  0));
+    remesh_block(coord + glm::ivec3( 1,  1,  0));
+
+    remesh_block(coord + glm::ivec3(-1, -1,  1));
+    remesh_block(coord + glm::ivec3(-1,  0,  1));
+    remesh_block(coord + glm::ivec3(-1,  1,  1));
+    remesh_block(coord + glm::ivec3( 0, -1,  1));
+    remesh_block(coord + glm::ivec3( 0,  0,  1));
+    remesh_block(coord + glm::ivec3( 0,  1,  1));
+    remesh_block(coord + glm::ivec3( 1, -1,  1));
+    remesh_block(coord + glm::ivec3( 1,  0,  1));
+    remesh_block(coord + glm::ivec3( 1,  1,  1));
 
     glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
     glm::ivec3 relative_coord {coord.x % chunk_size::width, coord.y, coord.z % chunk_size::depth};

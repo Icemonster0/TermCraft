@@ -21,7 +21,7 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
                              1.0f, // height
                              10.0f, // interact range
                              10.0f, // move speed
-                             60.0f, // look sensitivity
+                             40.0f, // look sensitivity
                              &world}; // world pointer
 }
 
