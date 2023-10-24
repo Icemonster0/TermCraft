@@ -15,9 +15,18 @@ glm::mat4 Camera::get_VP_matrix() {
     return VP;
 }
 
-glm::vec3 Camera::get_forward_vector() {
+glm::vec3 Camera::get_h_forward_vector() {
     // returns the horizontal forward vector (not affected by pitch)
     return glm::rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(yaw), glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+glm::vec3 Camera::get_forward_vector() {
+    // returns the true forward vector (affected by pitch)
+    return glm::rotate(
+        glm::rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)),
+        glm::radians(yaw),
+        glm::vec3(0.0f, -1.0f, 0.0f)
+    );
 }
 
 glm::vec3 Camera::get_right_vector() {

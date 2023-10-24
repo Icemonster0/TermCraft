@@ -17,7 +17,7 @@ public:
         for (auto &key : key_states) {
             if (key.active) {
                 key.time_left -= delta_time;
-                if (key.time_left <= 0) {
+                if (key.time_left <= 0 || key.is_single_event) {
                     key.active = false;
                 }
             }
@@ -44,7 +44,11 @@ public:
     }
 
     void add_key(char c) {
-        key_states.emplace_back(c);
+        key_states.emplace_back(c, false);
+    }
+
+    void add_single_event_key(char c) {
+        key_states.emplace_back(c, true);
     }
 
 private:

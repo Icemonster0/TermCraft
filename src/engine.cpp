@@ -16,9 +16,13 @@ namespace tc {
 Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
     world = World {0};
-    controller = Controller {glm::vec3(0.0f, world.get_spawn_height(), 0.0f),
-                             static_cast<float>(X_size) / static_cast<float>(Y_size),
-                             1.0f, 10.0f, 60.0f};
+    controller = Controller {glm::vec3(0.0f, world.get_spawn_height(), 0.0f), // spawn position
+                             static_cast<float>(X_size) / static_cast<float>(Y_size), // aspect
+                             1.0f, // height
+                             10.0f, // interact range
+                             10.0f, // move speed
+                             60.0f, // look sensitivity
+                             &world}; // world pointer
 }
 
 int Engine::run() {

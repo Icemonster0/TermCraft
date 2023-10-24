@@ -11,6 +11,7 @@ public:
     Camera() {}
 
     glm::mat4 get_VP_matrix();
+    glm::vec3 get_h_forward_vector();
     glm::vec3 get_forward_vector();
     glm::vec3 get_right_vector();
 

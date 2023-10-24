@@ -3,15 +3,19 @@
 #include "controller.hpp"
 #include "camera.hpp"
 #include "input_state.hpp"
+#include "../world/world.hpp"
+#include "../world/block.hpp"
 
 #include <algorithm>
+#include <optional>
 
 namespace tc {
 
 // public:
 
-Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity)
- : pos(p_pos), move_speed(p_move_speed), look_sensitivity(p_look_sensitivity), height(p_height) {
+Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_interact_range, float p_move_speed, float p_look_sensitivity, World *p_world_ptr)
+ : pos(p_pos), height(p_height), interact_range(p_interact_range), move_speed(p_move_speed), look_sensitivity(p_look_sensitivity), world_ptr(p_world_ptr), active_block_type(block_type::GRASS) {
+
     camera = Camera {45.0f, p_aspect, 0.01f, 100.0f, p_pos + glm::vec3(0, -height, 0)};
     input_state = Input_State {};
 
@@ -68,20 +72,25 @@ void Controller::register_input_keys() {
     input_state.add_key('k');
     input_state.add_key('j');
     input_state.add_key('l');
+
+    // interact
+    input_state.add_single_event_key('e');
+    input_state.add_single_event_key('f');
 }
 
 void Controller::evaluate_inputs(float delta_time) {
-    if(input_state.get_key('w'))
-        move(camera.get_forward_vector() * move_speed * delta_time);
+    // movement
 
+    if(input_state.get_key('w'))
+        move(camera.get_h_forward_vector() * move_speed * delta_time);
     if(input_state.get_key('a'))
         move(-camera.get_right_vector() * move_speed * delta_time);
-
     if(input_state.get_key('s'))
-        move(-camera.get_forward_vector() * move_speed * delta_time);
-
+        move(-camera.get_h_forward_vector() * move_speed * delta_time);
     if(input_state.get_key('d'))
         move(camera.get_right_vector() * move_speed * delta_time);
+
+    // fly / jump / crouch
 
     if(input_state.get_key(' '))
         move(glm::vec3(0.0f, -1.0f, 0.0f) * move_speed * delta_time);
@@ -89,17 +98,30 @@ void Controller::evaluate_inputs(float delta_time) {
     if(input_state.get_key('c'))
         move(glm::vec3(0.0f, 1.0f, 0.0f) * move_speed * delta_time);
 
+    // look
+
     if(input_state.get_key('8') || input_state.get_key('i'))
         turn(glm::vec2(0.0f, look_sensitivity * delta_time));
-
     if(input_state.get_key('2') || input_state.get_key('k'))
         turn(glm::vec2(0.0f, -look_sensitivity * delta_time));
-
     if(input_state.get_key('4') || input_state.get_key('j'))
         turn(glm::vec2(look_sensitivity * delta_time, 0.0f));
-
     if(input_state.get_key('6') || input_state.get_key('l'))
         turn(glm::vec2(-look_sensitivity * delta_time, 0.0f));
+
+    // interact
+
+    if(input_state.get_key('e')) {
+        std::optional<glm::ivec3> coord = calc_looked_at_block(false);
+        if (coord.has_value())
+            world_ptr->replace(coord.value(), block_type::EMPTY);
+    }
+
+    if(input_state.get_key('f')) {
+        std::optional<glm::ivec3> coord = calc_looked_at_block(true);
+        if (coord.has_value())
+            world_ptr->replace(coord.value(), active_block_type);
+    }
 }
 
 void Controller::move(glm::vec3 dir) {
@@ -116,6 +138,22 @@ void Controller::turn(glm::vec2 dir) {
 
     camera.calc_V_matrix();
     camera.calc_VP_matrix();
+}
+
+std::optional<glm::ivec3> Controller::calc_looked_at_block(bool adjacent) {
+    glm::vec3 dir = camera.get_forward_vector();
+    float step = 0.1f;
+
+    for (float f = 0.0f; f <= interact_range; f += step) {
+        if (world_ptr->get_block(camera.pos + f * dir)->type != block_type::EMPTY) {
+            if (adjacent)
+                return std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
+            else
+                return std::optional<glm::ivec3> {camera.pos + f * dir};
+        }
+    }
+
+    return std::optional<glm::ivec3> {};
 }
 
 } /* end of namespace tc */

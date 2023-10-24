@@ -5,12 +5,16 @@
 
 #include "camera.hpp"
 #include "input_state.hpp"
+#include "../world/world.hpp"
+#include "../world/block.hpp"
+
+#include <optional>
 
 namespace tc {
 
 class Controller {
 public:
-    Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_move_speed, float p_look_sensitivity);
+    Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_interact_range, float p_move_speed, float p_look_sensitivity, World *p_world_ptr);
     Controller() {}
 
     glm::mat4 get_VP_matrix();
@@ -24,14 +28,19 @@ private:
     void evaluate_inputs(float delta_time);
     void move(glm::vec3 dir);
     void turn(glm::vec2 dir);
+    std::optional<glm::ivec3> calc_looked_at_block(bool adjacent);
 
     glm::vec3 pos;
     float height;
+    float interact_range;
     float move_speed;
     float look_sensitivity;
 
+    block_type::Block_Type active_block_type;
+
     Camera camera;
     Input_State input_state;
+    World *world_ptr;
 };
 
 } /* end of namespace tc */
