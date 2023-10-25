@@ -20,6 +20,7 @@ Controller::Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_
     input_state = Input_State {};
 
     register_input_keys();
+    calc_looked_at_block(false);
 }
 
 glm::mat4 Controller::get_VP_matrix() {
@@ -32,8 +33,9 @@ void Controller::input_event(char key) {
 
 void Controller::simulation_step(float delta_time) {
     evaluate_inputs(delta_time);
-
     input_state.time_step(delta_time);
+
+    world_ptr->highlight_block(looked_at_block.has_value() ? looked_at_block.value() : glm::ivec3(-1));
 }
 
 void Controller::update_aspect(float value) {
@@ -112,15 +114,19 @@ void Controller::evaluate_inputs(float delta_time) {
     // interact
 
     if(input_state.get_key('e')) {
-        std::optional<glm::ivec3> coord = calc_looked_at_block(false);
-        if (coord.has_value())
-            world_ptr->replace(coord.value(), block_type::EMPTY);
+        if (looked_at_block.has_value())
+            world_ptr->replace(looked_at_block.value(), block_type::EMPTY);
+
+        calc_looked_at_block(false);
     }
 
     if(input_state.get_key('f')) {
-        std::optional<glm::ivec3> coord = calc_looked_at_block(true);
-        if (coord.has_value())
-            world_ptr->replace(coord.value(), active_block_type);
+        calc_looked_at_block(true);
+
+        if (looked_at_block.has_value())
+            world_ptr->replace(looked_at_block.value(), active_block_type);
+
+        calc_looked_at_block(false);
     }
 }
 
@@ -130,6 +136,8 @@ void Controller::move(glm::vec3 dir) {
 
     camera.calc_V_matrix();
     camera.calc_VP_matrix();
+
+    calc_looked_at_block(false);
 }
 
 void Controller::turn(glm::vec2 dir) {
@@ -138,22 +146,27 @@ void Controller::turn(glm::vec2 dir) {
 
     camera.calc_V_matrix();
     camera.calc_VP_matrix();
+
+    calc_looked_at_block(false);
 }
 
-std::optional<glm::ivec3> Controller::calc_looked_at_block(bool adjacent) {
+void Controller::calc_looked_at_block(bool adjacent) {
     glm::vec3 dir = camera.get_forward_vector();
     float step = 0.1f;
 
     for (float f = 0.0f; f <= interact_range; f += step) {
         if (world_ptr->get_block(camera.pos + f * dir)->type != block_type::EMPTY) {
-            if (adjacent)
-                return std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
-            else
-                return std::optional<glm::ivec3> {camera.pos + f * dir};
+            if (adjacent) {
+                looked_at_block = std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
+                return;
+            } else {
+                looked_at_block = std::optional<glm::ivec3> {camera.pos + f * dir};
+                return;
+            }
         }
     }
 
-    return std::optional<glm::ivec3> {};
+    looked_at_block = std::optional<glm::ivec3> {};
 }
 
 } /* end of namespace tc */

@@ -31,7 +31,9 @@ struct frag_shaders {
 
         float fac = light * ao;
 
-        return interp_color(f) * fac;
+        float highlight = is_face_highlighted(f) ? 0.1f : 0.0f;
+
+        return interp_color(f) * fac + highlight;
     }
 
 private:
@@ -61,6 +63,10 @@ private:
 
     static glm::vec3 face_normal(fragment f) {
         return f.triangle->normal;
+    }
+
+    static bool is_face_highlighted(fragment f) {
+        return f.triangle->is_highlighted;
     }
 
     template <typename T> static T square_interp(T x) {

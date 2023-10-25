@@ -18,12 +18,9 @@ mesh World::get_mesh() {
 }
 
 block* World::get_block(glm::ivec3 coord) {
-    glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
+    glm::ivec2 chunk_coord = get_chunk_of_block(coord);
 
-    if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
-        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))) &&
-        glm::all(glm::greaterThanEqual(coord, glm::ivec3(0, 0, 0)))) {
-
+    if (chunk_coord.x != -1 && glm::all(glm::greaterThanEqual(coord, glm::ivec3(0, 0, 0)))) {
         return &chunks[chunk_coord.x][chunk_coord.y].blocks[coord.x % chunk_size::width][coord.y][coord.z % chunk_size::depth];
     } else {
         null_block = block {};
@@ -36,6 +33,29 @@ void World::replace(glm::ivec3 coord, block_type::Block_Type type) {
     update_block(coord);
 }
 
+void World::highlight_block(glm::ivec3 coord) {
+    for (tri &triangle : get_block(highlighted_block)->block_mesh.tri_list) {
+        triangle.is_highlighted = false;
+    }
+    for (tri &triangle : get_block(coord)->block_mesh.tri_list) {
+        triangle.is_highlighted = true;
+    }
+
+    glm::ivec2 coord_chunk = get_chunk_of_block(coord);
+    glm::ivec2 highlighted_block_chunk = get_chunk_of_block(highlighted_block);
+
+    if (glm::all(glm::equal(coord_chunk, highlighted_block_chunk))) {
+        remesh_chunk(coord_chunk);
+    } else {
+        remesh_chunk(coord_chunk);
+        remesh_chunk(highlighted_block_chunk);
+    }
+
+    remesh_world();
+
+    highlighted_block = coord;
+}
+
 int World::get_spawn_height() {
     int y;
     for (y = 0; y < chunk_size::height; ++y) {
@@ -46,6 +66,15 @@ int World::get_spawn_height() {
 }
 
 // private:
+
+glm::ivec2 World::get_chunk_of_block(glm::ivec3 coord) {
+    glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
+
+    if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
+        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))))
+         return chunk_coord;
+    else return glm::ivec2(-1);
+}
 
 void World::update_block(glm::ivec3 coord) {
 

@@ -28,7 +28,7 @@ private:
     void evaluate_inputs(float delta_time);
     void move(glm::vec3 dir);
     void turn(glm::vec2 dir);
-    std::optional<glm::ivec3> calc_looked_at_block(bool adjacent);
+    void calc_looked_at_block(bool adjacent);
 
     glm::vec3 pos;
     float height;
@@ -37,6 +37,7 @@ private:
     float look_sensitivity;
 
     block_type::Block_Type active_block_type;
+    std::optional<glm::ivec3> looked_at_block;
 
     Camera camera;
     Input_State input_state;
