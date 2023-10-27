@@ -1,2 +1,6 @@
 build
 lib/glm-0.9.9.8/doc
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
