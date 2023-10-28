@@ -20,7 +20,8 @@ public:
     block* get_block(glm::ivec3 coord);
     void replace(glm::ivec3 coord, block_type::Block_Type type);
     void highlight_block(glm::ivec3 coord);
-    int get_spawn_height();
+    int get_ground_height_at(glm::ivec2 coord);
+    glm::ivec2 get_world_center();
 
 private:
     glm::ivec2 get_chunk_of_block(glm::ivec3 coord);

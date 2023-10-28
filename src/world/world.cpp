@@ -56,13 +56,18 @@ void World::highlight_block(glm::ivec3 coord) {
     highlighted_block = coord;
 }
 
-int World::get_spawn_height() {
+int World::get_ground_height_at(glm::ivec2 coord) {
     int y;
     for (y = 0; y < chunk_size::height; ++y) {
-        if (get_block({0, y, 0})->type != block_type::EMPTY)
+        if (get_block({coord.x, y, coord.y})->type != block_type::EMPTY)
             break;
     }
     return y;
+}
+
+glm::ivec2 World::get_world_center() {
+    return {chunks.size() * chunk_size::width / 2,
+            chunks[chunks.size() / 2].size() * chunk_size::depth / 2};
 }
 
 // private:
