@@ -26,7 +26,7 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
 }
 
 int Engine::run() {
-    #ifdef CURSOR_INVIS
+    #ifdef TC_CURSOR_INVIS
         system_catch_error("tput civis", 5);
     #endif
     system_catch_error("stty -echo cbreak", 6);
@@ -38,7 +38,7 @@ int Engine::run() {
     input_thread.join(); // wait until user quits
     render_thread.join(); // ensures clean exit
 
-    #ifdef CURSOR_INVIS
+    #ifdef TC_CURSOR_INVIS
         system_catch_error("tput cnorm", 8);
     #endif
     system_catch_error("stty echo -cbreak", 9);
