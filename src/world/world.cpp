@@ -251,10 +251,12 @@ void World::generate(int seed) {
             for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
                 block &b = *get_block({x, y, z});
 
-                int height = glm::perlin(glm::vec2((float)x/chunk_size::width, (float)z/chunk_size::depth)) * 5 + 128;
-                // printf("%d\n", height);
+                int grass_height = glm::perlin(glm::vec2((float)x/chunk_size::width, (float)z/chunk_size::depth)) * 5 + 128;
+                int dirt_height = grass_height - 1;
 
-                if (y >= chunk_size::height - height) {
+                if (y >= chunk_size::height - dirt_height) {
+                    b.type = block_type::DIRT;
+                } else if (y >= chunk_size::height - grass_height) {
                     b.type = block_type::GRASS;
                 } else {
                     b.type = block_type::EMPTY;
