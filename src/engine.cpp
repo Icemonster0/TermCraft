@@ -31,6 +31,7 @@ int Engine::run() {
     #endif
     system_catch_error("stty -echo cbreak", 6);
     system_catch_error("tput clear", 7);
+    system_catch_error("mkdir -p tmp", 1);
 
     input_thread = thread(&Engine::input_loop, this);
     render_thread = thread(&Engine::render_loop, this);
@@ -43,6 +44,7 @@ int Engine::run() {
     #endif
     system_catch_error("stty echo -cbreak", 9);
     system_catch_error("tput clear", 7);
+    system_catch_error("rm -r tmp", 3);
 
     return status;
 }
@@ -109,7 +111,6 @@ void Engine::debug_info() {
 }
 
 void Engine::update_window_size() {
-    system_catch_error("mkdir -p tmp", 1);
     system_catch_error("tput cols >> tmp/term-size.tmp", 2);
     system_catch_error("tput lines >> tmp/term-size.tmp", 2);
 
@@ -124,7 +125,7 @@ void Engine::update_window_size() {
 
     file.close();
 
-    system_catch_error("rm tmp/term-size.tmp", 3);
+    system_catch_error("> tmp/term-size.tmp", 10);
 
     controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
 }
