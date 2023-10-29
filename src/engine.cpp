@@ -15,7 +15,12 @@ namespace tc {
 
 Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
     render = Render {X_size, Y_size};
-    world = World {0};
+
+    system_catch_error("tput clear", 7);
+    world = World {};
+    world.generate(0, // seed
+                  {20, 20}); // world size (in chunks)
+
     glm::ivec2 center = world.get_world_center();
     controller = Controller {glm::vec3(center.x+0.5f, world.get_ground_height_at(center), center.y+0.5f), // spawn position
                              static_cast<float>(X_size) / static_cast<float>(Y_size), // aspect
@@ -23,7 +28,11 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
                              10.0f, // interact range
                              10.0f, // move speed (blocks per second)
                              40.0f, // look sensitivity (degrees per second)
+                             100.0f, // render distance
                              &world}; // world pointer
+
+    /* Player position needs to be known for optimized world meshing. */
+    world.generate_initial_mesh();
 }
 
 int Engine::run() {
@@ -99,7 +108,8 @@ void Engine::debug_info() {
 
     glm::vec3 pos;
     glm::vec2 look;
-    controller.get_params(&pos, &look);
+    float trash;
+    controller.get_params(&pos, &look, &trash);
 
     printf("fps: %d\n", static_cast<int>(fps));
     printf("screen: %dx%d\n", X_size, Y_size);

@@ -13,8 +13,10 @@ namespace tc {
 
 class World {
 public:
-    World(int seed);
     World() {}
+
+    void generate(int seed, glm::ivec2 size);
+    void generate_initial_mesh();
 
     mesh get_mesh();
     block* get_block(glm::ivec3 coord);
@@ -22,6 +24,7 @@ public:
     void highlight_block(glm::ivec3 coord);
     int get_ground_height_at(glm::ivec2 coord);
     glm::ivec2 get_world_center();
+    void update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, float render_dist);
 
 private:
     glm::ivec2 get_chunk_of_block(glm::ivec3 coord);
@@ -29,8 +32,6 @@ private:
     void remesh_block(glm::ivec3 coord);
     void remesh_chunk(glm::ivec2 coord);
     void remesh_world();
-    void generate(int seed);
-    void generate_initial_mesh();
 
     std::vector<std::vector<Chunk>> chunks;
     mesh world_mesh;

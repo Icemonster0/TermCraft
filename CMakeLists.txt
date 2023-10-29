@@ -11,10 +11,9 @@ add_library(libs_module
     src/controller/controller.cpp
     src/controller/camera.cpp
     src/world/world.cpp
-    src/world/chunk.cpp
 )
 
-target_compile_options(libs_module BEFORE PUBLIC "-O3")
+target_compile_options(libs_module BEFORE PUBLIC -fopenmp -Wall -O3)
 target_compile_definitions(libs_module PRIVATE TC_CURSOR_INVIS)
 message(Invisible\ cursor:\ ${TC_CURSOR_INVIS})
 

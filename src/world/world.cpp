@@ -9,8 +9,83 @@ namespace tc {
 
 // public:
 
-World::World(int seed) {
-    generate(seed);
+void World::generate(int seed, glm::ivec2 size) {
+    int progress = 0;
+    int percent = 0;
+    printf("Generating World... (Initializing)\n");
+
+    srand(seed);
+
+    for (int i = 0; i < size.x; ++i) {
+        chunks.emplace_back();
+        for (int j = 0; j < size.y; ++j) {
+            chunks[i].emplace_back();
+        }
+    }
+
+    #pragma omp parallel for schedule(static)
+    for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
+        for (int y = 0; y < chunk_size::height; ++y) {
+            for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
+                block &b = *get_block({x, y, z});
+
+                float mountainity = glm::perlin(glm::vec2 {(float)x/120.0f, (float)z/120.0f}) * 0.5f + 0.5f;
+
+                int grass_height = (glm::perlin(glm::vec2 {(float)x/20.0f, (float)z/20.0f}) * 0.5f + 0.5f) * mountainity * 30 + 128;
+                int dirt_height = grass_height - 1;
+
+                if (y >= chunk_size::height - dirt_height) {
+                    b.type = block_type::DIRT;
+                } else if (y >= chunk_size::height - grass_height) {
+                    b.type = block_type::GRASS;
+                } else {
+                    b.type = block_type::EMPTY;
+                }
+            }
+        }
+
+        #pragma omp critical
+        {
+            progress++;
+            percent = float(progress) / float(size.x * chunk_size::width - 1) * 100;
+            printf("\rGenerating World... %d%%", percent);
+            fflush(stdout);
+        }
+    }
+    printf("\n");
+}
+
+void World::generate_initial_mesh() {
+    int progress = 0;
+    int percent = 0;
+    printf("Generating Mesh... %d%%", percent);
+    fflush(stdout);
+
+    #pragma omp parallel for schedule(static)
+    for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
+        for (int y = 0; y < chunk_size::height; ++y) {
+            for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
+                remesh_block({x, y, z});
+            }
+        }
+
+        #pragma omp critical
+        {
+            progress++;
+            percent = float(progress) / float(chunks.size() * chunk_size::width - 1) * 100;
+            printf("\rGenerating Mesh... %d%%", percent);
+            fflush(stdout);
+        }
+    }
+    printf("\n");
+
+    for (int chunk_x = 0; chunk_x < chunks.size(); ++chunk_x) {
+        for (int chunk_z = 0; chunk_z < chunks[chunk_x].size(); ++chunk_z) {
+            remesh_chunk({chunk_x, chunk_z});
+        }
+    }
+
+    remesh_world();
 }
 
 mesh World::get_mesh() {
@@ -34,10 +109,12 @@ void World::replace(glm::ivec3 coord, block_type::Block_Type type) {
 }
 
 void World::highlight_block(glm::ivec3 coord) {
-    for (tri &triangle : get_block(highlighted_block)->block_mesh.tri_list) {
+    block &old_block = *get_block(highlighted_block);
+    for (tri &triangle : old_block.block_mesh.tri_list) {
         triangle.is_highlighted = false;
     }
-    for (tri &triangle : get_block(coord)->block_mesh.tri_list) {
+    block &new_block = *get_block(coord);
+    for (tri &triangle : new_block.block_mesh.tri_list) {
         triangle.is_highlighted = true;
     }
 
@@ -70,6 +147,36 @@ glm::ivec2 World::get_world_center() {
             chunks[chunks.size() / 2].size() * chunk_size::depth / 2};
 }
 
+void World::update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, float render_dist) {
+    /* If the player moves from one chunk to another,
+     * we remesh the loaded chunk difference (boolean operation). */
+
+    glm::ivec2 new_chunk_coord = get_chunk_of_block(new_player_pos);
+    glm::ivec2 old_chunk_coord = get_chunk_of_block(old_player_pos);
+
+    if (!glm::all(glm::equal(new_chunk_coord, old_chunk_coord))) {
+
+        // distance culling
+        for (glm::ivec2 chunk_coord {0}; chunk_coord.x < chunks.size(); ++chunk_coord.x) {
+            for (chunk_coord.y = 0; chunk_coord.y < chunks[chunk_coord.x].size(); ++chunk_coord.y) {
+
+                glm::vec2 diff = {((chunk_coord.x+0.5f) * chunk_size::width) - new_player_pos.x,
+                                  ((chunk_coord.y+0.5f) * chunk_size::depth) - new_player_pos.z};
+
+                if (diff.x*diff.x + diff.y*diff.y <= render_dist*render_dist) {
+                    chunks[chunk_coord.x][chunk_coord.y].loaded = true;
+                } else {
+                    chunks[chunk_coord.x][chunk_coord.y].loaded = false;
+                }
+
+                remesh_chunk(chunk_coord);
+            }
+        }
+
+        remesh_world();
+    }
+}
+
 // private:
 
 glm::ivec2 World::get_chunk_of_block(glm::ivec3 coord) {
@@ -83,7 +190,7 @@ glm::ivec2 World::get_chunk_of_block(glm::ivec3 coord) {
 
 void World::update_block(glm::ivec3 coord) {
 
-    // use these if ao doesn't matter
+    // use this if ao doesn't matter
     // remesh_block(coord);
     // remesh_block(coord + glm::ivec3(-1, 0, 0));
     // remesh_block(coord + glm::ivec3( 1, 0, 0));
@@ -92,36 +199,14 @@ void World::update_block(glm::ivec3 coord) {
     // remesh_block(coord + glm::ivec3(0, 0, -1));
     // remesh_block(coord + glm::ivec3(0, 0,  1));
 
-    // use these if ao matters
-    remesh_block(coord + glm::ivec3(-1, -1, -1));
-    remesh_block(coord + glm::ivec3(-1,  0, -1));
-    remesh_block(coord + glm::ivec3(-1,  1, -1));
-    remesh_block(coord + glm::ivec3( 0, -1, -1));
-    remesh_block(coord + glm::ivec3( 0,  0, -1));
-    remesh_block(coord + glm::ivec3( 0,  1, -1));
-    remesh_block(coord + glm::ivec3( 1, -1, -1));
-    remesh_block(coord + glm::ivec3( 1,  0, -1));
-    remesh_block(coord + glm::ivec3( 1,  1, -1));
-
-    remesh_block(coord + glm::ivec3(-1, -1,  0));
-    remesh_block(coord + glm::ivec3(-1,  0,  0));
-    remesh_block(coord + glm::ivec3(-1,  1,  0));
-    remesh_block(coord + glm::ivec3( 0, -1,  0));
-    remesh_block(coord + glm::ivec3( 0,  0,  0)); // the block itself
-    remesh_block(coord + glm::ivec3( 0,  1,  0));
-    remesh_block(coord + glm::ivec3( 1, -1,  0));
-    remesh_block(coord + glm::ivec3( 1,  0,  0));
-    remesh_block(coord + glm::ivec3( 1,  1,  0));
-
-    remesh_block(coord + glm::ivec3(-1, -1,  1));
-    remesh_block(coord + glm::ivec3(-1,  0,  1));
-    remesh_block(coord + glm::ivec3(-1,  1,  1));
-    remesh_block(coord + glm::ivec3( 0, -1,  1));
-    remesh_block(coord + glm::ivec3( 0,  0,  1));
-    remesh_block(coord + glm::ivec3( 0,  1,  1));
-    remesh_block(coord + glm::ivec3( 1, -1,  1));
-    remesh_block(coord + glm::ivec3( 1,  0,  1));
-    remesh_block(coord + glm::ivec3( 1,  1,  1));
+    // use this if ao matters (which it does)
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            for (int z = -1; z <= 1; ++z) {
+                remesh_block(coord + glm::ivec3(x, y, z));
+            }
+        }
+    }
 
     glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
     glm::ivec3 relative_coord {coord.x % chunk_size::width, coord.y, coord.z % chunk_size::depth};
@@ -216,12 +301,15 @@ void World::remesh_chunk(glm::ivec2 coord) {
     Chunk &chunk = chunks[coord.x][coord.y];
     chunk.chunk_mesh = mesh {};
 
-    for (int x = 0; x < chunk_size::width; ++x) {
-        for (int y = 0; y < chunk_size::height; ++y) {
-            for (int z = 0; z < chunk_size::depth; ++z) {
-                chunk.chunk_mesh.append(
-                    chunk.blocks[x][y][z].block_mesh.transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)))
-                );
+    if (chunk.loaded) {
+        // combining all block's meshes
+        for (int x = 0; x < chunk_size::width; ++x) {
+            for (int y = 0; y < chunk_size::height; ++y) {
+                for (int z = 0; z < chunk_size::depth; ++z) {
+                    chunk.chunk_mesh.append(
+                        chunk.blocks[x][y][z].block_mesh.transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)))
+                    );
+                }
             }
         }
     }
@@ -232,63 +320,11 @@ void World::remesh_world() {
 
     for (int x = 0; x < chunks.size(); ++x) {
         for (int z = 0; z < chunks[x].size(); ++z) {
-    // for (auto &row : chunks) {
-    //     for (Chunk &chunk : row) {
             world_mesh.append(
                 chunks[x][z].chunk_mesh.transform(glm::translate(glm::mat4(1.0f), glm::vec3(x*chunk_size::width, 0, z*chunk_size::depth)))
             );
         }
     }
-}
-
-void World::generate(int seed) {
-    srand(seed);
-
-    for (int i = 0; i < 3; ++i) {
-        chunks.emplace_back();
-        for (int j = 0; j < 3; ++j) {
-            chunks[i].emplace_back();
-        }
-    }
-
-    for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
-        for (int y = 0; y < chunk_size::height; ++y) {
-            for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
-                block &b = *get_block({x, y, z});
-
-                int grass_height = glm::perlin(glm::vec2((float)x/chunk_size::width, (float)z/chunk_size::depth)) * 5 + 128;
-                int dirt_height = grass_height - 1;
-
-                if (y >= chunk_size::height - dirt_height) {
-                    b.type = block_type::DIRT;
-                } else if (y >= chunk_size::height - grass_height) {
-                    b.type = block_type::GRASS;
-                } else {
-                    b.type = block_type::EMPTY;
-                }
-            }
-        }
-    }
-
-    generate_initial_mesh();
-}
-
-void World::generate_initial_mesh() {
-    for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
-        for (int y = 0; y < chunk_size::height; ++y) {
-            for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
-                remesh_block({x, y, z});
-            }
-        }
-    }
-
-    for (int chunk_x = 0; chunk_x < chunks.size(); ++chunk_x) {
-        for (int chunk_z = 0; chunk_z < chunks[chunk_x].size(); ++chunk_z) {
-            remesh_chunk({chunk_x, chunk_z});
-        }
-    }
-
-    remesh_world();
 }
 
 } /* end of namespace tc */
