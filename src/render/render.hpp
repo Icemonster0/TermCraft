@@ -30,8 +30,8 @@ private:
 
     int X_size;
     int Y_size;
-    float global_time;
-    glm::mat4 VP;
+    float global_time = 0.0f;
+    glm::mat4 VP = glm::mat4 {};
 
     int n_tris = 0;
     int n_active_tris = 0;

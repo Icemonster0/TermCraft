@@ -14,10 +14,13 @@ using namespace std;
 
 namespace tc {
 
-Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size), Y_size(p_Y_size), target_fps(p_target_fps) {
+Engine::Engine() {
+    system_catch_error("tput clear", 7);
+    if (!U.fixed_window_size) system_catch_error("mkdir -p tmp.term_craft", 1);
+
+    update_window_size();
     render = Render {X_size, Y_size};
 
-    system_catch_error("tput clear", 7);
     world = World {};
     world.generate(0, // seed
                   {20, 20}); // world size (in chunks)
@@ -37,10 +40,9 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
 }
 
 int Engine::run() {
-    if (U.cursor_invis) system_catch_error("tput civis", 5);
+    if (!U.cursor_visible) system_catch_error("tput civis", 5);
     system_catch_error("stty -echo cbreak", 6);
     system_catch_error("tput clear", 7);
-    system_catch_error("mkdir -p tmp", 1);
 
     input_thread = thread(&Engine::input_loop, this);
     render_thread = thread(&Engine::render_loop, this);
@@ -48,10 +50,10 @@ int Engine::run() {
     input_thread.join(); // wait until user quits
     render_thread.join(); // ensures clean exit
 
-    if (U.cursor_invis) system_catch_error("tput cnorm", 8);
+    if (!U.cursor_visible) system_catch_error("tput cnorm", 8);
     system_catch_error("stty echo -cbreak", 9);
     system_catch_error("tput clear", 7);
-    system_catch_error("rm -r tmp", 3);
+    if (!U.fixed_window_size) system_catch_error("rm -r tmp.term_craft", 3);
 
     return status;
 }
@@ -70,7 +72,7 @@ void Engine::input_loop() {
 }
 
 void Engine::render_loop() {
-    float corrected_fps = target_fps;
+    float corrected_fps = U.fps;
 
     while (!process_should_stop) {
         chrono::high_resolution_clock timer;
@@ -89,7 +91,7 @@ void Engine::render_loop() {
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;
         global_time += delta_time;
         fps = 1.0f / delta_time;
-        corrected_fps += static_cast<float>(target_fps) - fps;
+        corrected_fps += static_cast<float>(U.fps) - fps;
 
         debug_info();
     }
@@ -119,21 +121,27 @@ void Engine::debug_info() {
 }
 
 void Engine::update_window_size() {
-    system_catch_error("tput cols >> tmp/term-size.tmp", 2);
-    system_catch_error("tput lines >> tmp/term-size.tmp", 2);
-
-    ifstream file("tmp/term-size.tmp");
-    if (!file.is_open()) {
-        crash(5);
-        return;
+    if (U.fixed_window_size) {
+        X_size = U.width;
+        Y_size = U.height;
     }
+    else {
+        system_catch_error("tput cols >> tmp.term_craft/term-size.tmp", 2);
+        system_catch_error("tput lines >> tmp.term_craft/term-size.tmp", 2);
 
-    file >> X_size;
-    file >> Y_size;
+        ifstream file("tmp.term_craft/term-size.tmp");
+        if (!file.is_open()) {
+            crash(5);
+            return;
+        }
 
-    file.close();
+        file >> X_size;
+        file >> Y_size;
 
-    system_catch_error("> tmp/term-size.tmp", 10);
+        file.close();
+
+        system_catch_error("> tmp.term_craft/term-size.tmp", 10);
+    }
 
     controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
 }

@@ -6,6 +6,7 @@
 #include "mesh.hpp"
 #include "../shaders/vert_shaders.hpp"
 #include "../shaders/frag_shaders.hpp"
+#include "../user_settings.hpp"
 
 #include <string>
 #include <cstdio>
@@ -25,17 +26,9 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
 
 void Render::render(mesh m) {
     clear_buffers();
-
-    // m = mesh {};
-    // m.tri_list.emplace_back(vertex(-0.5, 0.5, 0.0), vertex(0.5, 0.5, 0.0), vertex(0.0, -0.5, 0.0));
-    // m.tri_list[0].vertices[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
-    // m.tri_list[0].vertices[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
-    // m.tri_list[0].vertices[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
-
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
     execute_fragment_shader(frag_shaders::FRAG_shaded);
-
     draw_fbuf();
 }
 
@@ -210,7 +203,9 @@ void Render::draw_fbuf() {
     for (size_t y = 0; y < Y_size; y++) {
         if(y) printbuf.append("\n");
         for (size_t x = 0; x < X_size; x++) {
-            printbuf.append(draw_util::ansi_color_string(draw_util::BG, fbuf.buf[x][y]));
+            if (U.color_type == "COMPAT") printbuf.append(draw_util::ansi_bw_color_string(draw_util::BG, fbuf.buf[x][y]));
+            else printbuf.append(draw_util::ansi_color_string(draw_util::BG, fbuf.buf[x][y]));
+
             printbuf.append(hud_buf.buf[x][y]);
             printbuf.append(draw_util::ansi_clear_string());
         }

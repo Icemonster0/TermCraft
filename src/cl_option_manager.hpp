@@ -27,11 +27,11 @@ public:
     CL_Option_Manager() : user_hint("Invalid command line options!\n") {
     }
 
-    void add_setting(std::string name, std::string default_value) {
+    void register_setting(std::string name, std::string default_value) {
         settings.emplace_back(name, default_value);
     }
 
-    void add_flag(std::string name) {
+    void register_flag(std::string name) {
         flags.emplace_back(name);
     }
 
@@ -61,8 +61,10 @@ public:
 
         if (setting != nullptr)
             return setting->value;
-        else
-            return "";
+        else {
+            std::cout << "The setting " << name << " is not registered!" << '\n';
+            exit(1);
+        }
     }
 
     bool is_flag_set(std::string name) {
@@ -70,8 +72,10 @@ public:
 
         if (flag != nullptr)
             return flag->is_set;
-        else
-            return false;
+        else {
+            std::cout << "The flag " << name << " is not registered!" << '\n';
+            exit(1);
+        }
     }
 
     void set_user_hint(std::string hint) {
