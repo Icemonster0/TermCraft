@@ -13,7 +13,7 @@ add_library(libs_module
     src/world/world.cpp
 )
 
-target_compile_options(libs_module BEFORE PUBLIC -fopenmp -Wall -O3)
+target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)
 target_compile_definitions(libs_module PRIVATE TC_CURSOR_INVIS)
 message(Invisible\ cursor:\ ${TC_CURSOR_INVIS})
 

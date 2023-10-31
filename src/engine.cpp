@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "render/render.hpp"
 #include "controller/controller.hpp"
+#include "user_settings.hpp"
 
 #include <cstdlib>
 #include <chrono>
@@ -36,9 +37,7 @@ Engine::Engine(int p_X_size, int p_Y_size, int p_target_fps) : X_size(p_X_size),
 }
 
 int Engine::run() {
-    #ifdef TC_CURSOR_INVIS
-        system_catch_error("tput civis", 5);
-    #endif
+    if (U.cursor_invis) system_catch_error("tput civis", 5);
     system_catch_error("stty -echo cbreak", 6);
     system_catch_error("tput clear", 7);
     system_catch_error("mkdir -p tmp", 1);
@@ -49,9 +48,7 @@ int Engine::run() {
     input_thread.join(); // wait until user quits
     render_thread.join(); // ensures clean exit
 
-    #ifdef TC_CURSOR_INVIS
-        system_catch_error("tput cnorm", 8);
-    #endif
+    if (U.cursor_invis) system_catch_error("tput cnorm", 8);
     system_catch_error("stty echo -cbreak", 9);
     system_catch_error("tput clear", 7);
     system_catch_error("rm -r tmp", 3);
