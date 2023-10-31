@@ -14,12 +14,15 @@ Usage:    TermCraft [<setting> <value>] [<flag>] ...\n\
 Example:  TermCraft fps 12 --cursor-visible\n\
 \n\
 settings:\n\
- name          default value       description\n\
-  fps           24                  Target fps\n\
-  width         80                  Window width (if --fixed-window-size is set)\n\
-  height        24                  Window height (if --fixed-window-size is set)\n\
-  color-type    FULL                FULL: rgb color\n\
-                                    COMPAT: bw color (if FULL is not supported)\n\
+ name              default value       description\n\
+  fps               24                  Target fps\n\
+  width             80                  Window width (if --fixed-window-size is set)\n\
+  height            24                  Window height (if --fixed-window-size is set)\n\
+  color-mode        FULL                FULL: rgb color\n\
+                                        COMPAT: bw color (if FULL is not supported)\n\
+  sky-color         0x7ce1ff            Hex code of sky color\n\
+  render-distance   100                 Render distance in blocks\n\
+  fog               0.5                 Fog factor (0.0 to 1.0)\n\
 \n\
 flags:\n\
  name                              description\n\
@@ -35,7 +38,10 @@ flags:\n\
     clom.register_flag("--fixed-window-size");
     clom.register_setting("width", "80");
     clom.register_setting("height", "24");
-    clom.register_setting("color-type", "FULL");
+    clom.register_setting("color-mode", "FULL");
+    clom.register_setting("sky-color", "0x7ce1ff");
+    clom.register_setting("render-distance", "100");
+    clom.register_setting("fog", "0.5");
 
     clom.process_cl_options(argc, argv);
 
@@ -50,7 +56,16 @@ flags:\n\
         U.fixed_window_size = clom.is_flag_set("--fixed-window-size");
         U.width = std::stoi(clom.get_setting_value("width"));
         U.height = std::stoi(clom.get_setting_value("height"));
-        U.color_type = clom.get_setting_value("color-type");
+        U.color_mode = clom.get_setting_value("color-mode");
+
+        unsigned int col = std::stoi(clom.get_setting_value("sky-color"), nullptr, 16);
+        unsigned int r = (col >> 16) & 0xff;
+        unsigned int g = (col >> 8) & 0xff;
+        unsigned int b = col & 0xff;
+        U.sky_color = glm::vec3 {(float)r/255.0f, (float)g/255.0f, (float)b/255.0f};
+
+        U.render_distance = std::stof(clom.get_setting_value("render-distance"));
+        U.fog = std::stof(clom.get_setting_value("fog"));
     }
     catch (...) {
         printf("Failed to parse command line options! Check if all settings expecting a number actually receive a number.\n");

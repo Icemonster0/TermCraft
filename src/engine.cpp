@@ -32,7 +32,6 @@ Engine::Engine() {
                              10.0f, // interact range
                              10.0f, // move speed (blocks per second)
                              40.0f, // look sensitivity (degrees per second)
-                             100.0f, // render distance
                              &world}; // world pointer
 
     /* Player position needs to be known for optimized world meshing. */
@@ -82,7 +81,7 @@ void Engine::render_loop() {
 
         update_window_size();
         controller.simulation_step(delta_time);
-        render.set_params(X_size, Y_size, global_time, controller.get_VP_matrix());
+        render.set_params(X_size, Y_size, global_time, controller.get_V_matrix(), controller.get_VP_matrix());
 
         system_catch_error("tput cup 0 0", 4);
         render.render(world.get_mesh());
@@ -107,8 +106,7 @@ void Engine::debug_info() {
 
     glm::vec3 pos;
     glm::vec2 look;
-    float trash;
-    controller.get_params(&pos, &look, &trash);
+    controller.get_params(&pos, &look);
 
     printf("fps: %d\n", static_cast<int>(fps));
     printf("screen: %dx%d\n", X_size, Y_size);

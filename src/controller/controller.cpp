@@ -5,6 +5,7 @@
 #include "input_state.hpp"
 #include "../world/world.hpp"
 #include "../world/block.hpp"
+#include "../user_settings.hpp"
 
 #include <algorithm>
 #include <optional>
@@ -19,7 +20,6 @@ Controller::Controller(glm::vec3 p_pos,
                        float p_interact_range,
                        float p_move_speed,
                        float p_look_sensitivity,
-                       float p_render_distance,
                        World *p_world_ptr) :
                        pos(p_pos),
                        old_pos({-1.0f}),
@@ -27,25 +27,27 @@ Controller::Controller(glm::vec3 p_pos,
                        interact_range(p_interact_range),
                        move_speed(p_move_speed),
                        look_sensitivity(p_look_sensitivity),
-                       render_distance(p_render_distance),
                        world_ptr(p_world_ptr),
                        active_block_type(block_type::GRASS) {
 
     camera = Camera {45.0f, // fov
                      p_aspect, // aspect ratio
                      0.01f, // near plane
-                     render_distance, // far plane
                      p_pos + glm::vec3(0, -height, 0)}; // position
 
     input_state = Input_State {};
 
     register_input_keys();
     calc_looked_at_block(false);
-    world_ptr->update_chunks(pos, old_pos, render_distance);
+    world_ptr->update_chunks(pos, old_pos, U.render_distance);
 }
 
 glm::mat4 Controller::get_VP_matrix() {
     return camera.get_VP_matrix();
+}
+
+glm::mat4 Controller::get_V_matrix() {
+    return camera.get_V_matrix();
 }
 
 void Controller::input_event(char key) {
@@ -66,10 +68,9 @@ void Controller::update_aspect(float value) {
     camera.calc_VP_matrix();
 }
 
-void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr, float *render_dist_ptr) {
+void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr) {
     *pos_ptr = pos;
     *look_ptr = glm::vec2(camera.yaw, camera.pitch);
-    *render_dist_ptr = render_distance;
 }
 
 // private:
@@ -161,7 +162,7 @@ void Controller::move(glm::vec3 dir) {
     camera.calc_VP_matrix();
 
     calc_looked_at_block(false);
-    world_ptr->update_chunks(pos, old_pos, render_distance);
+    world_ptr->update_chunks(pos, old_pos, U.render_distance);
 }
 
 void Controller::turn(glm::vec2 dir) {

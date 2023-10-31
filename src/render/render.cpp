@@ -32,11 +32,12 @@ void Render::render(mesh m) {
     draw_fbuf();
 }
 
-void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_VP) {
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP) {
     X_size = p_X_size;
     Y_size = p_Y_size;
     global_time = p_global_time;
     VP = p_VP;
+    V = p_V;
 }
 
 void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
@@ -45,13 +46,13 @@ void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
 }
 
 void Render::clear_buffers() {
-    fbuf.clear(X_size, Y_size, glm::vec3(0.0f));
+    fbuf.clear(X_size, Y_size, U.sky_color);
     zbuf.clear(X_size, Y_size, 1.0f);
     frag_buf.clear(X_size, Y_size, optional<fragment>{});
     hud_buf.clear(X_size, Y_size, " ");
 }
 
-void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, float)) {
+void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, glm::mat4, float)) {
     n_tris = m->tri_list.size(); // for debug info
 
     #pragma omp parallel for schedule(static)
@@ -60,7 +61,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 
         for (vertex &v : triangle.vertices) {
             // Programmable Shader
-            vert_shader(&v, VP, global_time);
+            vert_shader(&v, V, VP, global_time);
 
             /* Depth Division
              * pre-divides w too so that we can simply multiply in perspective
@@ -203,7 +204,7 @@ void Render::draw_fbuf() {
     for (size_t y = 0; y < Y_size; y++) {
         if(y) printbuf.append("\n");
         for (size_t x = 0; x < X_size; x++) {
-            if (U.color_type == "COMPAT") printbuf.append(draw_util::ansi_bw_color_string(draw_util::BG, fbuf.buf[x][y]));
+            if (U.color_mode == "COMPAT") printbuf.append(draw_util::ansi_bw_color_string(draw_util::BG, fbuf.buf[x][y]));
             else printbuf.append(draw_util::ansi_color_string(draw_util::BG, fbuf.buf[x][y]));
 
             printbuf.append(hud_buf.buf[x][y]);

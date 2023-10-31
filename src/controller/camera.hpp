@@ -7,10 +7,12 @@ namespace tc {
 
 class Camera {
 public:
-    Camera(float p_fov, float p_aspect, float p_near, float p_far, glm::vec3 p_pos);
+    Camera(float p_fov, float p_aspect, float p_near, glm::vec3 p_pos);
     Camera() {}
 
     glm::mat4 get_VP_matrix();
+    glm::mat4 get_V_matrix();
+    glm::mat4 get_P_matrix();
     glm::vec3 get_h_forward_vector();
     glm::vec3 get_forward_vector();
     glm::vec3 get_right_vector();
@@ -25,7 +27,6 @@ public:
     float fov;
     float aspect;
     float near;
-    float far;
 
 private:
 

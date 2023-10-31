@@ -1,11 +1,12 @@
 #include "../glm.hpp"
 
 #include "camera.hpp"
+#include "../user_settings.hpp"
 
 namespace tc {
 
-Camera::Camera(float p_fov, float p_aspect, float p_near, float p_far, glm::vec3 p_pos)
- : fov(p_fov), aspect(p_aspect), near(p_near), far(p_far), pos(p_pos), yaw(0.0f), pitch(0.0f) {
+Camera::Camera(float p_fov, float p_aspect, float p_near, glm::vec3 p_pos)
+ : fov(p_fov), aspect(p_aspect), near(p_near), pos(p_pos), yaw(0.0f), pitch(0.0f) {
      calc_V_matrix();
      calc_P_matrix();
      calc_VP_matrix();
@@ -13,6 +14,14 @@ Camera::Camera(float p_fov, float p_aspect, float p_near, float p_far, glm::vec3
 
 glm::mat4 Camera::get_VP_matrix() {
     return VP;
+}
+
+glm::mat4 Camera::get_V_matrix() {
+    return V;
+}
+
+glm::mat4 Camera::get_P_matrix() {
+    return P;
 }
 
 glm::vec3 Camera::get_h_forward_vector() {
@@ -42,7 +51,7 @@ void Camera::calc_V_matrix() {
 
 void Camera::calc_P_matrix() {
     P = glm::mat4(1.0f);
-    P = glm::perspective(fov, aspect / 2.0f, near, far);
+    P = glm::perspective(fov, aspect / 2.0f, near, U.render_distance);
 }
 
 void Camera::calc_VP_matrix() {

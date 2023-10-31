@@ -5,6 +5,7 @@
 
 #include "../render/vertex.hpp"
 #include "../render/buffer.hpp"
+#include "../user_settings.hpp"
 
 #include <cmath>
 
@@ -33,7 +34,10 @@ struct frag_shaders {
 
         float highlight = is_face_highlighted(f) ? 0.1f : 0.0f;
 
-        return interp_color(f) * fac + highlight;
+        float fog_begin = U.render_distance * (1.0f - U.fog);
+        float fog = glm::clamp((1.0f / (U.render_distance - fog_begin)) * (interp_distance(f) - fog_begin), 0.0f, 1.0f);
+
+        return glm::mix(interp_color(f) * fac + highlight, U.sky_color, fog);
     }
 
 private:
@@ -47,6 +51,12 @@ private:
         return f.weights[0] * f.triangle->vertices[0].pos
              + f.weights[1] * f.triangle->vertices[1].pos
              + f.weights[2] * f.triangle->vertices[2].pos;
+    }
+
+    static float interp_distance(fragment f) {
+        return f.weights[0] * f.triangle->vertices[0].distance
+             + f.weights[1] * f.triangle->vertices[1].distance
+             + f.weights[2] * f.triangle->vertices[2].distance;
     }
 
     static glm::vec2 interp_screenpos(fragment f) {

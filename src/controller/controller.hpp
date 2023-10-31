@@ -14,14 +14,15 @@ namespace tc {
 
 class Controller {
 public:
-    Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_interact_range, float p_move_speed, float p_look_sensitivity, float p_render_distance, World *p_world_ptr);
+    Controller(glm::vec3 p_pos, float p_aspect, float p_height, float p_interact_range, float p_move_speed, float p_look_sensitivity, World *p_world_ptr);
     Controller() {}
 
     glm::mat4 get_VP_matrix();
+    glm::mat4 get_V_matrix();
     void input_event(char key);
     void simulation_step(float delta_time);
     void update_aspect(float value);
-    void get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr, float *render_dist_ptr);
+    void get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr);
 
 private:
     void register_input_keys();
