@@ -25,6 +25,7 @@ public:
     int get_ground_height_at(glm::ivec2 coord);
     glm::ivec2 get_world_center();
     void update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, float render_dist);
+    size_t estimate_memory_usage();
 
 private:
     glm::ivec2 get_chunk_of_block(glm::ivec3 coord);

@@ -97,9 +97,6 @@ void Engine::render_loop() {
 }
 
 void Engine::debug_info() {
-    system_catch_error("tput cup 0 0", 4);
-    printf("Debug info\n");
-
     int n_tris;
     int n_active_tris;
     render.get_params(&n_tris, &n_active_tris);
@@ -107,6 +104,11 @@ void Engine::debug_info() {
     glm::vec3 pos;
     glm::vec2 look;
     controller.get_params(&pos, &look);
+
+    float est_memory = (float)world.estimate_memory_usage() / 1000000.0f;
+
+    system_catch_error("tput cup 0 0", 4);
+    printf("Debug info\n");
 
     printf("fps: %d\n", static_cast<int>(fps));
     printf("screen: %dx%d\n", X_size, Y_size);
@@ -116,6 +118,7 @@ void Engine::debug_info() {
     printf("pitch: %.2f°\n", look.y);
     printf("tris: %d\n", n_tris);
     printf("active tris: %d\n", n_active_tris);
+    printf("est. memory: %.2fMB\n", est_memory);
 }
 
 void Engine::update_window_size() {

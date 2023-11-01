@@ -177,6 +177,32 @@ void World::update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, fl
     }
 }
 
+size_t World::estimate_memory_usage() {
+    size_t blocks_bytes = sizeof(block) * chunk_size::width * chunk_size::height * chunk_size::depth * chunks.size() * chunks[0].size();
+    size_t world_mesh_bytes = world_mesh.tri_list.capacity() * 3*sizeof(vertex);
+
+    size_t chunks_mesh_bytes = 0;
+    size_t blocks_mesh_bytes = 0;
+
+    for (int chunk_x = 0; chunk_x < chunks.size(); ++chunk_x) {
+        for (int chunk_z = 0; chunk_z < chunks[chunk_x].size(); ++chunk_z) {
+
+            chunks_mesh_bytes += chunks[chunk_x][chunk_z].chunk_mesh.tri_list.capacity() * 3*sizeof(vertex);
+
+            for (int x = 0; x < chunk_size::width; ++x) {
+                for (int y = 0; y < chunk_size::height; ++y) {
+                    for (int z = 0; z < chunk_size::depth; ++z) {
+
+                        blocks_mesh_bytes += chunks[chunk_x][chunk_z].blocks[x][y][z].block_mesh.tri_list.capacity() * 3*sizeof(vertex);
+                    }
+                }
+            }
+        }
+    }
+
+    return blocks_bytes + world_mesh_bytes + chunks_mesh_bytes + blocks_mesh_bytes;
+}
+
 // private:
 
 glm::ivec2 World::get_chunk_of_block(glm::ivec3 coord) {
