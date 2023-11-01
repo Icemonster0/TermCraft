@@ -2,9 +2,11 @@
 #define DRAW_UTIL_HPP
 
 #include "../glm.hpp"
+#include "tri.hpp"
 
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -62,6 +64,20 @@ bool is_point_in_triangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3
 float cc_signed_area(glm::vec2 a, glm::vec2 b, glm::vec2 c) {
     // a-b-c has to be counter-clockwise
     return  glm::cross(glm::vec3(b, 0.0f) - glm::vec3(a, 0.0f), glm::vec3(c, 0.0f) - glm::vec3(a, 0.0f)).z;
+}
+
+bool is_tri_in_NDC(tri t) {
+    glm::vec3 a = t.vertices[0].pos;
+    glm::vec3 b = t.vertices[1].pos;
+    glm::vec3 c = t.vertices[2].pos;
+
+    /* If no plane (NDC box side) exists which every vertex is outside of,
+     * the triangle is in NDC space. */
+    return (
+        (abs(a.x) < 1 || abs(b.x) < 1 || abs(c.x) < 1) &&
+        (abs(a.y) < 1 || abs(b.y) < 1 || abs(c.y) < 1) &&
+        (abs(a.z) < 1 || abs(b.z) < 1 || abs(c.z) < 1)
+    );
 }
 
 } /* end of namespace tc::draw_util */

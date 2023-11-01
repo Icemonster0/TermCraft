@@ -70,11 +70,9 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
         }
 
         /* View Clipping
-         * If every vertex is outside of NDC space, the triangle
-         * is marked for death. */
-        if (glm::any(glm::greaterThan(glm::abs(triangle.vertices[0].pos.xyz()), glm::vec3(1.0f))) &&
-            glm::any(glm::greaterThan(glm::abs(triangle.vertices[1].pos.xyz()), glm::vec3(1.0f))) &&
-            glm::any(glm::greaterThan(glm::abs(triangle.vertices[2].pos.xyz()), glm::vec3(1.0f)))) {
+         * If the triangle doesn't touch NDC space (enough),
+         * the triangle is (usually) marked for death. */
+        if (!draw_util::is_tri_in_NDC(triangle)) {
 
             triangle.marked_for_death = true;
 
@@ -103,6 +101,12 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 }
 
 void Render::rasterize(mesh *m) {
+    // std::sort(m->tri_list.begin(), m->tri_list.end(), [](tri a, tri b) {
+    //     float depth_a = (a.vertices[0].pos.z + a.vertices[1].pos.z + a.vertices[2].pos.z) / 3.0f;
+    //     float depth_b = (b.vertices[0].pos.z + b.vertices[1].pos.z + b.vertices[2].pos.z) / 3.0f;
+    //     return depth_a > depth_b;
+    // });
+
     #pragma omp parallel for schedule(static)
     for (tri &triangle : m->tri_list) {
 
@@ -140,18 +144,18 @@ void Render::rasterize(mesh *m) {
 
                 /* calculate barycentric coordinates
                  * reference: https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf */
-                float v = draw_util::cc_signed_area(p, p1, p2) / area;
-                float w = draw_util::cc_signed_area(p, p2, p0) / area;
+                float u = draw_util::cc_signed_area(p, p1, p2) / area;
+                float v = draw_util::cc_signed_area(p, p2, p0) / area;
                 /* This method doesn't work well for some reason:
-                 *  float u = 1.0f - v - w;
+                 *  float w = 1.0f - u - v;
                  * Therefore we calculate it with the standard approach: */
-                float u = draw_util::cc_signed_area(p, p0, p1) / area;
+                float w = draw_util::cc_signed_area(p, p0, p1) / area;
 
                 /* perspective-corrected barycentric coordinates
                  * reference: https://stackoverflow.com/questions/24441631/how-exactly-does-opengl-do-perspectively-correct-linear-interpolation */
-                float b0 = v * triangle.vertices[0].pos.w;
-                float b1 = w * triangle.vertices[1].pos.w;
-                float b2 = u * triangle.vertices[2].pos.w;
+                float b0 = u * triangle.vertices[0].pos.w;
+                float b1 = v * triangle.vertices[1].pos.w;
+                float b2 = w * triangle.vertices[2].pos.w;
                 float inv_b_sum = 1.0f / (b0 + b1 + b2);
                 b0 *= inv_b_sum;
                 b1 *= inv_b_sum;
