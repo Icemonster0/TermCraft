@@ -19,6 +19,8 @@ struct user_settings {
     glm::vec3 sky_color = {0.486f, 0.882f, 1.0f};
     float render_distance = 100.0f;
     float fog = 0.5f;
+
+    bool debug_info = false;
 };
 
 /* This object needs to be declared in main.cpp */

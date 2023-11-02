@@ -9,10 +9,13 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
 namespace tc {
+
+// public:
 
 Engine::Engine() {
     system_catch_error("tput clear", 7);
@@ -57,6 +60,8 @@ int Engine::run() {
     return status;
 }
 
+// private:
+
 void Engine::input_loop() {
     char key = 0;
 
@@ -82,6 +87,7 @@ void Engine::render_loop() {
         update_window_size();
         controller.simulation_step(delta_time);
         render.set_params(X_size, Y_size, global_time, controller.get_V_matrix(), controller.get_VP_matrix());
+        if (U.debug_info) render.set_debug_info(debug_info_string());
 
         system_catch_error("tput cup 0 0", 4);
         render.render(world.get_mesh());
@@ -91,12 +97,10 @@ void Engine::render_loop() {
         global_time += delta_time;
         fps = 1.0f / delta_time;
         corrected_fps += static_cast<float>(U.fps) - fps;
-
-        debug_info();
     }
 }
 
-void Engine::debug_info() {
+string Engine::debug_info_string() {
     int n_tris;
     int n_active_tris;
     render.get_params(&n_tris, &n_active_tris);
@@ -107,18 +111,21 @@ void Engine::debug_info() {
 
     float est_memory = (float)world.estimate_memory_usage() / 1000000.0f;
 
-    system_catch_error("tput cup 0 0", 4);
-    printf("Debug info\n");
+    stringstream ss;
 
-    printf("fps: %d\n", static_cast<int>(fps));
-    printf("screen: %dx%d\n", X_size, Y_size);
-    printf("time: %.2f\n", global_time);
-    printf("coords: %.2f %.2f %.2f\n", pos.x, pos.y, pos.z);
-    printf("yaw: %.2f°\n", look.x);
-    printf("pitch: %.2f°\n", look.y);
-    printf("tris: %d\n", n_tris);
-    printf("active tris: %d\n", n_active_tris);
-    printf("est. memory: %.2fMB\n", est_memory);
+    ss << "Debug info\n";
+
+    ss << "fps: " << static_cast<int>(fps) << "\n";
+    ss << "screen: " << X_size << "x" << Y_size << "\n";
+    ss << "time: " << global_time << "\n";
+    ss << "coords: " << pos.x << " " << pos.y << " " << pos.z << "\n";
+    ss << "yaw: " << look.x << " deg\n";
+    ss << "pitch: " << look.y << " deg\n";
+    ss << "tris: " << n_tris << "\n";
+    ss << "active tris: " << n_active_tris << "\n";
+    ss << "est. memory: " << est_memory << "MB\n";
+
+    return ss.str();
 }
 
 void Engine::update_window_size() {

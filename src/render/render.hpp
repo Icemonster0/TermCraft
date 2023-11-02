@@ -18,6 +18,7 @@ public:
     Render() {}
 
     void render(mesh m);
+    void set_debug_info(std::string debug_info);
     void set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP);
     void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 
@@ -41,6 +42,7 @@ private:
     buffer<float> zbuf;
     buffer<std::optional<fragment>> frag_buf;
     buffer<std::string> hud_buf;
+    buffer<char> debug_buf;
 };
 
 } /* end of namespace tc */

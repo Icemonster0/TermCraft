@@ -20,7 +20,7 @@ private:
     void input_loop();
     void render_loop();
 
-    void debug_info();
+    std::string debug_info_string();
     void update_window_size();
     void system_catch_error(std::string command, int code);
     void crash(int code);

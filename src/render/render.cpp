@@ -20,6 +20,8 @@ using namespace std;
 
 namespace tc {
 
+// public:
+
 Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) {
     clear_buffers();
 }
@@ -30,6 +32,21 @@ void Render::render(mesh m) {
     rasterize(&m);
     execute_fragment_shader(frag_shaders::FRAG_shaded);
     draw_fbuf();
+}
+
+void Render::set_debug_info(std::string debug_info) {
+    debug_buf.clear(X_size, Y_size, ' ');
+
+    int x = 0, y = 0;
+    for (int i = 0; i < debug_info.length(); ++i) {
+        if (debug_info[i] == '\n') {
+            ++y;
+            x = 0;
+        } else {
+            debug_buf.buf[x][y] = debug_info[i];
+            ++x;
+        }
+    }
 }
 
 void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP) {
@@ -45,11 +62,14 @@ void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
     *n_active_tris_ptr = n_active_tris;
 }
 
+// private:
+
 void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, U.sky_color);
     zbuf.clear(X_size, Y_size, 1.0f);
     frag_buf.clear(X_size, Y_size, optional<fragment>{});
     hud_buf.clear(X_size, Y_size, " ");
+    // NOT clearing debug_buf, already set by set_debug_info()
 }
 
 void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, glm::mat4, float)) {
@@ -195,8 +215,16 @@ void Render::execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float)) 
             // crosshair
             if (x == X_size / 2 && y == Y_size / 2) {
                 hud_buf.buf[x][y] = string{}
-                                .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
-                                .append("\x1b[1mX");
+                                    .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
+                                    .append("\x1b[1mX");
+            }
+            // debug info
+            if (U.debug_info) {
+                if (debug_buf.buf[x][y] != ' ') {
+                    hud_buf.buf[x][y] = string{}
+                                        .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
+                                        .append(string {debug_buf.buf[x][y]});
+                }
             }
         }
     }

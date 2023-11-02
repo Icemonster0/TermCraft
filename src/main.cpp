@@ -30,6 +30,7 @@ flags:\n\
   --cursor-visible                  Makes the cursor not hidden (compat)\n\
   --fixed-window-size               Enables the width and height settings\n\
                                     (if not set: automatic window size)\n\
+  --debug-info                      Show debug info on screen\n\
     ");
 
     clom.register_flag("--help");
@@ -42,6 +43,7 @@ flags:\n\
     clom.register_setting("sky-color", "0x7ce1ff");
     clom.register_setting("render-distance", "100");
     clom.register_setting("fog", "0.5");
+    clom.register_flag("--debug-info");
 
     clom.process_cl_options(argc, argv);
 
@@ -66,6 +68,7 @@ flags:\n\
 
         U.render_distance = std::stof(clom.get_setting_value("render-distance"));
         U.fog = std::stof(clom.get_setting_value("fog"));
+        U.debug_info = clom.is_flag_set("--debug-info");
     }
     catch (...) {
         printf("Failed to parse command line options! Check if all settings expecting a number actually receive a number.\n");
