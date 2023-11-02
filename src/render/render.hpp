@@ -26,7 +26,8 @@ private:
     void clear_buffers();
     void execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::mat4, glm::mat4, float));
     void rasterize(mesh *m);
-    void execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float));
+    void execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment, float),
+                                           glm::vec3 (*post_shader)(const buffer<glm::vec3>*, glm::ivec2, glm::ivec2, float));
     void draw_fbuf();
 
     int X_size;

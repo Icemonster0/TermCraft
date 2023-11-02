@@ -5,6 +5,7 @@
 
 #include "../render/vertex.hpp"
 #include "../render/buffer.hpp"
+#include "../render/draw_util.hpp"
 #include "../user_settings.hpp"
 
 #include <cmath>
@@ -27,7 +28,7 @@ struct frag_shaders {
         float light = glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f;
         light = light * 0.3f + 0.7f;
 
-        float ao = 1.0f - square_interp(interp_ao(f));
+        float ao = 1.0f - draw_util::square_interp(interp_ao(f));
         ao = ao * 0.2f + 0.8f;
 
         float fac = light * ao;
@@ -37,7 +38,9 @@ struct frag_shaders {
         float fog_begin = U.render_distance * (1.0f - U.fog);
         float fog = glm::clamp((1.0f / (U.render_distance - fog_begin)) * (interp_distance(f) - fog_begin), 0.0f, 1.0f);
 
-        return glm::mix(interp_color(f) * fac + highlight, U.sky_color, fog);
+        glm::vec3 world_color = interp_color(f) * fac + highlight;
+
+        return glm::mix(world_color, U.sky_color, fog);
     }
 
 private:
@@ -77,14 +80,6 @@ private:
 
     static bool is_face_highlighted(fragment f) {
         return f.triangle->is_highlighted;
-    }
-
-    template <typename T> static T square_interp(T x) {
-        return x < 0.5f ? 2.0f*x*x : 1.0f-2.0f*(x-1.0f)*(x-1.0f);
-    }
-
-    template <typename T> static T cubic_interp(T x) {
-        return x < 0.5f ? 4.0f*x*x*x : 4.0f*(x-1.0f)*(x-1.0f)*(x-1.0f)+1.0f;
     }
 };
 

@@ -80,6 +80,14 @@ bool is_tri_in_NDC(tri t) {
     );
 }
 
+// interpolations
+template <typename T> static T square_interp(T x) {
+    return x < 0.5f ? 2.0f*x*x : 1.0f-2.0f*(x-1.0f)*(x-1.0f);
+}
+template <typename T> static T cubic_interp(T x) {
+    return x < 0.5f ? 4.0f*x*x*x : 4.0f*(x-1.0f)*(x-1.0f)*(x-1.0f)+1.0f;
+}
+
 } /* end of namespace tc::draw_util */
 
 #endif /* end of include guard: DRAW_UTIL_HPP */

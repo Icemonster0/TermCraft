@@ -30,6 +30,7 @@
 - fragment shader:
     - process fragments *(programmable)*
     - construct hud
+- post processing shader *(programmable)*
 - printing of framebuffer and hud to terminal
 
 ---

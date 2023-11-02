@@ -6,6 +6,7 @@
 #include "mesh.hpp"
 #include "../shaders/vert_shaders.hpp"
 #include "../shaders/frag_shaders.hpp"
+#include "../shaders/post_shaders.hpp"
 #include "../user_settings.hpp"
 
 #include <string>
@@ -30,7 +31,7 @@ void Render::render(mesh m) {
     clear_buffers();
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
-    execute_fragment_shader(frag_shaders::FRAG_shaded);
+    execute_fragment_and_post_shaders(frag_shaders::FRAG_shaded, post_shaders::POST_vignette);
     draw_fbuf();
 }
 
@@ -202,14 +203,18 @@ void Render::rasterize(mesh *m) {
     }
 }
 
-void Render::execute_fragment_shader(glm::vec3 (*frag_shader)(fragment, float)) {
+void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment, float),
+                                               glm::vec3 (*post_shader)(const buffer<glm::vec3>*, glm::ivec2, glm::ivec2, float)) {
     #pragma omp parallel for schedule(static) collapse(2)
     for (int x = 0; x < X_size; ++x) {
         for (int y = 0; y < Y_size; ++y) {
-            // Programmable Shader
+            // Programmable Fragment Shader
             if (frag_buf.buf[x][y].has_value()) {
                 fbuf.buf[x][y] = frag_shader(frag_buf.buf[x][y].value(), global_time);
             }
+
+            // Programmable Post Processing Shader
+            fbuf.buf[x][y] = post_shader(&fbuf, {x, y}, {X_size, Y_size}, global_time);
 
             // Construct HUD
             // crosshair
