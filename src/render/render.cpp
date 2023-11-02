@@ -90,10 +90,13 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
             v.pos = glm::vec4(v.pos.xyz(), 1.0f) / v.pos.w;
         }
 
-        /* View Clipping
-         * If the triangle doesn't touch NDC space (enough),
-         * the triangle is (usually) marked for death. */
-        if (!draw_util::is_tri_in_NDC(triangle)) {
+        /* View Clipping and Backface Culling
+         * If the triangle doesn't touch NDC space (enough)
+         * or is facing away from the camera,
+         * it is (usually) marked for death. */
+        triangle.view_normal = triangle.calc_normal();
+        if (!draw_util::is_tri_in_NDC(triangle) ||
+            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals) {
 
             triangle.marked_for_death = true;
 
@@ -107,7 +110,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
         }
     }
 
-    /* view clipping
+    /* View Clipping and Backface Culling
      * build a new mesh without marked-for-death triangles
      * (faster than erasing individually) */
     mesh tmp;

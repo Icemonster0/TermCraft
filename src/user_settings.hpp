@@ -21,6 +21,7 @@ struct user_settings {
     float fog = 0.5f;
 
     bool debug_info = false;
+    bool bad_normals = false;
 };
 
 /* This object needs to be declared in main.cpp */

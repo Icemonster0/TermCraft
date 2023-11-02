@@ -18,14 +18,14 @@ struct frag_shaders {
     }
 
     static glm::vec3 FRAG_fun(fragment f, float global_time) {
-        float light = (glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f;
+        float light = (glm::dot(face_world_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f;
         // return glm::vec3(sin(interp_color(f).r*25)*0.5f+0.5f) * glm::vec3(sin(interp_color(f).b*25)*0.5f+0.5f);
         return glm::vec3(light);
         // return interp_color(f);
     }
 
     static glm::vec3 FRAG_shaded(fragment f, float global_time) {
-        float light = glm::dot(face_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f;
+        float light = glm::dot(face_world_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f;
         light = light * 0.3f + 0.7f;
 
         float ao = 1.0f - draw_util::square_interp(interp_ao(f));
@@ -38,9 +38,15 @@ struct frag_shaders {
         float fog_begin = U.render_distance * (1.0f - U.fog);
         float fog = glm::clamp((1.0f / (U.render_distance - fog_begin)) * (interp_distance(f) - fog_begin), 0.0f, 1.0f);
 
-        glm::vec3 world_color = interp_color(f) * fac + highlight;
+        glm::vec3 albedo;
+        if (U.bad_normals)
+            albedo = glm::sign(face_view_normal(f).z) >= 0.0f ? glm::vec3 {1,0,0} : glm::vec3 {0,0,1};
+        else
+            albedo = interp_color(f);
 
-        return glm::mix(world_color, U.sky_color, fog);
+        glm::vec3 block_color = albedo * fac + highlight;
+
+        return glm::mix(block_color, U.sky_color, fog);
     }
 
 private:
@@ -74,8 +80,12 @@ private:
              + f.weights[2] * f.triangle->vertices[2].ao;
     }
 
-    static glm::vec3 face_normal(fragment f) {
-        return f.triangle->normal;
+    static glm::vec3 face_world_normal(fragment f) {
+        return f.triangle->world_normal;
+    }
+
+    static glm::vec3 face_view_normal(fragment f) {
+        return f.triangle->view_normal;
     }
 
     static bool is_face_highlighted(fragment f) {

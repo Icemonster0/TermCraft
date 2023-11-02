@@ -31,6 +31,8 @@ flags:\n\
   --fixed-window-size               Enables the width and height settings\n\
                                     (if not set: automatic window size)\n\
   --debug-info                      Show debug info on screen\n\
+  --bad-normals                     Show face front in blue, back in red;\n\
+                                    Disables backface culling\n\
     ");
 
     clom.register_flag("--help");
@@ -44,6 +46,7 @@ flags:\n\
     clom.register_setting("render-distance", "100");
     clom.register_setting("fog", "0.5");
     clom.register_flag("--debug-info");
+    clom.register_flag("--bad-normals");
 
     clom.process_cl_options(argc, argv);
 
@@ -69,6 +72,7 @@ flags:\n\
         U.render_distance = std::stof(clom.get_setting_value("render-distance"));
         U.fog = std::stof(clom.get_setting_value("fog"));
         U.debug_info = clom.is_flag_set("--debug-info");
+        U.bad_normals = clom.is_flag_set("--bad-normals");
     }
     catch (...) {
         printf("Failed to parse command line options! Check if all settings expecting a number actually receive a number.\n");

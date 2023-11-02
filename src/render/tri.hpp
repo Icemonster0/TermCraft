@@ -12,7 +12,7 @@ struct tri {
         vertices[0] = a;
         vertices[1] = b;
         vertices[2] = c;
-        calc_normal();
+        world_normal = calc_normal();
     }
 
     tri() {
@@ -21,12 +21,13 @@ struct tri {
     vertex vertices[3];
     bool marked_for_death = false;
 
-    glm::vec3 normal {0.0f};
+    glm::vec3 world_normal {0.0f};
+    glm::vec3 view_normal {0.0f};
     bool is_highlighted = false;
 
-    void calc_normal() {
-        normal = glm::cross(vertices[1].pos.xyz() - vertices[0].pos.xyz(),
-                            vertices[2].pos.xyz() - vertices[0].pos.xyz());
+    glm::vec3 calc_normal() {
+        return glm::cross(vertices[1].pos.xyz() - vertices[0].pos.xyz(),
+                          vertices[2].pos.xyz() - vertices[0].pos.xyz());
     }
 };
 
