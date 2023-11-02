@@ -2,14 +2,15 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
+- Use better voxel grid traversal algorithm
 - Fix triangle overlap / gap issue
 - Backface culling
 - Use an input library for simultaneous key press support
-- Add walk controller
-- Day-night cycle
 - Add cave generation
 - Add textures
 - Add tree generation
+- Add walk controller
+- Day-night cycle
 - Menu / gui and world saving / loading
 - ~~Rewrite view clipping~~
 - ~~Add command line option support~~
