@@ -33,8 +33,11 @@ void World::generate(int seed, glm::ivec2 size) {
 
                 int grass_height = (glm::perlin(glm::vec2 {(float)x/20.0f, (float)z/20.0f}) * 0.5f + 0.5f) * mountainity * 30 + 128;
                 int dirt_height = grass_height - 1;
+                int stone_height = dirt_height - 5;
 
-                if (y >= chunk_size::height - dirt_height) {
+                if (y >= chunk_size::height - stone_height) {
+                    b.type = block_type::STONE;
+                } else if (y >= chunk_size::height - dirt_height) {
                     b.type = block_type::DIRT;
                 } else if (y >= chunk_size::height - grass_height) {
                     b.type = block_type::GRASS;

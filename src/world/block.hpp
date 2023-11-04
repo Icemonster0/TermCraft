@@ -12,12 +12,14 @@ namespace block_type {
     enum Block_Type {
         EMPTY,
         GRASS,
-        DIRT
+        DIRT,
+        STONE
     };
     const glm::vec3 block_color[] = {
         glm::vec3 {0.0f}, // EMPTY
-        glm::vec3 {0.3f, 0.6f, 0.2f}, // GRASS
-        glm::vec3 {0.5f, 0.4f, 0.1f} // DIRT
+        glm::vec3 {0.4f, 0.7f, 0.3f}, // GRASS
+        glm::vec3 {0.5f, 0.4f, 0.2f}, // DIRT
+        glm::vec3 {0.6f, 0.6f, 0.6f} // STONE
     };
 } /* end of namespace block_type */
 
