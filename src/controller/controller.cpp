@@ -176,6 +176,45 @@ void Controller::turn(glm::vec2 dir) {
 }
 
 void Controller::calc_looked_at_block(bool adjacent) {
+    // const glm::vec3 dir = camera.get_forward_vector();
+    // const glm::vec3 start = camera.pos;
+    // const glm::vec3 end = start + dir * interact_range;
+    //
+    // glm::ivec3 block = start;
+    // const glm::ivec3 block_dir = glm::sign(dir);
+    //
+    // glm::vec3 p = start;
+    //
+    // glm::ivec3 next_border = glm::round(p + glm::vec3(block_dir) * 0.5f);
+    // glm::vec3 next_dist = glm::vec3(next_border) - p;
+    //
+    // printf("%f %f %f\n", next_dist.x, next_dist.y, next_dist.z);
+    //
+    // float x_slope =
+    // float y_slope =
+    // float z_slope =
+    //
+    // float x_step =
+    // float y_step
+    // float z_step
+    //
+    // float step = 0.1f;
+    //
+    // for (float f = 0.0f; f <= interact_range; f += step) {
+    //     if (world_ptr->get_block(camera.pos + f * dir)->type != block_type::EMPTY) {
+    //         if (adjacent) {
+    //             looked_at_block = std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
+    //             return;
+    //         } else {
+    //             looked_at_block = std::optional<glm::ivec3> {camera.pos + f * dir};
+    //             return;
+    //         }
+    //     }
+    // }
+    //
+    // looked_at_block = std::optional<glm::ivec3> {};
+
+
     glm::vec3 dir = camera.get_forward_vector();
     float step = 0.1f;
 
