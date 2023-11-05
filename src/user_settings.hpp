@@ -22,6 +22,8 @@ struct user_settings {
 
     bool debug_info = false;
     bool bad_normals = false;
+
+    float fov = 70.0f;
 };
 
 /* This object needs to be declared in main.cpp */

@@ -51,7 +51,7 @@ void Camera::calc_V_matrix() {
 
 void Camera::calc_P_matrix() {
     P = glm::mat4(1.0f);
-    P = glm::perspective(fov, aspect / 2.0f, near, U.render_distance);
+    P = glm::perspective(glm::radians(fov), aspect / 2.0f, near, U.render_distance);
 }
 
 void Camera::calc_VP_matrix() {

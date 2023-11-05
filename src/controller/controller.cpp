@@ -30,7 +30,7 @@ Controller::Controller(glm::vec3 p_pos,
                        world_ptr(p_world_ptr),
                        active_block_type(block_type::GRASS) {
 
-    camera = Camera {45.0f, // fov
+    camera = Camera {U.fov, // fov
                      p_aspect, // aspect ratio
                      0.01f, // near plane
                      p_pos + glm::vec3(0, -height, 0)}; // position

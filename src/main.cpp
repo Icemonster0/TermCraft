@@ -21,6 +21,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_setting<float>("fog", 0.5f, "Fog factor (0.0 to 1.0)");
     clom.register_flag("--debug-info", "Show debug info in the HUD");
     clom.register_flag("--bad-normals", "Show face front in blue, back in red; Disable backface culling");
+    clom.register_setting<float>("fov", 70.0f, "Field of view in degrees");
 
     clom.process_cl_options(argc, argv);
     clom.generate_user_hint("TermCraft");
@@ -47,6 +48,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.fog = clom.get_setting_value<float>("fog");
     U.debug_info = clom.is_flag_set("--debug-info");
     U.bad_normals = clom.is_flag_set("--bad-normals");
+    U.fov = clom.get_setting_value<float>("fov");
 }
 
 int main(int argc, char const *argv[]) {
