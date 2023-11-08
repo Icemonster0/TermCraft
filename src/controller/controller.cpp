@@ -176,57 +176,64 @@ void Controller::turn(glm::vec2 dir) {
 }
 
 void Controller::calc_looked_at_block(bool adjacent) {
-    // const glm::vec3 dir = camera.get_forward_vector();
-    // const glm::vec3 start = camera.pos;
-    // const glm::vec3 end = start + dir * interact_range;
-    //
-    // glm::ivec3 block = start;
-    // const glm::ivec3 block_dir = glm::sign(dir);
-    //
-    // glm::vec3 p = start;
-    //
-    // glm::ivec3 next_border = glm::round(p + glm::vec3(block_dir) * 0.5f);
-    // glm::vec3 next_dist = glm::vec3(next_border) - p;
-    //
-    // printf("%f %f %f\n", next_dist.x, next_dist.y, next_dist.z);
-    //
-    // float x_slope =
-    // float y_slope =
-    // float z_slope =
-    //
-    // float x_step =
-    // float y_step
-    // float z_step
-    //
-    // float step = 0.1f;
-    //
-    // for (float f = 0.0f; f <= interact_range; f += step) {
-    //     if (world_ptr->get_block(camera.pos + f * dir)->type != block_type::EMPTY) {
-    //         if (adjacent) {
-    //             looked_at_block = std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
-    //             return;
-    //         } else {
-    //             looked_at_block = std::optional<glm::ivec3> {camera.pos + f * dir};
-    //             return;
-    //         }
-    //     }
-    // }
-    //
-    // looked_at_block = std::optional<glm::ivec3> {};
+    const glm::vec3 dir = camera.get_forward_vector();
+    const glm::vec3 start = camera.pos;
+    const glm::vec3 end = start + dir * interact_range;
 
+    glm::vec3 diff = end - start;
+    float interact_range_squared = interact_range * interact_range;
 
-    glm::vec3 dir = camera.get_forward_vector();
-    float step = 0.1f;
+    glm::ivec3 block = start;
+    const glm::ivec3 dir_sign = glm::sign(dir);
+    glm::ivec3 block_step {0};
 
-    for (float f = 0.0f; f <= interact_range; f += step) {
-        if (world_ptr->get_block(camera.pos + f * dir)->type != block_type::EMPTY) {
+    glm::ivec3 next_border {};
+
+    while (true) {
+        if (world_ptr->get_block(block)->type != block_type::EMPTY) {
             if (adjacent) {
-                looked_at_block = std::optional<glm::ivec3> {camera.pos + (f - step) * dir};
+                looked_at_block = std::optional<glm::ivec3> {block - block_step};
                 return;
             } else {
-                looked_at_block = std::optional<glm::ivec3> {camera.pos + f * dir};
+                looked_at_block = std::optional<glm::ivec3> {block};
                 return;
             }
+        }
+
+        glm::bvec3 is_block_negative = glm::lessThan(glm::sign(block), glm::ivec3(0));
+        next_border.x = block.x + std::clamp(dir_sign.x, 0 - is_block_negative.x, 1 - is_block_negative.x);
+        next_border.y = block.y + std::clamp(dir_sign.y, 0 - is_block_negative.y, 1 - is_block_negative.y);
+        next_border.z = block.z + std::clamp(dir_sign.z, 0 - is_block_negative.z, 1 - is_block_negative.z);
+
+        float intersect_x_fac = (next_border.x - start.x) / (end.x - start.x);
+        glm::ivec2 intersect_x {
+            start.y + (end.y - start.y) * intersect_x_fac,
+            start.z + (end.z - start.z) * intersect_x_fac
+        };
+        float intersect_y_fac = (next_border.y - start.y) / (end.y - start.y);
+        glm::ivec2 intersect_y {
+            start.x + (end.x - start.x) * intersect_y_fac,
+            start.z + (end.z - start.z) * intersect_y_fac
+        };
+        float intersect_z_fac = (next_border.z - start.z) / (end.z - start.z);
+        glm::ivec2 intersect_z {
+            start.x + (end.x - start.x) * intersect_z_fac,
+            start.y + (end.y - start.y) * intersect_z_fac
+        };
+
+        if (intersect_x == block.yz()) {
+            block_step = glm::ivec3 {1, 0, 0} * dir_sign;
+        } else if (intersect_y == block.xz()) {
+            block_step = glm::ivec3 {0, 1, 0} * dir_sign;
+        } else if (intersect_z == block.xy()) {
+            block_step = glm::ivec3 {0, 0, 1} * dir_sign;
+        }
+
+        block += block_step;
+
+        glm::vec3 diff = glm::vec3(block) - start;
+        if ((diff.x*diff.x + diff.y*diff.y + diff.z*diff.z) > interact_range_squared) {
+            break;
         }
     }
 

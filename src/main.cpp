@@ -23,8 +23,8 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_flag("--bad-normals", "Show face front in blue, back in red; Disable backface culling");
     clom.register_setting<float>("fov", 70.0f, "Field of view in degrees");
 
-    clom.process_cl_options(argc, argv);
     clom.generate_user_hint("TermCraft");
+    clom.process_cl_options(argc, argv);
 
     if (clom.is_flag_set("--help")) {
         clom.print_user_hint();
