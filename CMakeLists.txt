@@ -11,6 +11,7 @@ add_library(libs_module
     src/controller/controller.cpp
     src/controller/camera.cpp
     src/world/world.cpp
+    src/stb.cpp
 )
 
 target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)

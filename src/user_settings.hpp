@@ -15,6 +15,7 @@ struct user_settings {
     int height = 24;
 
     std::string color_mode = "FULL";
+    bool disable_textures = false;
 
     glm::vec3 sky_color = {0.486f, 0.882f, 1.0f};
     float render_distance = 100.0f;
