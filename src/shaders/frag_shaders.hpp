@@ -102,7 +102,10 @@ private:
     }
 
     static glm::vec3 sample_face_texture(fragment f) {
-        return tex::textures[f.triangle->block_type_index].sample(interp_tex_coord(f));
+        return block_type::block_texture[f.triangle->block_type_index].sample(
+            interp_tex_coord(f),
+            f.triangle->block_side_index
+        );
     }
 };
 

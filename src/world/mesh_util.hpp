@@ -5,6 +5,7 @@
 
 #include "../render/mesh.hpp"
 #include "block.hpp"
+#include "../render/texture.hpp"
 
 #include <cstdio>
 #include <unistd.h>
@@ -32,7 +33,7 @@ glm::bvec4 calc_ambient_occlusion(bool nb[3][3][3], glm::mat4 mat_four) {
     return ao;
 }
 
-mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type) {
+mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type, unsigned int side) {
     mesh m;
     glm::bvec4 ao = calc_ambient_occlusion(nb, M);
 
@@ -40,6 +41,8 @@ mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type) {
     m.tri_list.push_back(tri {{-0.5f, 0.5f,-0.5f, ao.z, 0, 1}, {0.5f,-0.5f,-0.5f, ao.y, 1, 0}, {-0.5f,-0.5f,-0.5f, ao.x, 0, 0}});
 
     m.tri_list[0].block_type_index = m.tri_list[1].block_type_index = type;
+    m.tri_list[0].block_side_index = m.tri_list[1].block_side_index = side;
+
     m = m.transform(glm::translate(glm::mat4 {1.0f}, glm::vec3(0.5f)) * M);
     m.tri_list[0].world_normal = m.tri_list[1].world_normal = m.tri_list[0].calc_normal();
 
@@ -48,27 +51,27 @@ mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type) {
 
 mesh left_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::LEFT);
 }
 mesh right_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians( 90.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::RIGHT);
 }
 mesh top_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0));
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::TOP);
 }
 mesh bottom_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians( 90.0f), glm::vec3(1, 0, 0));
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::BOTTOM);
 }
 mesh front_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M {1.0f};
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::FRONT);
 }
 mesh back_plane(bool nb[3][3][3], unsigned int type) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type);
+    return generic_plane(nb, M, type, tex::BACK);
 }
 
 } /* end of namespace tc::mesh_util */

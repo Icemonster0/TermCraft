@@ -24,6 +24,7 @@ struct tri {
     glm::vec3 view_normal {0.0f};
     bool is_highlighted = false;
     unsigned int block_type_index = 0;
+    unsigned int block_side_index = 0;
 
     glm::vec3 calc_normal() {
         return glm::cross(vertices[1].pos.xyz() - vertices[0].pos.xyz(),

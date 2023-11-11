@@ -239,6 +239,7 @@ std::optional<glm::ivec2> World::get_chunk_coord_of_block(glm::ivec3 coord) {
 }
 
 void World::update_block(glm::ivec3 coord) {
+    block_update_simulation(coord);
 
     // use this if ao doesn't matter
     // remesh_block(coord);
@@ -272,6 +273,21 @@ void World::update_block(glm::ivec3 coord) {
         remesh_chunk(chunk_coord + glm::ivec2(0,  1));
 
     remesh_world();
+}
+
+void World::block_update_simulation(glm::ivec3 coord) {
+    block *block_current = get_block(coord);
+    block *block_below = get_block(coord + glm::ivec3(0, 1, 0));
+
+    // Replace grass with dirt
+    if (block_current->type == block_type::GRASS &&
+        get_block(coord + glm::ivec3(0, -1, 0))->type != block_type::EMPTY) {
+
+        block_current->type = block_type::DIRT;
+    }
+    if (block_below->type == block_type::GRASS) {
+        block_below->type = block_type::DIRT;
+    }
 }
 
 void World::remesh_block(glm::ivec3 coord) {

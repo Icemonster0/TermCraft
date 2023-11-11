@@ -6,8 +6,20 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace tc {
+
+namespace tex {
+    enum Side {
+        LEFT,
+        RIGHT,
+        TOP,
+        BOTTOM,
+        FRONT,
+        BACK
+    };
+} /* end of namespace tex */
 
 class Texture {
 public:
@@ -47,15 +59,48 @@ private:
     std::vector<std::vector<glm::vec3>> pixels;
 };
 
-namespace tex {
-    // refer to order in ../world/block.hpp
-    const Texture textures[] {
-        {"../res/tex/test.png"},
-        {"../res/tex/grass_top.png"},
-        {"../res/tex/dirt.png"},
-        {"../res/tex/stone.png"},
-    };
-} /* end of namespace tex */
+class Texture_Set {
+public:
+    Texture_Set(const std::string path) {
+        std::shared_ptr<Texture> t = std::make_shared<Texture>(Texture {path});
+        textures[tex::LEFT] = t;
+        textures[tex::RIGHT] = t;
+        textures[tex::TOP] = t;
+        textures[tex::BOTTOM] = t;
+        textures[tex::FRONT] = t;
+        textures[tex::BACK] = t;
+    }
+
+    Texture_Set(const std::string path_side, const std::string path_top_bottom) {
+        std::shared_ptr<Texture> ta = std::make_shared<Texture>(Texture {path_side});
+        std::shared_ptr<Texture> tb = std::make_shared<Texture>(Texture {path_top_bottom});
+        textures[tex::LEFT] = ta;
+        textures[tex::RIGHT] = ta;
+        textures[tex::TOP] = tb;
+        textures[tex::BOTTOM] = tb;
+        textures[tex::FRONT] = ta;
+        textures[tex::BACK] = ta;
+    }
+
+    Texture_Set(const std::string path_side, const std::string path_top, const std::string path_bottom) {
+        std::shared_ptr<Texture> ta = std::make_shared<Texture>(Texture {path_side});
+        std::shared_ptr<Texture> tb = std::make_shared<Texture>(Texture {path_top});
+        std::shared_ptr<Texture> tc = std::make_shared<Texture>(Texture {path_bottom});
+        textures[tex::LEFT] = ta;
+        textures[tex::RIGHT] = ta;
+        textures[tex::TOP] = tb;
+        textures[tex::BOTTOM] = tc;
+        textures[tex::FRONT] = ta;
+        textures[tex::BACK] = ta;
+    }
+
+    glm::vec3 sample(const glm::vec2 tex_coord, const unsigned int side) const {
+        return textures[side]->sample(tex_coord);
+    }
+
+private:
+    std::shared_ptr<Texture> textures[6];
+};
 
 } /* end of namespace tc */
 

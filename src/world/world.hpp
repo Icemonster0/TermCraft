@@ -31,6 +31,7 @@ public:
 private:
     std::optional<glm::ivec2> get_chunk_coord_of_block(glm::ivec3 coord);
     void update_block(glm::ivec3 coord);
+    void block_update_simulation(glm::ivec3 coord);
     void remesh_block(glm::ivec3 coord);
     void remesh_chunk(glm::ivec2 coord);
     void remesh_world();
