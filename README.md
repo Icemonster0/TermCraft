@@ -1,14 +1,14 @@
 # TermCraft - WIP
 A 3D Minecraft clone running in the terminal.
 
-### Work in progress
+## Work in progress
 This is an early version of the project. [Many features](doc/TODO.md) are still missing.
 
 ![Screenshot](doc/Screenshot.png)
 
 ---
 
-### Index
+## Index
 - [Build Instructions](#build-instructions)
 - [Keybinds](#keybinds)
 - [Troubleshooting](#troubleshooting)
@@ -20,7 +20,7 @@ This is an early version of the project. [Many features](doc/TODO.md) are still 
 
 ---
 
-### Build Instructions
+## Build Instructions
 Compile the project with cmake:  
 ```
 mkdir build
@@ -32,7 +32,7 @@ The executable must be run in a command line!
 
 ---
 
-### Keybinds
+## Keybinds
 It is recommended to turn off the delay on repeat keys in the system settings (probably under the keyboard or accessibility section). Try to quit using `q` rather than `ctrl-c` whenever possible to ensure a clean exit.
 
 `w a s d`: Movement  
@@ -43,9 +43,9 @@ It is recommended to turn off the delay on repeat keys in the system settings (p
 
 ---
 
-### Troubleshooting
+## Troubleshooting
 
-##### Error Codes
+### Error Codes
 When TermCraft exits or crashes in a controlled manner, it will print the following message:  
 `Engine exited with return value x`.  
 Here are all possible values for `x` and the associated errors.
@@ -69,7 +69,7 @@ If TermCraft crashes by printing `Killed`, the system likely ran out of memory a
 
 In any other case, feel free to open an issue.
 
-##### Performance
+### Performance
 You can see useful info (fps, estimated memory usage etc.) by running with the `--debug--info` flag.
 The biggest factors affecting performance are:
 
@@ -79,10 +79,10 @@ The biggest factors affecting performance are:
 
 ---
 
-### Command Line Parameters
+## Command Line Parameters
 Here are all parameters you can pass to TermCraft in the command line. Note that a *setting* must be followed by a value while a *flag* must not.
 
-##### Settings
+### Settings
 | name | type | default value | description |
 | ---- | ---- | ------------- | ----------- |
 | `color-mode` | string | `FULL` | Can be one of: `FULL` (full rgb color); `COMPAT` (grayscale with low dynamic range) |
@@ -95,7 +95,7 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 | `width` | int | `80` | Width of viewport in pixels, if `--fixed-window-size` is set |
 | `world-size` | int | `10` | World width in both X and Z directions in chunks (`world-size`*16 blocks) |
 
-##### Flags
+### Flags
 | name | description |
 | ---- | ----------- |
 | `--bad-normals` | Show frontfacing triangles in blue, backfacing in red (similar to Blender); Turn backface culling off |
