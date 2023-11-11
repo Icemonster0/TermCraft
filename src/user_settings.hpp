@@ -8,7 +8,10 @@
 struct user_settings {
     bool cursor_visible = false;
 
+    int world_size = 10;
+
     int fps = 24;
+    float fov = 70.0f;
 
     bool fixed_window_size = false;
     int width = 80;
@@ -23,8 +26,6 @@ struct user_settings {
 
     bool debug_info = false;
     bool bad_normals = false;
-
-    float fov = 70.0f;
 };
 
 /* This object needs to be declared in main.cpp */

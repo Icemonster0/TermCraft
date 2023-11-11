@@ -13,13 +13,13 @@ namespace block_type {
         EMPTY,
         GRASS,
         DIRT,
-        STONE
+        STONE,
     };
     const glm::vec3 block_color[] = {
         glm::vec3 {0.0f}, // EMPTY
         glm::vec3 {0.4f, 0.7f, 0.3f}, // GRASS
         glm::vec3 {0.5f, 0.4f, 0.2f}, // DIRT
-        glm::vec3 {0.6f, 0.6f, 0.6f} // STONE
+        glm::vec3 {0.6f, 0.6f, 0.6f}, // STONE
     };
 } /* end of namespace block_type */
 

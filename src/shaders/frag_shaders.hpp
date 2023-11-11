@@ -8,6 +8,7 @@
 #include "../render/draw_util.hpp"
 #include "../user_settings.hpp"
 #include "../render/texture.hpp"
+#include "../world/block.hpp"
 
 #include <cmath>
 
@@ -43,7 +44,7 @@ struct frag_shaders {
         if (U.bad_normals)
             albedo = glm::sign(face_view_normal(f).z) >= 0.0f ? glm::vec3 {1,0,0} : glm::vec3 {0,0,1};
         else {
-            if (U.disable_textures) albedo = interp_color(f);
+            if (U.disable_textures) albedo = face_color(f);
             else albedo = sample_face_texture(f);
         }
 
@@ -53,11 +54,6 @@ struct frag_shaders {
     }
 
 private:
-    static glm::vec3 interp_color(fragment f) {
-        return f.weights[0] * f.triangle->vertices[0].color
-             + f.weights[1] * f.triangle->vertices[1].color
-             + f.weights[2] * f.triangle->vertices[2].color;
-    }
 
     static glm::vec4 interp_pos(fragment f) {
         return f.weights[0] * f.triangle->vertices[0].pos
@@ -95,6 +91,10 @@ private:
 
     static glm::vec3 face_view_normal(fragment f) {
         return f.triangle->view_normal;
+    }
+
+    static glm::vec3 face_color(fragment f) {
+        return block_type::block_color[f.triangle->block_type_index];
     }
 
     static bool is_face_highlighted(fragment f) {

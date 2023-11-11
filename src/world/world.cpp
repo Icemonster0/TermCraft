@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <optional>
 
 namespace tc {
 
@@ -23,6 +24,8 @@ void World::generate(int seed, glm::ivec2 size) {
         }
     }
 
+    const int half_chunk_height = chunk_size::height / 2;
+
     #pragma omp parallel for schedule(static)
     for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
         for (int y = 0; y < chunk_size::height; ++y) {
@@ -31,7 +34,7 @@ void World::generate(int seed, glm::ivec2 size) {
 
                 float mountainity = glm::perlin(glm::vec2 {(float)x/120.0f, (float)z/120.0f}) * 0.5f + 0.5f;
 
-                int grass_height = (glm::perlin(glm::vec2 {(float)x/20.0f, (float)z/20.0f}) * 0.5f + 0.5f) * mountainity * 30 + 128;
+                int grass_height = (glm::perlin(glm::vec2 {(float)x/20.0f, (float)z/20.0f}) * 0.5f + 0.5f) * mountainity * 30 + half_chunk_height;
                 int dirt_height = grass_height - 1;
                 int stone_height = dirt_height - 5;
 
@@ -96,14 +99,25 @@ mesh World::get_mesh() {
 }
 
 block* World::get_block(glm::ivec3 coord) {
-    glm::ivec2 chunk_coord = get_chunk_of_block(coord);
+    std::optional<glm::ivec2> chunk_coord = get_chunk_coord_of_block(coord);
 
-    if (chunk_coord.x != -1 && glm::all(glm::greaterThanEqual(coord, glm::ivec3(0, 0, 0)))) {
-        return &chunks[chunk_coord.x][chunk_coord.y].blocks[coord.x % chunk_size::width][coord.y][coord.z % chunk_size::depth];
-    } else {
-        null_block = block {};
-        return &null_block;
+    if (chunk_coord.has_value()) {
+        glm::ivec3 relative_coord {
+            coord.x - chunk_size::width*chunk_coord.value().x,
+            coord.y,
+            coord.z - chunk_size::depth*chunk_coord.value().y
+        };
+
+        if (glm::all(glm::greaterThanEqual(relative_coord, glm::ivec3(0))) &&
+            glm::all(glm::lessThan(relative_coord, glm::ivec3(chunk_size::width, chunk_size::height, chunk_size::depth)))) {
+
+            return &chunks[chunk_coord.value().x][chunk_coord.value().y]
+                    .blocks[relative_coord.x][relative_coord.y][relative_coord.z];
+        }
     }
+
+    null_block = block {};
+    return &null_block;
 }
 
 void World::replace(glm::ivec3 coord, block_type::Block_Type type) {
@@ -121,14 +135,16 @@ void World::highlight_block(glm::ivec3 coord) {
         triangle.is_highlighted = true;
     }
 
-    glm::ivec2 coord_chunk = get_chunk_of_block(coord);
-    glm::ivec2 highlighted_block_chunk = get_chunk_of_block(highlighted_block);
+    std::optional<glm::ivec2> coord_chunk = get_chunk_coord_of_block(coord);
+    std::optional<glm::ivec2> highlighted_block_chunk = get_chunk_coord_of_block(highlighted_block);
 
-    if (glm::all(glm::equal(coord_chunk, highlighted_block_chunk))) {
-        remesh_chunk(coord_chunk);
+    if (coord_chunk.has_value() && highlighted_block_chunk.has_value() &&
+        glm::all(glm::equal(coord_chunk.value(), highlighted_block_chunk.value()))) {
+
+        remesh_chunk(coord_chunk.value());
     } else {
-        remesh_chunk(coord_chunk);
-        remesh_chunk(highlighted_block_chunk);
+        if (coord_chunk.has_value()) remesh_chunk(coord_chunk.value());
+        if (highlighted_block_chunk.has_value()) remesh_chunk(highlighted_block_chunk.value());
     }
 
     remesh_world();
@@ -154,8 +170,8 @@ void World::update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, fl
     /* If the player moves from one chunk to another,
      * we remesh the loaded chunk difference (boolean operation). */
 
-    glm::ivec2 new_chunk_coord = get_chunk_of_block(new_player_pos);
-    glm::ivec2 old_chunk_coord = get_chunk_of_block(old_player_pos);
+    glm::ivec2 new_chunk_coord = get_chunk_coord_of_block(new_player_pos).value_or(glm::ivec2(-1));
+    glm::ivec2 old_chunk_coord = get_chunk_coord_of_block(old_player_pos).value_or(glm::ivec2(-1));
 
     if (!glm::all(glm::equal(new_chunk_coord, old_chunk_coord))) {
 
@@ -166,13 +182,18 @@ void World::update_chunks(glm::vec3 new_player_pos, glm::vec3 old_player_pos, fl
                 glm::vec2 diff = {((chunk_coord.x+0.5f) * chunk_size::width) - new_player_pos.x,
                                   ((chunk_coord.y+0.5f) * chunk_size::depth) - new_player_pos.z};
 
+                bool was_loaded = chunks[chunk_coord.x][chunk_coord.y].loaded;
+
                 if (diff.x*diff.x + diff.y*diff.y <= render_dist*render_dist) {
                     chunks[chunk_coord.x][chunk_coord.y].loaded = true;
-                } else {
-                    chunks[chunk_coord.x][chunk_coord.y].loaded = false;
+                    if (!was_loaded)
+                        remesh_chunk(chunk_coord);
                 }
-
-                remesh_chunk(chunk_coord);
+                else {
+                    chunks[chunk_coord.x][chunk_coord.y].loaded = false;
+                    if (was_loaded)
+                        remesh_chunk(chunk_coord);
+                }
             }
         }
 
@@ -208,13 +229,13 @@ size_t World::estimate_memory_usage() {
 
 // private:
 
-glm::ivec2 World::get_chunk_of_block(glm::ivec3 coord) {
+std::optional<glm::ivec2> World::get_chunk_coord_of_block(glm::ivec3 coord) {
     glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
 
     if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
         glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))))
-         return chunk_coord;
-    else return glm::ivec2(-1);
+         return std::optional<glm::ivec2> {chunk_coord};
+    else return std::optional<glm::ivec2> {};
 }
 
 void World::update_block(glm::ivec3 coord) {
@@ -267,61 +288,25 @@ void World::remesh_block(glm::ivec3 coord) {
         }
     }
 
-    // generate faces and set ambient occlusion
+    // generate faces
     if (b.type != block_type::EMPTY) {
         if (!neighbors[0][1][1]) { // left
-            b.block_mesh.append(mesh_util::left_plane ({
-                (neighbors[0][0][0] || neighbors[0][1][0] || neighbors[0][0][1]),
-                (neighbors[0][0][2] || neighbors[0][1][2] || neighbors[0][0][1]),
-                (neighbors[0][2][2] || neighbors[0][1][2] || neighbors[0][2][1]),
-                (neighbors[0][2][0] || neighbors[0][1][0] || neighbors[0][2][1])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::left_plane (neighbors, b.type));
         }
         if (!neighbors[2][1][1]) { // right
-            b.block_mesh.append(mesh_util::right_plane ({
-                (neighbors[2][2][2] || neighbors[2][1][2] || neighbors[2][2][1]),
-                (neighbors[2][0][2] || neighbors[2][1][2] || neighbors[2][0][1]),
-                (neighbors[2][0][0] || neighbors[2][1][0] || neighbors[2][0][1]),
-                (neighbors[2][2][0] || neighbors[2][1][0] || neighbors[2][2][1])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::right_plane (neighbors, b.type));
         }
         if (!neighbors[1][0][1]) { // top
-            b.block_mesh.append(mesh_util::top_plane ({
-                (neighbors[0][0][0] || neighbors[0][0][1] || neighbors[1][0][0]),
-                (neighbors[2][0][0] || neighbors[2][0][1] || neighbors[1][0][0]),
-                (neighbors[2][0][2] || neighbors[2][0][1] || neighbors[1][0][2]),
-                (neighbors[0][0][2] || neighbors[0][0][1] || neighbors[1][0][2])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::top_plane (neighbors, b.type));
         }
         if (!neighbors[1][2][1]) { // bottom
-            b.block_mesh.append(mesh_util::bottom_plane ({
-                (neighbors[0][2][0] || neighbors[0][2][1] || neighbors[1][2][0]),
-                (neighbors[0][2][2] || neighbors[0][2][1] || neighbors[1][2][2]),
-                (neighbors[2][2][2] || neighbors[2][2][1] || neighbors[1][2][2]),
-                (neighbors[2][2][0] || neighbors[2][2][1] || neighbors[1][2][0])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::bottom_plane (neighbors, b.type));
         }
         if (!neighbors[1][1][0]) { // front
-            b.block_mesh.append(mesh_util::front_plane ({
-                (neighbors[0][2][0] || neighbors[1][2][0] || neighbors[0][1][0]),
-                (neighbors[2][2][0] || neighbors[1][2][0] || neighbors[2][1][0]),
-                (neighbors[2][0][0] || neighbors[1][0][0] || neighbors[2][1][0]),
-                (neighbors[0][0][0] || neighbors[1][0][0] || neighbors[0][1][0])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::front_plane (neighbors, b.type));
         }
         if (!neighbors[1][1][2]) { // back
-            b.block_mesh.append(mesh_util::back_plane ({
-                (neighbors[2][0][2] || neighbors[1][0][2] || neighbors[2][1][2]),
-                (neighbors[2][2][2] || neighbors[1][2][2] || neighbors[2][1][2]),
-                (neighbors[0][2][2] || neighbors[1][2][2] || neighbors[0][1][2]),
-                (neighbors[0][0][2] || neighbors[1][0][2] || neighbors[0][1][2])},
-                b.type
-            ));
+            b.block_mesh.append(mesh_util::back_plane (neighbors, b.type));
         }
     }
 }

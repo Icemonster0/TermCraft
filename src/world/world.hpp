@@ -8,6 +8,7 @@
 #include "../render/mesh.hpp"
 
 #include <vector>
+#include <optional>
 
 namespace tc {
 
@@ -28,7 +29,7 @@ public:
     size_t estimate_memory_usage();
 
 private:
-    glm::ivec2 get_chunk_of_block(glm::ivec3 coord);
+    std::optional<glm::ivec2> get_chunk_coord_of_block(glm::ivec3 coord);
     void update_block(glm::ivec3 coord);
     void remesh_block(glm::ivec3 coord);
     void remesh_chunk(glm::ivec2 coord);
@@ -36,7 +37,7 @@ private:
 
     std::vector<std::vector<Chunk>> chunks;
     mesh world_mesh;
-    block null_block; // is returned for invalid coords
+    block null_block; // is returned for invalid coords; Using this willy nilly is UB
     glm::ivec3 highlighted_block {-1};
 };
 

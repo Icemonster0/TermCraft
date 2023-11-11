@@ -189,7 +189,7 @@ void Controller::calc_looked_at_block(bool adjacent) {
 
     glm::ivec3 next_border {};
 
-    while (true) {
+    for (int i = 0; i < 100; ++i) {
         if (world_ptr->get_block(block)->type != block_type::EMPTY) {
             if (adjacent) {
                 looked_at_block = std::optional<glm::ivec3> {block - block_step};

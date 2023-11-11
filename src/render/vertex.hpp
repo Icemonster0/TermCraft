@@ -25,7 +25,6 @@ struct vertex {
     glm::vec4 pos;
     glm::vec2 screenpos {0.0f};
     glm::vec2 tex_coord {0.0f};
-    glm::vec3 color {0.0f};
     float ao = 0.0f;
     float distance = 0.0f;
 };

@@ -3,8 +3,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 project(TermCraft VERSION 1.0)
 
-option(TC_CURSOR_INVIS "Make the terminal cursor invisible" ON)
-
 add_library(libs_module
     src/engine.cpp
     src/render/render.cpp
@@ -15,8 +13,6 @@ add_library(libs_module
 )
 
 target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)
-target_compile_definitions(libs_module PRIVATE TC_CURSOR_INVIS)
-message(Invisible\ cursor:\ ${TC_CURSOR_INVIS})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libs_module pthread)

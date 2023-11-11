@@ -23,6 +23,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_flag("--bad-normals", "Show face front in blue, back in red; Disable backface culling");
     clom.register_setting<float>("fov", 70.0f, "Field of view in degrees");
     clom.register_flag("--disable-textures", "Use flat colors instead of textures");
+    clom.register_setting<int>("world-size", 10, "World x and z width in chunks");
 
     clom.generate_user_hint("TermCraft");
     clom.process_cl_options(argc, argv);
@@ -51,6 +52,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.bad_normals = clom.is_flag_set("--bad-normals");
     U.fov = clom.get_setting_value<float>("fov");
     U.disable_textures = clom.is_flag_set("--disable-textures");
+    U.world_size = clom.get_setting_value<int>("world-size");
 }
 
 int main(int argc, char const *argv[]) {

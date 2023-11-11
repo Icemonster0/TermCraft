@@ -26,7 +26,7 @@ Engine::Engine() {
 
     world = World {};
     world.generate(0, // seed
-                  {20, 20}); // world size (in chunks)
+                  {U.world_size, U.world_size}); // world size (in chunks)
 
     glm::ivec2 center = world.get_world_center();
     controller = Controller {glm::vec3(center.x+0.5f, world.get_ground_height_at(center), center.y+0.5f), // spawn position
