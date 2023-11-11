@@ -139,7 +139,7 @@ void Engine::update_window_size() {
 
         ifstream file("tmp.term_craft/term-size.tmp");
         if (!file.is_open()) {
-            crash(5);
+            crash(11);
             return;
         }
 
