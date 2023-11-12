@@ -15,18 +15,24 @@ namespace block_type {
         GRASS,
         DIRT,
         STONE,
+        OAK_LOG,
+        OAK_PLANKS,
     };
     const glm::vec3 block_color[] = {
         glm::vec3 {0.0f}, // EMPTY
-        glm::vec3 {0.4f, 0.7f, 0.3f}, // GRASS
-        glm::vec3 {0.5f, 0.4f, 0.2f}, // DIRT
-        glm::vec3 {0.6f, 0.6f, 0.6f}, // STONE
+        glm::vec3 {0.40f, 0.70f, 0.30f}, // GRASS
+        glm::vec3 {0.50f, 0.40f, 0.20f}, // DIRT
+        glm::vec3 {0.60f, 0.60f, 0.60f}, // STONE
+        glm::vec3 {0.19f, 0.12f, 0.07f}, // OAK_LOG
+        glm::vec3 {0.74f, 0.55f, 0.43f}, // OAK_PLANKS
     };
     const Texture_Set block_texture[] {
         {"../res/tex/test.png"}, // EMPTY
         {"../res/tex/grass_side.png", "../res/tex/grass_top.png", "../res/tex/dirt.png"}, // GRASS
         {"../res/tex/dirt.png"}, // DIRT
         {"../res/tex/stone.png"}, // STONE
+        {"../res/tex/oak_log_side.png", "../res/tex/oak_log_top.png"}, // OAK_LOG
+        {"../res/tex/oak_planks.png"}, // OAK_PLANKS
     };
 } /* end of namespace block_type */
 

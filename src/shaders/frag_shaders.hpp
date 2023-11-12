@@ -11,6 +11,7 @@
 #include "../world/block.hpp"
 
 #include <cmath>
+#include <type_traits>
 
 namespace tc {
 
@@ -94,7 +95,10 @@ private:
     }
 
     static glm::vec3 face_color(fragment f) {
-        return block_type::block_color[f.triangle->block_type_index];
+        return (f.triangle->block_type_index < 0 ||
+                f.triangle->block_type_index >= std::extent<decltype(block_type::block_color)>::value) ?
+                block_type::block_color[0] :
+                block_type::block_color[f.triangle->block_type_index];
     }
 
     static bool is_face_highlighted(fragment f) {
@@ -102,7 +106,11 @@ private:
     }
 
     static glm::vec3 sample_face_texture(fragment f) {
-        return block_type::block_texture[f.triangle->block_type_index].sample(
+        const Texture_Set *tex_set = (f.triangle->block_type_index < 0 ||
+                                     f.triangle->block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
+                                     &block_type::block_texture[0] :
+                                     &block_type::block_texture[f.triangle->block_type_index];
+        return tex_set->sample(
             interp_tex_coord(f),
             f.triangle->block_side_index
         );

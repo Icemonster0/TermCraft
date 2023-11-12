@@ -29,6 +29,8 @@ public:
         if (!data) {
             pixels.emplace_back();
             pixels[0].emplace_back(1.0f, 0.0f, 1.0f);
+            size = {1, 1};
+            real_channels = 0;
             return;
         }
 

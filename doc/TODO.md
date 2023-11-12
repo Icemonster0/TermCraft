@@ -2,12 +2,12 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- **Active block type selection and more blocks**
 - Use an input library for simultaneous key press support
 - ASCII mode
 - Better world generation
 - Add tree generation
 - Transparency
+- Flowers / tall grass
 - Add water
 - Add cave generation
 - Add walk controller
@@ -15,6 +15,7 @@ and work in progress tasks with **bold**.
 - Day-night cycle
 - Menu / gui and world saving / loading
 - Fix triangle overlap / gap issue
+- ~~Active block type selection and more blocks~~
 - ~~Add directional textures~~
 - ~~Make block meshing less manual and just generally less cringe~~
 - ~~Use better voxel grid traversal algorithm~~
