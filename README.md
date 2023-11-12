@@ -13,6 +13,7 @@ This is an early version of the project. [Many features](doc/TODO.md) are still 
 - [Keybinds](#keybinds)
 - [Troubleshooting](#troubleshooting)
     - [Error Codes](#error-codes)
+    - [Graphics](#graphics)
     - [Performance](#performance)
 - [Command Line Parameters](#command-line-parameters)
     - [Settings](#settings)
@@ -71,6 +72,9 @@ Here are all possible values for `x` and the associated errors.
 If TermCraft crashes by printing `Killed`, the system likely ran out of memory and you should set the world size smaller (parameter `world-size`).  
 
 In any other case, feel free to open an issue.
+
+### Graphics
+If the graphics look like a cat walked over your keyboard or look wrong in any other way, make sure that your terminal supports full rgb color (most terminals do). If you can't get it to work, you can also use `color-mode COMPAT`. This will make everything black-and-white with low dynamic range. If that still doesn't work, there is an ASCII mode coming soon.
 
 ### Performance
 You can see useful info (fps, estimated memory usage etc.) by running with the `--debug--info` flag.
