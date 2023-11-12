@@ -17,6 +17,7 @@ namespace block_type {
         STONE,
         OAK_LOG,
         OAK_PLANKS,
+        TUX,
     };
     const glm::vec3 block_color[] = {
         glm::vec3 {0.0f}, // EMPTY
@@ -25,6 +26,7 @@ namespace block_type {
         glm::vec3 {0.60f, 0.60f, 0.60f}, // STONE
         glm::vec3 {0.19f, 0.12f, 0.07f}, // OAK_LOG
         glm::vec3 {0.74f, 0.55f, 0.43f}, // OAK_PLANKS
+        glm::vec3 {1.00f, 1.00f, 1.00f}, // TUX
     };
     const Texture_Set block_texture[] {
         {"../res/tex/test.png"}, // EMPTY
@@ -33,6 +35,7 @@ namespace block_type {
         {"../res/tex/stone.png"}, // STONE
         {"../res/tex/oak_log_side.png", "../res/tex/oak_log_top.png"}, // OAK_LOG
         {"../res/tex/oak_planks.png"}, // OAK_PLANKS
+        {"../res/tex/Tux.png"}, // TUX
     };
     const char block_initial[] {
         ' ', // EMPTY
@@ -41,6 +44,7 @@ namespace block_type {
         'S', // STONE
         'L', // OAK_LOG
         'P', // OAK_PLANKS
+        'T', // TUX
     };
 } /* end of namespace block_type */
 

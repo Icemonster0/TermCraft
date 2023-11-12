@@ -4,7 +4,9 @@ A 3D Minecraft clone running in the terminal.
 ## Work in progress
 This is an early version of the project. [Many features](doc/TODO.md) are still missing.
 
-![Screenshot](doc/Screenshot.png)
+| House | Tux Shrine |
+|:-----:|:----------:|
+| ![Screenshot 1](doc/Screenshot.png) | ![Screenshot 2](doc/Screenshot_2.png) |
 
 ---
 
@@ -18,6 +20,7 @@ This is an early version of the project. [Many features](doc/TODO.md) are still 
 - [Command Line Parameters](#command-line-parameters)
     - [Settings](#settings)
     - [Flags](#flags)
+- [License](#license)
 
 ---
 
@@ -111,3 +114,6 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 | `--disable-textures` | Use flat colors instead of textures |
 | `--fixed-window-size` | Enable the `width` and `height` settings (if not set: automatic window size) |
 | `--help` | Display a similar help message to these tables and exit |
+
+### License
+TermCraft is licensed under the [MIT License](LICENSE). Thanks to lewing@isc.tamu.edu Larry Ewing and The GIMP for the tux easteregg!
