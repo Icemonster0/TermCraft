@@ -34,6 +34,14 @@ namespace block_type {
         {"../res/tex/oak_log_side.png", "../res/tex/oak_log_top.png"}, // OAK_LOG
         {"../res/tex/oak_planks.png"}, // OAK_PLANKS
     };
+    const char block_initial[] {
+        ' ', // EMPTY
+        'G', // GRASS
+        'D', // DIRT
+        'S', // STONE
+        'L', // OAK_LOG
+        'P', // OAK_PLANKS
+    };
 } /* end of namespace block_type */
 
 struct block {

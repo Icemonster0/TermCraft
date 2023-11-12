@@ -3,7 +3,6 @@ Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethroug
 and work in progress tasks with **bold**.
 
 - Use an input library for simultaneous key press support
-- ASCII mode
 - Better world generation
 - Add tree generation
 - Transparency
@@ -15,6 +14,7 @@ and work in progress tasks with **bold**.
 - Day-night cycle
 - Menu / gui and world saving / loading
 - Fix triangle overlap / gap issue
+- ~~ASCII mode~~
 - ~~Active block type selection and more blocks~~
 - ~~Add directional textures~~
 - ~~Make block meshing less manual and just generally less cringe~~

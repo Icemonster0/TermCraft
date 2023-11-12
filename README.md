@@ -74,7 +74,7 @@ If TermCraft crashes by printing `Killed`, the system likely ran out of memory a
 In any other case, feel free to open an issue.
 
 ### Graphics
-If the graphics look like a cat walked over your keyboard or look wrong in any other way, make sure that your terminal supports full rgb color (most terminals do). If you can't get it to work, you can also use `color-mode COMPAT`. This will make everything black-and-white with low dynamic range. If that still doesn't work, there is an ASCII mode coming soon.
+If the graphics look like a cat walked over your keyboard or look wrong in any other way, make sure that your terminal supports full rgb color (most terminals do). If you can't get it to work, you can also use `color-mode COMPAT`. This will make everything black-and-white with low dynamic range. If that still doesn't work, you can use `color-mode ASCII` (*possible permanent eye damage warning*).
 
 ### Performance
 You can see useful info (fps, estimated memory usage etc.) by running with the `--debug--info` flag.
@@ -92,7 +92,7 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 ### Settings
 | name | type | default value | description |
 | ---- | ---- | ------------- | ----------- |
-| `color-mode` | string | `FULL` | Can be one of: `FULL` (full rgb color); `COMPAT` (grayscale with low dynamic range) |
+| `color-mode` | string | `FULL` | Can be one of: `FULL` (full rgb color); `COMPAT` (grayscale with low dynamic range); `ASCII` (display letters, numbers and symbols to indicate brightess (*possible permanent eye damage warning*)) |
 | `fog` | float | `0.5` | Fog factor between 0.0 and 1.0 (0.0 = no fog; 1.0 = fog gradient comes up to camera) |
 | `fov` | float | `70` | Field of view in degrees |
 | `fps` | int | `24` | Target fps / fps cap |

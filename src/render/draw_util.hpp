@@ -37,6 +37,17 @@ string ansi_bw_color_string(Col_Type type, glm::vec3 c) {
                         .append(to_string(value)).append("m");
 }
 
+string ascii_bw_color_string(Col_Type type, glm::vec3 c) {
+    // convert bw value to ascii character
+    // string chars = " .,:+#@";
+    string chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+
+
+    float avg = (c.r + c.g + c.b) * 0.3333f;
+    int value = clamp(1.0f - avg, 0.0f, 1.0f) * chars.length()-1;
+    return string {chars[value]};
+}
+
 string auto_color_string(Col_Type type, glm::vec3 c) {
     if (U.color_mode == "COMPAT")
         return ansi_bw_color_string(type, c);

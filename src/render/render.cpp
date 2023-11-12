@@ -248,8 +248,10 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
                                  .append((i == active_block_type) ? ";7m" : "m")
                                  .append(draw_util::auto_color_string(draw_util::FG,  glm::vec3(1.0f)));
         std::string middle_part = string{}
-                                  .append(draw_util::auto_color_string(draw_util::BG,  block_type::block_color[i]))
-                                  .append(" ")
+                                  .append(U.color_mode == "ASCII" ?
+                                      string {block_type::block_initial[i]} :
+                                      draw_util::auto_color_string(draw_util::BG,  block_type::block_color[i]).append(" ")
+                                  )
                                   .append(draw_util::ansi_clear_string());
         hud_buf.buf[0][Y_size-2 - i] = string{}
                                        .append(font_style)
@@ -271,9 +273,13 @@ void Render::draw_fbuf() {
     for (size_t y = 0; y < Y_size; y++) {
         if(y) printbuf.append("\n");
         for (size_t x = 0; x < X_size; x++) {
-            printbuf.append(draw_util::auto_color_string(draw_util::BG, fbuf.buf[x][y]));
-
-            printbuf.append(hud_buf.buf[x][y]);
+            if (U.color_mode == "ASCII") {
+                if (hud_buf.buf[x][y] == " ") printbuf.append(draw_util::ascii_bw_color_string(draw_util::BG, fbuf.buf[x][y]));
+                else printbuf.append(hud_buf.buf[x][y]);
+            } else {
+                printbuf.append(draw_util::auto_color_string(draw_util::BG, fbuf.buf[x][y]));
+                printbuf.append(hud_buf.buf[x][y]);
+            }
             printbuf.append(draw_util::ansi_clear_string());
         }
     }
