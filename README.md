@@ -35,10 +35,13 @@ The executable must be run in a command line!
 ### Keybinds
 It is recommended to turn off the delay on repeat keys in the system settings (probably under the keyboard or accessibility section). Try to quit using `q` rather than `ctrl-c` whenever possible to ensure a clean exit.
 
-`w a s d`: Movement  
-`i j k l` or `8 4 2 6`: Look/Turn  
+`w` `a` `s` `d`: Movement  
+`i` `j` `k` `l`: Look/Turn  
 `space`: fly up  
 `c`: fly down  
+`e`: break block  
+`f`: place block  
+`1`-`9`: select block in hand  
 `q`: quit
 
 ---

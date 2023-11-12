@@ -6,6 +6,7 @@
 #include "buffer.hpp"
 #include "fragment.hpp"
 #include "mesh.hpp"
+#include "../world/block.hpp"
 
 #include <vector>
 #include <optional>
@@ -19,7 +20,7 @@ public:
 
     void render(mesh m);
     void set_debug_info(std::string debug_info);
-    void set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP);
+    void set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type);
     void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 
 private:
@@ -35,6 +36,7 @@ private:
     float global_time = 0.0f;
     glm::mat4 VP = glm::mat4 {};
     glm::mat4 V = glm::mat4 {};
+    block_type::Block_Type active_block_type {};
 
     int n_tris = 0;
     int n_active_tris = 0;

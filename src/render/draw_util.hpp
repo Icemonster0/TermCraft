@@ -3,6 +3,7 @@
 
 #include "../glm.hpp"
 #include "tri.hpp"
+#include "../user_settings.hpp"
 
 #include <string>
 #include <algorithm>
@@ -34,6 +35,13 @@ string ansi_bw_color_string(Col_Type type, glm::vec3 c) {
     return string("\e[").append(type == BG ? "48" : "38")
                         .append(";5;")
                         .append(to_string(value)).append("m");
+}
+
+string auto_color_string(Col_Type type, glm::vec3 c) {
+    if (U.color_mode == "COMPAT")
+        return ansi_bw_color_string(type, c);
+    else
+        return ansi_color_string(type, c);
 }
 
 string ansi_clear_string() {

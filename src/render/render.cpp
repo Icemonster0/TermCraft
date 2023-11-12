@@ -8,6 +8,7 @@
 #include "../shaders/frag_shaders.hpp"
 #include "../shaders/post_shaders.hpp"
 #include "../user_settings.hpp"
+#include "../world/block.hpp"
 
 #include <string>
 #include <cstdio>
@@ -16,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <optional>
+#include <type_traits>
 
 using namespace std;
 
@@ -47,15 +49,17 @@ void Render::set_debug_info(std::string debug_info) {
             debug_buf.buf[x][y] = debug_info[i];
             ++x;
         }
+        if (x > X_size || y > Y_size) break;
     }
 }
 
-void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP) {
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type) {
     X_size = p_X_size;
     Y_size = p_Y_size;
     global_time = p_global_time;
     VP = p_VP;
     V = p_V;
+    active_block_type = p_active_block_type;
 }
 
 void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
@@ -223,18 +227,41 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
             // crosshair
             if (x == X_size / 2 && y == Y_size / 2) {
                 hud_buf.buf[x][y] = string{}
-                                    .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
-                                    .append("\x1b[1mX");
+                                    .append(draw_util::auto_color_string(draw_util::FG, glm::vec3(1.0f)))
+                                    .append("\x1b[1m+");
             }
             // debug info
             if (U.debug_info) {
                 if (debug_buf.buf[x][y] != ' ') {
                     hud_buf.buf[x][y] = string{}
-                                        .append(draw_util::ansi_color_string(draw_util::FG, glm::vec3(1.0f)))
+                                        .append(draw_util::auto_color_string(draw_util::FG, glm::vec3(1.0f)))
                                         .append(string {debug_buf.buf[x][y]});
                 }
             }
         }
+    }
+
+    // Construct HUD
+    // block selector
+    for (int i = 1; i < std::extent<decltype(block_type::block_color)>::value; ++i) {
+        std::string font_style = string {"\x1b[1"}
+                                 .append((i == active_block_type) ? ";7m" : "m")
+                                 .append(draw_util::auto_color_string(draw_util::FG,  glm::vec3(1.0f)));
+        std::string middle_part = string{}
+                                  .append(draw_util::auto_color_string(draw_util::BG,  block_type::block_color[i]))
+                                  .append(" ")
+                                  .append(draw_util::ansi_clear_string());
+        hud_buf.buf[0][Y_size-2 - i] = string{}
+                                       .append(font_style)
+                                       .append(to_string(i));
+        hud_buf.buf[1][Y_size-2 - i] = string{}
+                                       .append(font_style)
+                                       .append("[");
+        hud_buf.buf[2][Y_size-2 - i] = middle_part;
+        hud_buf.buf[3][Y_size-2 - i] = middle_part;
+        hud_buf.buf[4][Y_size-2 - i] = string{}
+                                       .append(font_style)
+                                       .append("]");
     }
 }
 
@@ -244,8 +271,7 @@ void Render::draw_fbuf() {
     for (size_t y = 0; y < Y_size; y++) {
         if(y) printbuf.append("\n");
         for (size_t x = 0; x < X_size; x++) {
-            if (U.color_mode == "COMPAT") printbuf.append(draw_util::ansi_bw_color_string(draw_util::BG, fbuf.buf[x][y]));
-            else printbuf.append(draw_util::ansi_color_string(draw_util::BG, fbuf.buf[x][y]));
+            printbuf.append(draw_util::auto_color_string(draw_util::BG, fbuf.buf[x][y]));
 
             printbuf.append(hud_buf.buf[x][y]);
             printbuf.append(draw_util::ansi_clear_string());

@@ -73,6 +73,10 @@ void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr) {
     *look_ptr = glm::vec2(camera.yaw, camera.pitch);
 }
 
+block_type::Block_Type Controller::get_active_block_type() {
+    return active_block_type;
+}
+
 // private:
 
 void Controller::register_input_keys() {
@@ -87,12 +91,6 @@ void Controller::register_input_keys() {
     input_state.add_key('c');
 
     // look
-    input_state.add_key('8');
-    input_state.add_key('2');
-    input_state.add_key('4');
-    input_state.add_key('6');
-
-    // alt look
     input_state.add_key('i');
     input_state.add_key('k');
     input_state.add_key('j');
@@ -101,49 +99,60 @@ void Controller::register_input_keys() {
     // interact
     input_state.add_single_event_key('e');
     input_state.add_single_event_key('f');
+
+    // select active block
+    input_state.add_single_event_key('1');
+    input_state.add_single_event_key('2');
+    input_state.add_single_event_key('3');
+    input_state.add_single_event_key('4');
+    input_state.add_single_event_key('5');
+    input_state.add_single_event_key('6');
+    input_state.add_single_event_key('7');
+    input_state.add_single_event_key('8');
+    input_state.add_single_event_key('9');
 }
 
 void Controller::evaluate_inputs(float delta_time) {
     // movement
 
-    if(input_state.get_key('w'))
+    if (input_state.get_key('w'))
         move(camera.get_h_forward_vector() * move_speed * delta_time);
-    if(input_state.get_key('a'))
+    if (input_state.get_key('a'))
         move(-camera.get_right_vector() * move_speed * delta_time);
-    if(input_state.get_key('s'))
+    if (input_state.get_key('s'))
         move(-camera.get_h_forward_vector() * move_speed * delta_time);
-    if(input_state.get_key('d'))
+    if (input_state.get_key('d'))
         move(camera.get_right_vector() * move_speed * delta_time);
 
     // fly / jump / crouch
 
-    if(input_state.get_key(' '))
+    if (input_state.get_key(' '))
         move(glm::vec3(0.0f, -1.0f, 0.0f) * move_speed * delta_time);
 
-    if(input_state.get_key('c'))
+    if (input_state.get_key('c'))
         move(glm::vec3(0.0f, 1.0f, 0.0f) * move_speed * delta_time);
 
     // look
 
-    if(input_state.get_key('8') || input_state.get_key('i'))
+    if (input_state.get_key('i'))
         turn(glm::vec2(0.0f, look_sensitivity * delta_time));
-    if(input_state.get_key('2') || input_state.get_key('k'))
+    if (input_state.get_key('k'))
         turn(glm::vec2(0.0f, -look_sensitivity * delta_time));
-    if(input_state.get_key('4') || input_state.get_key('j'))
+    if (input_state.get_key('j'))
         turn(glm::vec2(look_sensitivity * delta_time, 0.0f));
-    if(input_state.get_key('6') || input_state.get_key('l'))
+    if (input_state.get_key('l'))
         turn(glm::vec2(-look_sensitivity * delta_time, 0.0f));
 
     // interact
 
-    if(input_state.get_key('e')) {
+    if (input_state.get_key('e')) {
         if (looked_at_block.has_value())
             world_ptr->replace(looked_at_block.value(), block_type::EMPTY);
 
         calc_looked_at_block(false);
     }
 
-    if(input_state.get_key('f')) {
+    if (input_state.get_key('f') && active_block_type != block_type::EMPTY) {
         calc_looked_at_block(true);
 
         if (looked_at_block.has_value())
@@ -151,6 +160,27 @@ void Controller::evaluate_inputs(float delta_time) {
 
         calc_looked_at_block(false);
     }
+
+    // select active block
+
+    if (input_state.get_key('1'))
+        active_block_type = block_type::GRASS;
+    if (input_state.get_key('2'))
+        active_block_type = block_type::DIRT;
+    if (input_state.get_key('3'))
+        active_block_type = block_type::STONE;
+    if (input_state.get_key('4'))
+        active_block_type = block_type::EMPTY;
+    if (input_state.get_key('5'))
+        active_block_type = block_type::EMPTY;
+    if (input_state.get_key('6'))
+        active_block_type = block_type::EMPTY;
+    if (input_state.get_key('7'))
+        active_block_type = block_type::EMPTY;
+    if (input_state.get_key('8'))
+        active_block_type = block_type::EMPTY;
+    if (input_state.get_key('9'))
+        active_block_type = block_type::EMPTY;
 }
 
 void Controller::move(glm::vec3 dir) {
