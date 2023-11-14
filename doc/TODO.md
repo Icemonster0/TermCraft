@@ -2,10 +2,10 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
+- **Transparency**
 - Use an input library for simultaneous key press support
 - Better world generation
 - Add tree generation
-- Transparency
 - Flowers / tall grass
 - Add water
 - Add cave generation

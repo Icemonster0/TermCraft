@@ -18,6 +18,8 @@
 #include <array>
 #include <optional>
 #include <type_traits>
+#include <list>
+#include <iterator>
 
 using namespace std;
 
@@ -72,7 +74,7 @@ void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
 void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, U.sky_color);
     zbuf.clear(X_size, Y_size, 1.0f);
-    frag_buf.clear(X_size, Y_size, optional<fragment>{});
+    frag_buf.clear(X_size, Y_size, list<fragment> {});
     hud_buf.clear(X_size, Y_size, " ");
     // NOT clearing debug_buf, already set by set_debug_info()
 }
@@ -100,7 +102,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
          * it is (usually) marked for death. */
         triangle.view_normal = triangle.calc_normal();
         if (!draw_util::is_tri_in_NDC(triangle) ||
-            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals) {
+            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals && !block_type::block_transparent[triangle.block_type_index]) {
 
             triangle.marked_for_death = true;
 
@@ -196,12 +198,46 @@ void Render::rasterize(mesh *m) {
                             + b1 * triangle.vertices[1].pos.z
                             + b2 * triangle.vertices[2].pos.z;
 
+                    // interpolate alpha
+                    const Texture_Set *tex_set = (triangle.block_type_index < 0 ||
+                                                  triangle.block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
+                                                  &block_type::block_texture[0] :
+                                                  &block_type::block_texture[triangle.block_type_index];
+                    float a = tex_set->sample(b0 * triangle.vertices[0].tex_coord
+                                            + b1 * triangle.vertices[1].tex_coord
+                                            + b2 * triangle.vertices[2].tex_coord,
+                                              triangle.block_side_index).a;
+
                     // create fragment if depth test passes
                     #pragma omp critical
                     {
-                        if(z < zbuf.buf[x][y]) {
-                            frag_buf.buf[x][y] = fragment(&triangle, b0, b1, b2);
-                            zbuf.buf[x][y] = z;
+                        auto ins_point = frag_buf.buf[x][y].begin();
+                        auto i = frag_buf.buf[x][y].begin();
+                        while (i != frag_buf.buf[x][y].end()) {
+                            if (z < (*i).depth) {
+                                ins_point = i;
+                                break;
+                            }
+                            else if (i == std::prev(frag_buf.buf[x][y].end())) {
+                                ins_point = frag_buf.buf[x][y].end();
+                                break;
+                            }
+                            ++i;
+                        }
+                        i = frag_buf.buf[x][y].begin();
+                        bool occluded = false;
+                        while (i != ins_point) {
+                            if ((*i).opacity == 1.0f) {
+                                occluded = true;
+                                break;
+                            }
+                            ++i;
+                        }
+                        if (!occluded) {
+                            auto end = frag_buf.buf[x][y].emplace(ins_point, &triangle, b0, b1, b2, z, a);
+                            if (a == 1.0f) {
+                                frag_buf.buf[x][y].erase(ins_point, frag_buf.buf[x][y].end());
+                            }
                         }
                     }
                 }
@@ -216,8 +252,8 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
     for (int x = 0; x < X_size; ++x) {
         for (int y = 0; y < Y_size; ++y) {
             // Programmable Fragment Shader
-            if (frag_buf.buf[x][y].has_value()) {
-                fbuf.buf[x][y] = frag_shader(frag_buf.buf[x][y].value(), global_time);
+            for (auto i = frag_buf.buf[x][y].rbegin(); i != frag_buf.buf[x][y].rend(); ++i) {
+                fbuf.buf[x][y] = glm::mix(fbuf.buf[x][y], frag_shader((*i), global_time), (*i).opacity);
             }
 
             // Programmable Post Processing Shader

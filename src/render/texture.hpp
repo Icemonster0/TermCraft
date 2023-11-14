@@ -29,6 +29,8 @@ public:
         if (!data) {
             pixels.emplace_back();
             pixels[0].emplace_back(1.0f, 0.0f, 1.0f);
+            alpha.emplace_back();
+            alpha[0].emplace_back(1.0f);
             size = {1, 1};
             real_channels = 0;
             return;
@@ -38,27 +40,32 @@ public:
 
         for (int x = 0; x < size.x; ++x) {
             pixels.emplace_back();
+            alpha.emplace_back();
             for (int y = 0; y < size.y; ++y) {
                 pixels[x].push_back(glm::vec3 {
                     static_cast<float>(data[y*size.x*channels + x*channels + 0]),
                     static_cast<float>(data[y*size.x*channels + x*channels + 1]),
                     static_cast<float>(data[y*size.x*channels + x*channels + 2])
                 } * inverse_char_max);
+                alpha[x].push_back(static_cast<float>(data[y*size.x*channels + x*channels + 3]) * inverse_char_max);
             }
         }
 
         stbi_image_free(data);
     }
 
-    glm::vec3 sample(const glm::vec2 tex_coord) const {
-        return pixels[glm::clamp(int(tex_coord.x * size.x), 0, size.x-1)][glm::clamp(int(tex_coord.y * size.y), 0, size.y-1)];
+    glm::vec4 sample(const glm::vec2 tex_coord) const {
+        glm::ivec2 corrected_tex_coord {glm::clamp(int(tex_coord.x * size.x), 0, size.x-1),
+                                        glm::clamp(int(tex_coord.y * size.y), 0, size.y-1)};
+        return glm::vec4 {pixels[corrected_tex_coord.x][corrected_tex_coord.y], alpha[corrected_tex_coord.x][corrected_tex_coord.y]};
     }
 
 private:
     glm::ivec2 size {0};
     int real_channels = 0;
-    const int channels = 3;
+    const int channels = 4;
     std::vector<std::vector<glm::vec3>> pixels;
+    std::vector<std::vector<float>> alpha;
 };
 
 class Texture_Set {
@@ -96,7 +103,7 @@ public:
         textures[tex::BACK] = ta;
     }
 
-    glm::vec3 sample(const glm::vec2 tex_coord, const unsigned int side) const {
+    glm::vec4 sample(const glm::vec2 tex_coord, const unsigned int side) const {
         return textures[side]->sample(tex_coord);
     }
 

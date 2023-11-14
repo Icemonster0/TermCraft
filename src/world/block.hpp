@@ -37,6 +37,15 @@ namespace block_type {
         {"../res/tex/oak_planks.png"}, // OAK_PLANKS
         {"../res/tex/Tux.png"}, // TUX
     };
+    const bool block_transparent[] {
+        true, // EMPTY
+        false, // GRASS
+        false, // DIRT
+        false, // STONE
+        false, // OAK_LOG
+        false, // OAK_PLANKS
+        true, // TUX
+    };
     const char block_initial[] {
         ' ', // EMPTY
         'G', // GRASS

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <optional>
+#include <list>
 
 namespace tc {
 
@@ -43,7 +44,7 @@ private:
 
     buffer<glm::vec3> fbuf;
     buffer<float> zbuf;
-    buffer<std::optional<fragment>> frag_buf;
+    buffer<std::list<fragment>> frag_buf;
     buffer<std::string> hud_buf;
     buffer<char> debug_buf;
 };

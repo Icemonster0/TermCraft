@@ -281,11 +281,12 @@ void World::block_update_simulation(glm::ivec3 coord) {
 
     // Replace grass with dirt
     if (block_current->type == block_type::GRASS &&
-        get_block(coord + glm::ivec3(0, -1, 0))->type != block_type::EMPTY) {
+        !block_type::block_transparent[get_block(coord + glm::ivec3(0, -1, 0))->type]) {
 
         block_current->type = block_type::DIRT;
     }
-    if (block_below->type == block_type::GRASS) {
+    if (block_below->type == block_type::GRASS &&
+        !block_type::block_transparent[block_current->type]) {
         block_below->type = block_type::DIRT;
     }
 }
@@ -299,7 +300,7 @@ void World::remesh_block(glm::ivec3 coord) {
     for (int x = 0; x < 3; ++x) {
         for (int y = 0; y < 3; ++y) {
             for (int z = 0; z < 3; ++z) {
-                neighbors[x][y][z] = get_block(coord + glm::ivec3(x-1, y-1, z-1))->type != block_type::EMPTY;
+                neighbors[x][y][z] = !block_type::block_transparent[get_block(coord + glm::ivec3(x-1, y-1, z-1))->type];
             }
         }
     }

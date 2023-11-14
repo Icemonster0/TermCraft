@@ -110,10 +110,10 @@ private:
                                      f.triangle->block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
                                      &block_type::block_texture[0] :
                                      &block_type::block_texture[f.triangle->block_type_index];
-        return tex_set->sample(
+        return glm::vec3 {tex_set->sample(
             interp_tex_coord(f),
             f.triangle->block_side_index
-        );
+        )};
     }
 };
 
