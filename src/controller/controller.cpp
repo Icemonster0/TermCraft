@@ -174,9 +174,9 @@ void Controller::evaluate_inputs(float delta_time) {
     if (input_state.get_key('5'))
         active_block_type = block_type::OAK_PLANKS;
     if (input_state.get_key('6'))
-        active_block_type = block_type::TUX;
+        active_block_type = block_type::FLOWER;
     if (input_state.get_key('7'))
-        active_block_type = block_type::EMPTY;
+        active_block_type = block_type::TUX;
     if (input_state.get_key('8'))
         active_block_type = block_type::EMPTY;
     if (input_state.get_key('9'))

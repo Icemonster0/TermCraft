@@ -70,7 +70,7 @@ void Engine::input_loop() {
 
         switch (key) {
             case 'q': process_should_stop = true; break;
-            default: controller.input_event(key);
+            default: controller.input_event(key); break;
         }
     }
 }

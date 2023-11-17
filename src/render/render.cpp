@@ -203,7 +203,9 @@ void Render::rasterize(mesh *m) {
                                                   triangle.block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
                                                   &block_type::block_texture[0] :
                                                   &block_type::block_texture[triangle.block_type_index];
-                    float a = tex_set->sample(b0 * triangle.vertices[0].tex_coord
+                    float a = U.disable_textures ?
+                              1.0f :
+                              tex_set->sample(b0 * triangle.vertices[0].tex_coord
                                             + b1 * triangle.vertices[1].tex_coord
                                             + b2 * triangle.vertices[2].tex_coord,
                                               triangle.block_side_index).a;
@@ -279,7 +281,7 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
 
     // Construct HUD
     // block selector
-    for (int i = 1; i < std::extent<decltype(block_type::block_color)>::value; ++i) {
+    for (int i = 1; i < std::extent<decltype(block_type::block_color)>::value && Y_size-2 - i >= 0; ++i) {
         std::string font_style = string {"\x1b[1"}
                                  .append((i == active_block_type) ? ";7m" : "m")
                                  .append(draw_util::auto_color_string(draw_util::FG,  glm::vec3(1.0f)));

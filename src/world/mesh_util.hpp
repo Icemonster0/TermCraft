@@ -74,6 +74,15 @@ mesh back_plane(bool nb[3][3][3], unsigned int type) {
     return generic_plane(nb, M, type, tex::BACK);
 }
 
+mesh diagonal_plane(bool nb[3][3][3], unsigned int type, bool flipped) {
+    glm::mat4 M {1.0f};
+    M = glm::scale(M, glm::vec3(flipped ? -1 : 1, 1, 1));
+    M = glm::rotate(M, glm::radians(45.0f), glm::vec3(0,-1, 0));
+    M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
+
+    return generic_plane(nb, M, type, tex::FRONT);
+}
+
 } /* end of namespace tc::mesh_util */
 
 #endif /* end of include guard: MESH_UTIL_HPP */

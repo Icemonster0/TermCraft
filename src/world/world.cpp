@@ -307,23 +307,29 @@ void World::remesh_block(glm::ivec3 coord) {
 
     // generate faces
     if (b.type != block_type::EMPTY) {
-        if (!neighbors[0][1][1]) { // left
-            b.block_mesh.append(mesh_util::left_plane (neighbors, b.type));
+        if (block_type::block_shape[b.type] == block_type::SOLID_BLOCK) {
+            if (!neighbors[0][1][1]) { // left
+                b.block_mesh.append(mesh_util::left_plane (neighbors, b.type));
+            }
+            if (!neighbors[2][1][1]) { // right
+                b.block_mesh.append(mesh_util::right_plane (neighbors, b.type));
+            }
+            if (!neighbors[1][0][1]) { // top
+                b.block_mesh.append(mesh_util::top_plane (neighbors, b.type));
+            }
+            if (!neighbors[1][2][1]) { // bottom
+                b.block_mesh.append(mesh_util::bottom_plane (neighbors, b.type));
+            }
+            if (!neighbors[1][1][0]) { // front
+                b.block_mesh.append(mesh_util::front_plane (neighbors, b.type));
+            }
+            if (!neighbors[1][1][2]) { // back
+                b.block_mesh.append(mesh_util::back_plane (neighbors, b.type));
+            }
         }
-        if (!neighbors[2][1][1]) { // right
-            b.block_mesh.append(mesh_util::right_plane (neighbors, b.type));
-        }
-        if (!neighbors[1][0][1]) { // top
-            b.block_mesh.append(mesh_util::top_plane (neighbors, b.type));
-        }
-        if (!neighbors[1][2][1]) { // bottom
-            b.block_mesh.append(mesh_util::bottom_plane (neighbors, b.type));
-        }
-        if (!neighbors[1][1][0]) { // front
-            b.block_mesh.append(mesh_util::front_plane (neighbors, b.type));
-        }
-        if (!neighbors[1][1][2]) { // back
-            b.block_mesh.append(mesh_util::back_plane (neighbors, b.type));
+        else if (block_type::block_shape[b.type] == block_type::X_PLANES) {
+            b.block_mesh.append(mesh_util::diagonal_plane (neighbors, b.type, false));
+            b.block_mesh.append(mesh_util::diagonal_plane (neighbors, b.type, true));
         }
     }
 }

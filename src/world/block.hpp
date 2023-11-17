@@ -9,6 +9,11 @@
 namespace tc {
 
 namespace block_type {
+    enum Block_Shape {
+        SOLID_BLOCK,
+        X_PLANES,
+    };
+
     // Don't change the order of blocks in the lists!
     enum Block_Type {
         EMPTY,
@@ -17,6 +22,7 @@ namespace block_type {
         STONE,
         OAK_LOG,
         OAK_PLANKS,
+        FLOWER,
         TUX,
     };
     const glm::vec3 block_color[] = {
@@ -26,6 +32,7 @@ namespace block_type {
         glm::vec3 {0.60f, 0.60f, 0.60f}, // STONE
         glm::vec3 {0.19f, 0.12f, 0.07f}, // OAK_LOG
         glm::vec3 {0.74f, 0.55f, 0.43f}, // OAK_PLANKS
+        glm::vec3 {1.00f, 0.10f, 0.10f}, // FLOWER
         glm::vec3 {1.00f, 1.00f, 1.00f}, // TUX
     };
     const Texture_Set block_texture[] {
@@ -35,6 +42,7 @@ namespace block_type {
         {"../res/tex/stone.png"}, // STONE
         {"../res/tex/oak_log_side.png", "../res/tex/oak_log_top.png"}, // OAK_LOG
         {"../res/tex/oak_planks.png"}, // OAK_PLANKS
+        {"../res/tex/flower.png"}, // FLOWER
         {"../res/tex/Tux.png"}, // TUX
     };
     const bool block_transparent[] {
@@ -44,7 +52,18 @@ namespace block_type {
         false, // STONE
         false, // OAK_LOG
         false, // OAK_PLANKS
+        true, // FLOWER
         true, // TUX
+    };
+    const bool block_shape[] {
+        SOLID_BLOCK, // EMPTY
+        SOLID_BLOCK, // GRASS
+        SOLID_BLOCK, // DIRT
+        SOLID_BLOCK, // STONE
+        SOLID_BLOCK, // OAK_LOG
+        SOLID_BLOCK, // OAK_PLANKS
+        X_PLANES, // FLOWER
+        X_PLANES, // TUX
     };
     const char block_initial[] {
         ' ', // EMPTY
@@ -53,6 +72,7 @@ namespace block_type {
         'S', // STONE
         'L', // OAK_LOG
         'P', // OAK_PLANKS
+        'F', // FLOWER
         'T', // TUX
     };
 } /* end of namespace block_type */
