@@ -42,6 +42,7 @@ private:
 
     block_type::Block_Type active_block_type;
     std::optional<glm::ivec3> looked_at_block;
+    std::optional<glm::ivec3> old_looked_at_block;
     glm::ivec2 this_chunk_coord {0};
 
     Camera camera;

@@ -143,15 +143,20 @@ void Engine::update_window_size() {
             return;
         }
 
+        old_X_size = X_size;
+        old_Y_size = Y_size;
+
         file >> X_size;
         file >> Y_size;
 
         file.close();
 
         system_catch_error("> tmp.term_craft/term-size.tmp", 10);
-    }
 
-    controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
+        if (X_size != old_X_size && Y_size != old_Y_size) {
+            controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
+        }
+    }
 }
 
 void Engine::system_catch_error(string command, int code) {

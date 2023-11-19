@@ -58,7 +58,9 @@ void Controller::simulation_step(float delta_time) {
     evaluate_inputs(delta_time);
     input_state.time_step(delta_time);
 
-    world_ptr->highlight_block(looked_at_block.has_value() ? looked_at_block.value() : glm::ivec3(-1));
+    if (looked_at_block != old_looked_at_block) {
+        world_ptr->highlight_block(looked_at_block.has_value() ? looked_at_block.value() : glm::ivec3(-1));
+    }
 }
 
 void Controller::update_aspect(float value) {
@@ -206,6 +208,8 @@ void Controller::turn(glm::vec2 dir) {
 }
 
 void Controller::calc_looked_at_block(bool adjacent) {
+    old_looked_at_block = looked_at_block;
+
     const glm::vec3 dir = camera.get_forward_vector();
     const glm::vec3 start = camera.pos;
     const glm::vec3 end = start + dir * interact_range;

@@ -15,8 +15,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <algorithm>
-#include <array>
-#include <optional>
 #include <type_traits>
 #include <list>
 #include <iterator>

@@ -31,6 +31,8 @@ private:
 
     int X_size;
     int Y_size;
+    int old_X_size = 0;
+    int old_Y_size = 0;
     float fps = 0.0f;
     float delta_time = 0.0f;
     float global_time = 0.0f;
