@@ -1,15 +1,4 @@
 #include "engine.hpp"
-#include "render/render.hpp"
-#include "controller/controller.hpp"
-#include "user_settings.hpp"
-
-#include <cstdlib>
-#include <chrono>
-#include <thread>
-#include <cstdio>
-#include <fstream>
-#include <string>
-#include <sstream>
 
 using namespace std;
 

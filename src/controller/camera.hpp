@@ -3,6 +3,8 @@
 
 #include "../glm.hpp"
 
+#include "../user_settings.hpp"
+
 namespace tc {
 
 class Camera {

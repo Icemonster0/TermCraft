@@ -6,9 +6,11 @@ project(TermCraft VERSION 1.0)
 add_library(libs_module
     src/engine.cpp
     src/render/render.cpp
+    src/render/draw_util.cpp
     src/controller/controller.cpp
     src/controller/camera.cpp
     src/world/world.cpp
+    src/world/mesh_util.cpp
     src/stb.cpp
 )
 

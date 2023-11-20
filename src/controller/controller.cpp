@@ -1,14 +1,4 @@
-#include "../glm.hpp"
-
 #include "controller.hpp"
-#include "camera.hpp"
-#include "input_state.hpp"
-#include "../world/world.hpp"
-#include "../world/block.hpp"
-#include "../user_settings.hpp"
-
-#include <algorithm>
-#include <optional>
 
 namespace tc {
 

@@ -6,7 +6,10 @@
 #include "chunk.hpp"
 #include "block.hpp"
 #include "../render/mesh.hpp"
+#include "mesh_util.hpp"
 
+#include <cstdlib>
+#include <cstdio>
 #include <vector>
 #include <optional>
 

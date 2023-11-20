@@ -1,23 +1,4 @@
-#include "../glm.hpp"
-
 #include "render.hpp"
-#include "buffer.hpp"
-#include "draw_util.hpp"
-#include "mesh.hpp"
-#include "../shaders/vert_shaders.hpp"
-#include "../shaders/frag_shaders.hpp"
-#include "../shaders/post_shaders.hpp"
-#include "../user_settings.hpp"
-#include "../world/block.hpp"
-
-#include <string>
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
-#include <algorithm>
-#include <type_traits>
-#include <list>
-#include <iterator>
 
 using namespace std;
 

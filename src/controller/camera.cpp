@@ -1,7 +1,4 @@
-#include "../glm.hpp"
-
 #include "camera.hpp"
-#include "../user_settings.hpp"
 
 namespace tc {
 

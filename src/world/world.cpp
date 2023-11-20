@@ -1,10 +1,4 @@
 #include "world.hpp"
-#include "block.hpp"
-#include "mesh_util.hpp"
-
-#include <cstdlib>
-#include <cstdio>
-#include <optional>
 
 namespace tc {
 

@@ -2,8 +2,7 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- Replace null_block with a better solution
-- Clean up includes
+- Add global resource paths
 - Optimize highlight block more
 - Add walk controller
 - Better world generation
@@ -15,9 +14,11 @@ and work in progress tasks with **bold**.
 - Day-night cycle
 - Menu / gui and world saving / loading
 - Add viewmodel
+- Replace null_block with a better solution
 - Use an input library for simultaneous key press support
 - Fix triangle overlap / gap issue
 
+- ~~Clean up includes~~
 - ~~Remove need for tmp directory~~
 - ~~Optimize highlight block~~
 - ~~Flowers~~

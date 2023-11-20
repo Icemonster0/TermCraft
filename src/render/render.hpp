@@ -7,7 +7,19 @@
 #include "fragment.hpp"
 #include "mesh.hpp"
 #include "../world/block.hpp"
+#include "draw_util.hpp"
+#include "../shaders/vert_shaders.hpp"
+#include "../shaders/frag_shaders.hpp"
+#include "../shaders/post_shaders.hpp"
+#include "../user_settings.hpp"
 
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <algorithm>
+#include <type_traits>
+#include <iterator>
 #include <vector>
 #include <optional>
 #include <list>
