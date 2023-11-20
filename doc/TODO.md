@@ -2,9 +2,9 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- Remove need for tmp directory
 - Replace null_block with a better solution
 - Clean up includes
+- Optimize highlight block more
 - Add walk controller
 - Better world generation
 - Add tree generation
@@ -17,8 +17,8 @@ and work in progress tasks with **bold**.
 - Add viewmodel
 - Use an input library for simultaneous key press support
 - Fix triangle overlap / gap issue
-- Optimize highlight block more
 
+- ~~Remove need for tmp directory~~
 - ~~Optimize highlight block~~
 - ~~Flowers~~
 - ~~Transparency~~

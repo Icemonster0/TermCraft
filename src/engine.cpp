@@ -19,7 +19,6 @@ namespace tc {
 
 Engine::Engine() {
     system_catch_error("tput clear", 7);
-    if (!U.fixed_window_size) system_catch_error("mkdir -p tmp.term_craft", 1);
 
     update_window_size();
     render = Render {X_size, Y_size};
@@ -55,7 +54,6 @@ int Engine::run() {
     if (!U.cursor_visible) system_catch_error("tput cnorm", 8);
     system_catch_error("stty echo -cbreak", 9);
     system_catch_error("tput clear", 7);
-    if (!U.fixed_window_size) system_catch_error("rm -r tmp.term_craft", 3);
 
     return status;
 }
@@ -134,24 +132,19 @@ void Engine::update_window_size() {
         Y_size = U.height;
     }
     else {
-        system_catch_error("tput cols >> tmp.term_craft/term-size.tmp", 2);
-        system_catch_error("tput lines >> tmp.term_craft/term-size.tmp", 2);
-
-        ifstream file("tmp.term_craft/term-size.tmp");
-        if (!file.is_open()) {
-            crash(11);
-            return;
-        }
-
         old_X_size = X_size;
         old_Y_size = Y_size;
 
-        file >> X_size;
-        file >> Y_size;
+        FILE *file;
+        if (!(file = popen("tput cols; tput lines", "r"))) {
+            crash(2);
+        }
 
-        file.close();
+        if(fscanf(file, "%d %d", &X_size, &Y_size) != 2) { // ie. failed to read 2 numbers
+            crash(10);
+        }
 
-        system_catch_error("> tmp.term_craft/term-size.tmp", 10);
+        pclose(file);
 
         if (X_size != old_X_size && Y_size != old_Y_size) {
             controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));

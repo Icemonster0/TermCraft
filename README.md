@@ -60,17 +60,14 @@ Here are all possible values for `x` and the associated errors.
 | Code | Error | Possible Solution |
 | ---- | ----- | -------- |
 | 0 | Success | N/A |
-| 1 | Failed to create temporary directory (command: `mkdir -p tmp.term_craft`) | `--fixed-window-size` |
-| 2 | Failed to get terminal size and/or write to temporary file (command: `tput cols >> tmp.term_craft/term-size.tmp` or `tput lines >> tmp.term_craft/term-size.tmp`) | `--fixed-window-size` |
-| 3 | Failed to remove temporary directory (command: `rm -r tmp.term_craft`) | `--fixed-window-size` |
+| 2 | Failed to get terminal size and/or open pipe with `popen("tput cols; tput lines", "r"))` | `--fixed-window-size` |
 | 4 | Failed to set cursor to position zero (command: `tput cup 0 0`) |  |
 | 5 | Failed to make cursor invisible (command: `tput civis`) | `--cursor-visible` |
 | 6 | Input setup failed (command: `stty -echo cbreak`) |  |
 | 7 | Failed to clear the terminal window (command: `tput clear`) |  |
 | 8 | Failed to reset cursor to normal mode (command: `tput cnorm`) | `--cursor-visible` |
 | 9 | Failed to reset input to normal mode (command: `stty echo -cbreak`) |  |
-| 10 | Failed to clear temporary file (command: `> tmp.term_craft/term-size.tmp`) | `--fixed-window-size` |
-| 11 | Failed to open temporary file `tmp.term_craft/term-size.tmp` using `std::ifstream` |  |
+| 10 | Failed to read terminal size from pipe with `fscanf(...)` | `--fixed-window-size` |
 
 If TermCraft crashes by printing `Killed`, the system likely ran out of memory and you should set the world size smaller (parameter `world-size`).  
 
