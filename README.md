@@ -77,7 +77,7 @@ In any other case, feel free to open an issue.
 If the graphics look like a cat walked over your keyboard or look wrong in any other way, make sure that your terminal supports full rgb color (most terminals do). If you can't get it to work, you can also use `color-mode COMPAT`. This will make everything black-and-white with low dynamic range. If that still doesn't work, you can use `color-mode ASCII` (*possible permanent eye damage warning*).
 
 ### Performance
-You can see useful info (fps, estimated memory usage etc.) by running with the `--debug--info` flag.
+You can see useful info (fps, estimated memory usage etc.) by running with the `--debug-info` flag.
 The biggest factors affecting performance are:
 
 - Render distance (parameter `render-distance`)
