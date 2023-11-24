@@ -2,8 +2,9 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
+- Optimize highlight block more (render highlight separately)
+- Correct backface normals
 - Add global resource paths
-- Optimize highlight block more
 - Add walk controller
 - Better world generation
 - Add tree generation
@@ -18,6 +19,8 @@ and work in progress tasks with **bold**.
 - Use an input library for simultaneous key press support
 - Fix triangle overlap / gap issue
 
+## Done
+- ~~Optimize buffer clearing~~
 - ~~Clean up includes~~
 - ~~Remove need for tmp directory~~
 - ~~Optimize highlight block~~

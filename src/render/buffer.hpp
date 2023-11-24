@@ -16,11 +16,9 @@ struct buffer {
 
     void clear(int x_size, int y_size, T value) {
         buf.clear();
-        for (int x = 0; x < x_size; ++x) {
-            buf.emplace_back();
-            for (int y = 0; y < y_size; ++y) {
-                buf[x].emplace_back(value);
-            }
+        buf = std::vector<std::vector<T>> (static_cast<long unsigned int>(x_size), std::vector<T> {});
+        for (auto &column : buf) {
+            column = std::vector<T> (static_cast<long unsigned int>(y_size), value);
         }
     }
 

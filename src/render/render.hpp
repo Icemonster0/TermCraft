@@ -55,7 +55,6 @@ private:
     int n_active_tris = 0;
 
     buffer<glm::vec3> fbuf;
-    buffer<float> zbuf;
     buffer<std::list<fragment>> frag_buf;
     buffer<std::string> hud_buf;
     buffer<char> debug_buf;

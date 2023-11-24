@@ -52,7 +52,6 @@ void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
 
 void Render::clear_buffers() {
     fbuf.clear(X_size, Y_size, U.sky_color);
-    zbuf.clear(X_size, Y_size, 1.0f);
     frag_buf.clear(X_size, Y_size, list<fragment> {});
     hud_buf.clear(X_size, Y_size, " ");
     // NOT clearing debug_buf, already set by set_debug_info()
