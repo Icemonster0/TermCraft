@@ -18,7 +18,7 @@ namespace chunk_size {
 
 class Chunk {
 public:
-    Chunk() {}
+    Chunk();
 
     std::array<std::array<std::array<block, chunk_size::depth>, chunk_size::height>, chunk_size::width> blocks;
     mesh chunk_mesh;

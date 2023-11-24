@@ -7,10 +7,17 @@ add_library(libs_module
     src/engine.cpp
     src/render/render.cpp
     src/render/draw_util.cpp
+    src/render/fragment.cpp
+    src/render/mesh.cpp
+    src/render/texture.cpp
+    src/render/tri.cpp
+    src/render/vertex.cpp
     src/controller/controller.cpp
     src/controller/camera.cpp
     src/world/world.cpp
     src/world/mesh_util.cpp
+    src/world/block.cpp
+    src/world/chunk.cpp
     src/stb.cpp
 )
 

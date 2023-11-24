@@ -120,30 +120,34 @@ void World::replace(glm::ivec3 coord, block_type::Block_Type type) {
 }
 
 void World::highlight_block(glm::ivec3 coord) {
-    block &old_block = *get_block(highlighted_block);
-    for (tri &triangle : old_block.block_mesh.tri_list) {
-        triangle.is_highlighted = false;
-    }
-    block &new_block = *get_block(coord);
-    for (tri &triangle : new_block.block_mesh.tri_list) {
-        triangle.is_highlighted = true;
-    }
-
-    std::optional<glm::ivec2> coord_chunk = get_chunk_coord_of_block(coord);
-    std::optional<glm::ivec2> highlighted_block_chunk = get_chunk_coord_of_block(highlighted_block);
-
-    if (coord_chunk.has_value() && highlighted_block_chunk.has_value() &&
-        glm::all(glm::equal(coord_chunk.value(), highlighted_block_chunk.value()))) {
-
-        remesh_chunk(coord_chunk.value());
-    } else {
-        if (coord_chunk.has_value()) remesh_chunk(coord_chunk.value());
-        if (highlighted_block_chunk.has_value()) remesh_chunk(highlighted_block_chunk.value());
-    }
-
-    remesh_world();
+    get_block(highlighted_block)->is_highlighted = false;
+    get_block(coord)->is_highlighted = true;
 
     highlighted_block = coord;
+    // block &old_block = *get_block(highlighted_block);
+    // for (tri &triangle : old_block.block_mesh->tri_list) {
+    //     triangle.is_highlighted = false;
+    // }
+    // block &new_block = *get_block(coord);
+    // for (tri &triangle : new_block.block_mesh->tri_list) {
+    //     triangle.is_highlighted = true;
+    // }
+    //
+    // std::optional<glm::ivec2> coord_chunk = get_chunk_coord_of_block(coord);
+    // std::optional<glm::ivec2> highlighted_block_chunk = get_chunk_coord_of_block(highlighted_block);
+    //
+    // if (coord_chunk.has_value() && highlighted_block_chunk.has_value() &&
+    //     glm::all(glm::equal(coord_chunk.value(), highlighted_block_chunk.value()))) {
+    //
+    //     remesh_chunk(coord_chunk.value());
+    // } else {
+    //     if (coord_chunk.has_value()) remesh_chunk(coord_chunk.value());
+    //     if (highlighted_block_chunk.has_value()) remesh_chunk(highlighted_block_chunk.value());
+    // }
+    //
+    // remesh_world();
+    //
+    // highlighted_block = coord;
 }
 
 int World::get_ground_height_at(glm::ivec2 coord) {
@@ -211,7 +215,7 @@ size_t World::estimate_memory_usage() {
                 for (int y = 0; y < chunk_size::height; ++y) {
                     for (int z = 0; z < chunk_size::depth; ++z) {
 
-                        blocks_mesh_bytes += chunks[chunk_x][chunk_z].blocks[x][y][z].block_mesh.tri_list.capacity() * 3*sizeof(vertex);
+                        blocks_mesh_bytes += chunks[chunk_x][chunk_z].blocks[x][y][z].block_mesh->tri_list.capacity() * 3*sizeof(vertex);
                     }
                 }
             }
@@ -287,7 +291,7 @@ void World::block_update_simulation(glm::ivec3 coord) {
 
 void World::remesh_block(glm::ivec3 coord) {
     block &b = *get_block(coord);
-    b.block_mesh = mesh {};
+    b.block_mesh = std::make_unique<mesh>();
 
     // store in array which neighbors exist
     bool neighbors[3][3][3];
@@ -303,27 +307,27 @@ void World::remesh_block(glm::ivec3 coord) {
     if (b.type != block_type::EMPTY) {
         if (block_type::block_shape[b.type] == block_type::SOLID_BLOCK) {
             if (!neighbors[0][1][1]) { // left
-                b.block_mesh.append(mesh_util::left_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::left_plane (neighbors, &b));
             }
             if (!neighbors[2][1][1]) { // right
-                b.block_mesh.append(mesh_util::right_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::right_plane (neighbors, &b));
             }
             if (!neighbors[1][0][1]) { // top
-                b.block_mesh.append(mesh_util::top_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::top_plane (neighbors, &b));
             }
             if (!neighbors[1][2][1]) { // bottom
-                b.block_mesh.append(mesh_util::bottom_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::bottom_plane (neighbors, &b));
             }
             if (!neighbors[1][1][0]) { // front
-                b.block_mesh.append(mesh_util::front_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::front_plane (neighbors, &b));
             }
             if (!neighbors[1][1][2]) { // back
-                b.block_mesh.append(mesh_util::back_plane (neighbors, b.type));
+                b.block_mesh->append(mesh_util::back_plane (neighbors, &b));
             }
         }
         else if (block_type::block_shape[b.type] == block_type::X_PLANES) {
-            b.block_mesh.append(mesh_util::diagonal_plane (neighbors, b.type, false));
-            b.block_mesh.append(mesh_util::diagonal_plane (neighbors, b.type, true));
+            b.block_mesh->append(mesh_util::diagonal_plane (neighbors, &b, false));
+            b.block_mesh->append(mesh_util::diagonal_plane (neighbors, &b, true));
         }
     }
 }
@@ -338,7 +342,7 @@ void World::remesh_chunk(glm::ivec2 coord) {
             for (int y = 0; y < chunk_size::height; ++y) {
                 for (int z = 0; z < chunk_size::depth; ++z) {
                     chunk.chunk_mesh.append(
-                        chunk.blocks[x][y][z].block_mesh.transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)))
+                        chunk.blocks[x][y][z].block_mesh->transform(glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)))
                     );
                 }
             }

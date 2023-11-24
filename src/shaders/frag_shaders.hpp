@@ -36,7 +36,7 @@ struct frag_shaders {
 
         float fac = light * ao;
 
-        float highlight = is_face_highlighted(f) ? 0.1f : 0.0f;
+        float highlight = is_block_highlighted(f) ? 0.1f : 0.0f;
 
         float fog_begin = U.render_distance * (1.0f - U.fog);
         float fog = glm::clamp((1.0f / (U.render_distance - fog_begin)) * (interp_distance(f) - fog_begin), 0.0f, 1.0f);
@@ -95,21 +95,21 @@ private:
     }
 
     static glm::vec3 face_color(fragment f) {
-        return (f.triangle->block_type_index < 0 ||
-                f.triangle->block_type_index >= std::extent<decltype(block_type::block_color)>::value) ?
+        return (f.triangle->block_ptr->type < 0 ||
+                f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_color)>::value) ?
                 block_type::block_color[0] :
-                block_type::block_color[f.triangle->block_type_index];
+                block_type::block_color[f.triangle->block_ptr->type];
     }
 
-    static bool is_face_highlighted(fragment f) {
-        return f.triangle->is_highlighted;
+    static bool is_block_highlighted(fragment f) {
+        return f.triangle->block_ptr->is_highlighted;
     }
 
     static glm::vec3 sample_face_texture(fragment f) {
-        const Texture_Set *tex_set = (f.triangle->block_type_index < 0 ||
-                                     f.triangle->block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
+        const Texture_Set *tex_set = (f.triangle->block_ptr->type < 0 ||
+                                     f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
                                      &block_type::block_texture[0] :
-                                     &block_type::block_texture[f.triangle->block_type_index];
+                                     &block_type::block_texture[f.triangle->block_ptr->type];
         return glm::vec3 {tex_set->sample(
             interp_tex_coord(f),
             f.triangle->block_side_index

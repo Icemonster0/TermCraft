@@ -14,16 +14,16 @@ namespace tc::mesh_util {
 
 glm::bvec4 calc_ambient_occlusion(bool nb[3][3][3], glm::mat4 mat_four);
 
-mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type, unsigned int side);
+mesh generic_plane(bool nb[3][3][3], glm::mat4 M, block *b, unsigned int side);
 
-mesh left_plane(bool nb[3][3][3], unsigned int type);
-mesh right_plane(bool nb[3][3][3], unsigned int type);
-mesh top_plane(bool nb[3][3][3], unsigned int type);
-mesh bottom_plane(bool nb[3][3][3], unsigned int type);
-mesh front_plane(bool nb[3][3][3], unsigned int type);
-mesh back_plane(bool nb[3][3][3], unsigned int type);
+mesh left_plane(bool nb[3][3][3], block *b);
+mesh right_plane(bool nb[3][3][3], block *b);
+mesh top_plane(bool nb[3][3][3], block *b);
+mesh bottom_plane(bool nb[3][3][3], block *b);
+mesh front_plane(bool nb[3][3][3], block *b);
+mesh back_plane(bool nb[3][3][3], block *b);
 
-mesh diagonal_plane(bool nb[3][3][3], unsigned int type, bool flipped);
+mesh diagonal_plane(bool nb[3][3][3], block *b, bool flipped);
 
 } /* end of namespace tc::mesh_util */
 

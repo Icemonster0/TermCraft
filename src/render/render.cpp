@@ -80,7 +80,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
          * it is (usually) marked for death. */
         triangle.view_normal = triangle.calc_normal();
         if (!draw_util::is_tri_in_NDC(triangle) ||
-            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals && !block_type::block_transparent[triangle.block_type_index]) {
+            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals && !block_type::block_transparent[triangle.block_ptr->type]) {
 
             triangle.marked_for_death = true;
 
@@ -177,10 +177,10 @@ void Render::rasterize(mesh *m) {
                             + b2 * triangle.vertices[2].pos.z;
 
                     // interpolate alpha
-                    const Texture_Set *tex_set = (triangle.block_type_index < 0 ||
-                                                  triangle.block_type_index >= std::extent<decltype(block_type::block_texture)>::value) ?
+                    const Texture_Set *tex_set = (triangle.block_ptr->type < 0 ||
+                                                  triangle.block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
                                                   &block_type::block_texture[0] :
-                                                  &block_type::block_texture[triangle.block_type_index];
+                                                  &block_type::block_texture[triangle.block_ptr->type];
                     float a = U.disable_textures ?
                               1.0f :
                               tex_set->sample(b0 * triangle.vertices[0].tex_coord

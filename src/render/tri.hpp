@@ -4,32 +4,27 @@
 #include "../glm.hpp"
 
 #include "vertex.hpp"
+#include "../world/block.hpp"
 
 namespace tc {
 
-struct tri {
-    tri(const vertex &a, const  vertex &b, const  vertex &c) {
-        vertices[0] = a;
-        vertices[1] = b;
-        vertices[2] = c;
-    }
+struct block;
 
-    tri() {
-    }
+struct tri {
+    tri(const vertex &a, const vertex &b, const vertex &c, block *ptr);
+    tri();
 
     vertex vertices[3];
     bool marked_for_death = false;
 
     glm::vec3 world_normal {0.0f};
     glm::vec3 view_normal {0.0f};
-    bool is_highlighted = false;
-    unsigned int block_type_index = 0;
+    block *block_ptr;
+    // bool is_highlighted = false;
+    // unsigned int block_type_index = 0;
     unsigned int block_side_index = 0;
 
-    glm::vec3 calc_normal() {
-        return glm::cross(vertices[1].pos.xyz() - vertices[0].pos.xyz(),
-                          vertices[2].pos.xyz() - vertices[0].pos.xyz());
-    }
+    glm::vec3 calc_normal();
 };
 
 } /* end of namespace tc */

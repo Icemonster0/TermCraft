@@ -23,54 +23,53 @@ glm::bvec4 calc_ambient_occlusion(bool nb[3][3][3], glm::mat4 mat_four) {
     return ao;
 }
 
-mesh generic_plane(bool nb[3][3][3], glm::mat4 M, unsigned int type, unsigned int side) {
+mesh generic_plane(bool nb[3][3][3], glm::mat4 M, block *b, unsigned int side) {
     mesh m;
     glm::bvec4 ao = calc_ambient_occlusion(nb, M);
 
-    m.tri_list.push_back(tri {{-0.5f, 0.5f,-0.5f, ao.z, 0, 1}, {0.5f, 0.5f,-0.5f, ao.w, 1, 1}, { 0.5f,-0.5f,-0.5f, ao.y, 1, 0}});
-    m.tri_list.push_back(tri {{-0.5f, 0.5f,-0.5f, ao.z, 0, 1}, {0.5f,-0.5f,-0.5f, ao.y, 1, 0}, {-0.5f,-0.5f,-0.5f, ao.x, 0, 0}});
+    m.tri_list.push_back(tri {{-0.5f, 0.5f,-0.5f, ao.z, 0, 1}, {0.5f, 0.5f,-0.5f, ao.w, 1, 1}, { 0.5f,-0.5f,-0.5f, ao.y, 1, 0}, b});
+    m.tri_list.push_back(tri {{-0.5f, 0.5f,-0.5f, ao.z, 0, 1}, {0.5f,-0.5f,-0.5f, ao.y, 1, 0}, {-0.5f,-0.5f,-0.5f, ao.x, 0, 0}, b});
 
-    m.tri_list[0].block_type_index = m.tri_list[1].block_type_index = type;
     m.tri_list[0].block_side_index = m.tri_list[1].block_side_index = side;
 
     m = m.transform(glm::translate(glm::mat4 {1.0f}, glm::vec3(0.5f)) * M);
-    m.tri_list[0].world_normal = m.tri_list[1].world_normal = m.tri_list[0].calc_normal();
+    m.tri_list[0].world_normal = m.tri_list[1].world_normal = m.tri_list[0].calc_normal(); // tri 0 and 1 have the same normal
 
     return m;
 }
 
-mesh left_plane(bool nb[3][3][3], unsigned int type) {
+mesh left_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type, tex::LEFT);
+    return generic_plane(nb, M, b, tex::LEFT);
 }
-mesh right_plane(bool nb[3][3][3], unsigned int type) {
+mesh right_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians( 90.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type, tex::RIGHT);
+    return generic_plane(nb, M, b, tex::RIGHT);
 }
-mesh top_plane(bool nb[3][3][3], unsigned int type) {
+mesh top_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0));
-    return generic_plane(nb, M, type, tex::TOP);
+    return generic_plane(nb, M, b, tex::TOP);
 }
-mesh bottom_plane(bool nb[3][3][3], unsigned int type) {
+mesh bottom_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians( 90.0f), glm::vec3(1, 0, 0));
-    return generic_plane(nb, M, type, tex::BOTTOM);
+    return generic_plane(nb, M, b, tex::BOTTOM);
 }
-mesh front_plane(bool nb[3][3][3], unsigned int type) {
+mesh front_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M {1.0f};
-    return generic_plane(nb, M, type, tex::FRONT);
+    return generic_plane(nb, M, b, tex::FRONT);
 }
-mesh back_plane(bool nb[3][3][3], unsigned int type) {
+mesh back_plane(bool nb[3][3][3], block *b) {
     glm::mat4 M = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0,-1, 0));
-    return generic_plane(nb, M, type, tex::BACK);
+    return generic_plane(nb, M, b, tex::BACK);
 }
 
-mesh diagonal_plane(bool nb[3][3][3], unsigned int type, bool flipped) {
+mesh diagonal_plane(bool nb[3][3][3], block *b, bool flipped) {
     glm::mat4 M {1.0f};
     M = glm::scale(M, glm::vec3(flipped ? -1 : 1, 1, 1));
     M = glm::rotate(M, glm::radians(45.0f), glm::vec3(0,-1, 0));
     M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
 
-    return generic_plane(nb, M, type, tex::FRONT);
+    return generic_plane(nb, M, b, tex::FRONT);
 }
 
 } /* end of namespace tc::mesh_util */

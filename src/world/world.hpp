@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <vector>
 #include <optional>
+#include <memory>
 
 namespace tc {
 

@@ -6,6 +6,8 @@
 #include "../render/mesh.hpp"
 #include "../render/texture.hpp"
 
+#include <memory>
+
 namespace tc {
 
 namespace block_type {
@@ -77,12 +79,15 @@ namespace block_type {
     };
 } /* end of namespace block_type */
 
+struct mesh;
+
 struct block {
 public:
-    block() : type(block_type::EMPTY) {}
+    block();
 
     block_type::Block_Type type;
-    mesh block_mesh;
+    bool is_highlighted;
+    std::unique_ptr<mesh> block_mesh;
 };
 
 } /* end of namespace tc */
