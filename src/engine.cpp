@@ -135,7 +135,7 @@ void Engine::update_window_size() {
 
         pclose(file);
 
-        if (X_size != old_X_size && Y_size != old_Y_size) {
+        if (X_size != old_X_size || Y_size != old_Y_size) {
             controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
         }
     }
