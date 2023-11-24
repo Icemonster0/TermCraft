@@ -2,7 +2,6 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- Optimize highlight block more (and maybe revamp the entire render engine in the process)
 - Correct backface normals
 - Optimize get_block and get_chunk
 - Add global resource paths
@@ -21,6 +20,7 @@ and work in progress tasks with **bold**.
 - Fix triangle overlap / gap issue
 
 ## Done
+- ~~Optimize highlight block more~~
 - ~~Optimize buffer clearing~~
 - ~~Clean up includes~~
 - ~~Remove need for tmp directory~~
