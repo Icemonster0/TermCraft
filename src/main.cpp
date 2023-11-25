@@ -24,6 +24,8 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_setting<float>("fov", 70.0f, "Field of view in degrees");
     clom.register_flag("--disable-textures", "Use flat colors instead of textures");
     clom.register_setting<int>("world-size", 10, "World x and z width in chunks");
+    clom.register_setting<float>("start-time", 10.0f, "Starting time of day (in 24-hour clock)");
+    clom.register_setting<float>("time-scale", 60.0f, "Speed up factor of time of day (1 = real life scale; 60 (default) = 24 in game hours hours last 24 real life minutes)");
 
     clom.generate_user_hint("TermCraft");
     clom.process_cl_options(argc, argv);
@@ -53,6 +55,8 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.fov = clom.get_setting_value<float>("fov");
     U.disable_textures = clom.is_flag_set("--disable-textures");
     U.world_size = clom.get_setting_value<int>("world-size");
+    U.start_time = clom.get_setting_value<float>("start-time");
+    U.time_scale = clom.get_setting_value<float>("time-scale");
 }
 
 int main(int argc, char const *argv[]) {

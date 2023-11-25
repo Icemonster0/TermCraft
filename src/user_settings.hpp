@@ -26,6 +26,9 @@ struct user_settings {
 
     bool debug_info = false;
     bool bad_normals = false;
+
+    float start_time = 10.0f;
+    float time_scale = 60.0f;
 };
 
 /* This object needs to be declared in main.cpp */

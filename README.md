@@ -99,6 +99,8 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 | `height` | int | `24` | Height of viewport in pixels, if `--fixed-window-size` is set |
 | `render-distance` | float | `100` | Render distance in blocks |
 | `sky-color` | hex | `0x7ce1ff` | Color of the sky and fog (note the `0x` instead of `#`) |
+| `start-time` | float | `10` | Starting time of day in hours (24-hour clock) |
+| `time-scale` | float | `60` | Speed factor of time of day compared to real life time (`1` = real life; `60` = 1 real life minute is 1 in-game hour) |
 | `width` | int | `80` | Width of viewport in pixels, if `--fixed-window-size` is set |
 | `world-size` | int | `10` | World width in both X and Z directions in chunks (`world-size`*16 blocks) |
 

@@ -11,6 +11,8 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
 }
 
 void Render::render(mesh m) {
+
+
     clear_buffers();
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
@@ -34,10 +36,12 @@ void Render::set_debug_info(std::string debug_info) {
     }
 }
 
-void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type) {
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, float p_time_of_day, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type) {
     X_size = p_X_size;
     Y_size = p_Y_size;
     global_time = p_global_time;
+    time_of_day = p_time_of_day;
+    time_of_day_update();
     VP = p_VP;
     V = p_V;
     active_block_type = p_active_block_type;
@@ -50,8 +54,19 @@ void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
 
 // private:
 
+void Render::time_of_day_update() {
+    const float two_pi = 6.283185307f;
+
+    sun_direction = glm::vec3 {
+        -sin(time_of_day * two_pi),
+        cos(time_of_day * two_pi),
+        0.0f
+    };
+    sky_brightness = glm::clamp(-cos(time_of_day * two_pi) * 1.3f, 0.0f, 1.0f) * 0.9f + 0.1f;
+}
+
 void Render::clear_buffers() {
-    fbuf.clear(X_size, Y_size, U.sky_color);
+    fbuf.clear(X_size, Y_size, U.sky_color * sky_brightness);
     frag_buf.clear(X_size, Y_size, list<fragment> {});
     hud_buf.clear(X_size, Y_size, " ");
     // NOT clearing debug_buf, already set by set_debug_info()
@@ -91,7 +106,6 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
             /* backfacing normal correction */
             if (backfacing) {
                 triangle.world_normal *= -1.0f;
-                triangle.view_normal *= -1.0f;
             }
 
             // screen transform
@@ -235,14 +249,14 @@ void Render::rasterize(mesh *m) {
     }
 }
 
-void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment, float),
+void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment, glm::vec3, float, float),
                                                glm::vec3 (*post_shader)(const buffer<glm::vec3>*, glm::ivec2, glm::ivec2, float)) {
     #pragma omp parallel for schedule(static) collapse(2)
     for (int x = 0; x < X_size; ++x) {
         for (int y = 0; y < Y_size; ++y) {
             // Programmable Fragment Shader
             for (auto i = frag_buf.buf[x][y].rbegin(); i != frag_buf.buf[x][y].rend(); ++i) {
-                fbuf.buf[x][y] = glm::mix(fbuf.buf[x][y], frag_shader((*i), global_time), (*i).opacity);
+                fbuf.buf[x][y] = glm::mix(fbuf.buf[x][y], frag_shader((*i), sun_direction, sky_brightness, global_time), (*i).opacity);
             }
 
             // Programmable Post Processing Shader

@@ -73,7 +73,7 @@ void Engine::render_loop() {
 
         update_window_size();
         controller.simulation_step(delta_time);
-        render.set_params(X_size, Y_size, global_time, controller.get_V_matrix(), controller.get_VP_matrix(), controller.get_active_block_type());
+        render.set_params(X_size, Y_size, global_time, time_of_day, controller.get_V_matrix(), controller.get_VP_matrix(), controller.get_active_block_type());
         if (U.debug_info) render.set_debug_info(debug_info_string());
 
         system_catch_error("tput cup 0 0", 4);
@@ -82,6 +82,7 @@ void Engine::render_loop() {
         auto timer_end = timer.now();
         delta_time = chrono::duration_cast<chrono::milliseconds>(timer_end - timer_start).count() / 1000.0f;
         global_time += delta_time;
+        calc_time_of_day();
         fps = 1.0f / delta_time;
         corrected_fps += static_cast<float>(U.fps) - fps;
     }
@@ -91,6 +92,8 @@ string Engine::debug_info_string() {
     int n_tris;
     int n_active_tris;
     render.get_params(&n_tris, &n_active_tris);
+
+    int time_of_day_hours = (int)floor(time_of_day * 24);
 
     glm::vec3 pos;
     glm::vec2 look;
@@ -104,7 +107,9 @@ string Engine::debug_info_string() {
 
     ss << "fps: " << static_cast<int>(fps) << "\n";
     ss << "screen: " << X_size << "x" << Y_size << "\n";
-    ss << "time: " << global_time << "\n";
+    ss << "running time: " << global_time << "s\n";
+    ss << "in-game time: "  << setfill('0') << setw(2) << time_of_day_hours << ":"
+       << setw(2) << floor((time_of_day*24.0f - time_of_day_hours) * 60) << "\n";
     ss << "coords: " << pos.x << " " << pos.y << " " << pos.z << "\n";
     ss << "yaw: " << look.x << " deg\n";
     ss << "pitch: " << look.y << " deg\n";
@@ -139,6 +144,12 @@ void Engine::update_window_size() {
             controller.update_aspect(static_cast<float>(X_size) / static_cast<float>(Y_size));
         }
     }
+}
+
+void Engine::calc_time_of_day() {
+    const float seconds_per_day = 86400.0f;
+    time_of_day = global_time / seconds_per_day * U.time_scale + U.start_time / 24.0f;
+    time_of_day -= floor(time_of_day);
 }
 
 void Engine::system_catch_error(string command, int code) {

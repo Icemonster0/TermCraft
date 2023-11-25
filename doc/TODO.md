@@ -11,7 +11,6 @@ and work in progress tasks with **bold**.
 - Add cave generation
 - Tall grass
 - Light levels
-- Day-night cycle
 - Menu / gui and world saving / loading
 - Add viewmodel
 - Replace null_block with a better solution
@@ -19,6 +18,7 @@ and work in progress tasks with **bold**.
 - Fix triangle overlap / gap issue
 
 ## Done
+- ~~Day-night cycle~~
 - ~~Correct backface normals~~
 - ~~Optimize highlight block more~~
 - ~~Optimize buffer clearing~~

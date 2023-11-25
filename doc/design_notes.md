@@ -17,6 +17,7 @@
 
 - takes copy of world mesh
 - gets parameters from and is called by render thread
+- time of day and lighting
 
 ###### Render pipeline
 

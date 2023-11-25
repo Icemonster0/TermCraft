@@ -20,8 +20,6 @@ struct tri {
     glm::vec3 world_normal {0.0f};
     glm::vec3 view_normal {0.0f};
     block *block_ptr;
-    // bool is_highlighted = false;
-    // unsigned int block_type_index = 0;
     unsigned int block_side_index = 0;
 
     glm::vec3 calc_normal();

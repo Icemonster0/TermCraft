@@ -12,7 +12,9 @@
 #include <cstdio>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <string>
+#include <cmath>
 
 namespace tc {
 
@@ -28,6 +30,7 @@ private:
 
     std::string debug_info_string();
     void update_window_size();
+    void calc_time_of_day();
     void system_catch_error(std::string command, int code);
     void crash(int code);
 
@@ -42,6 +45,7 @@ private:
     float fps = 0.0f;
     float delta_time = 0.0f;
     float global_time = 0.0f;
+    float time_of_day = 0.0f;
 
     std::thread input_thread;
     std::thread render_thread;

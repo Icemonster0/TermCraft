@@ -16,27 +16,27 @@
 namespace tc {
 
 struct frag_shaders {
-    static glm::vec3 FRAG_default(fragment f, float global_time) {
+    static glm::vec3 FRAG_default(fragment f, glm::vec3 sun_dir, float sky_brightness, float global_time) {
         return glm::vec3(1.0f);
     }
 
-    static glm::vec3 FRAG_fun(fragment f, float global_time) {
+    static glm::vec3 FRAG_fun(fragment f, glm::vec3 sun_dir, float sky_brightness, float global_time) {
         float light = (glm::dot(face_world_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f) * 0.8f + 0.2f;
         // return glm::vec3(sin(interp_color(f).r*25)*0.5f+0.5f) * glm::vec3(sin(interp_color(f).b*25)*0.5f+0.5f);
         return glm::vec3(light);
         // return interp_color(f);
     }
 
-    static glm::vec3 FRAG_shaded(fragment f, float global_time) {
-        float light = glm::dot(face_world_normal(f), glm::normalize(glm::vec3(-0.7f, -1.0f, 0.4f)))*0.5f+0.5f;
+    static glm::vec3 FRAG_shaded(fragment f, glm::vec3 sun_dir, float sky_brightness, float global_time) {
+        float light = glm::dot(face_world_normal(f), sun_dir);
         light = light * 0.3f + 0.7f;
 
         float ao = 1.0f - draw_util::square_interp(interp_ao(f));
-        ao = ao * 0.2f + 0.8f;
+        ao = ao * 0.3f + 0.7f;
 
-        float fac = light * ao;
+        float fac = glm::mix(0.1f, light, sky_brightness) * ao;
 
-        float highlight = is_block_highlighted(f) ? 0.1f : 0.0f;
+        float highlight = is_block_highlighted(f) ? 0.07f : 0.0f;
 
         float fog_begin = U.render_distance * (1.0f - U.fog);
         float fog = glm::clamp((1.0f / (U.render_distance - fog_begin)) * (interp_distance(f) - fog_begin), 0.0f, 1.0f);
@@ -51,7 +51,7 @@ struct frag_shaders {
 
         glm::vec3 block_color = albedo * fac + highlight;
 
-        return glm::mix(block_color, U.sky_color, fog);
+        return glm::mix(block_color, U.sky_color * sky_brightness, fog);
     }
 
 private:
