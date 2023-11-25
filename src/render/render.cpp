@@ -79,12 +79,21 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
          * or is facing away from the camera,
          * it is (usually) marked for death. */
         triangle.view_normal = triangle.calc_normal();
+
+        bool backfacing = glm::sign(triangle.view_normal.z) >= 0;
+
         if (!draw_util::is_tri_in_NDC(triangle) ||
-            glm::sign(triangle.view_normal.z) >= 0.0f && !U.bad_normals && !block_type::block_transparent[triangle.block_ptr->type]) {
+            backfacing && !U.bad_normals && !block_type::block_transparent[triangle.block_ptr->type]) {
 
             triangle.marked_for_death = true;
 
         } else {
+            /* backfacing normal correction */
+            if (backfacing) {
+                triangle.world_normal *= -1.0f;
+                triangle.view_normal *= -1.0f;
+            }
+
             // screen transform
             for (vertex &v : triangle.vertices) {
                 v.screenpos = v.pos * 0.5f + 0.5f;
