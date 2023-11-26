@@ -3,7 +3,6 @@ Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethroug
 and work in progress tasks with **bold**.
 
 - Optimize get_block and get_chunk
-- Add global resource paths
 - Add walk controller
 - Better world generation
 - Add tree generation
@@ -18,6 +17,7 @@ and work in progress tasks with **bold**.
 - Fix triangle overlap / gap issue
 
 ## Done
+- ~~Add global resource paths~~
 - ~~Day-night cycle~~
 - ~~Correct backface normals~~
 - ~~Optimize highlight block more~~
