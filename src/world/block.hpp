@@ -38,14 +38,14 @@ namespace block_type {
         glm::vec3 {1.00f, 1.00f, 1.00f}, // TUX
     };
     const Texture_Set block_texture[] {
-        {"../res/tex/test.png"}, // EMPTY
-        {"../res/tex/grass_side.png", "../res/tex/grass_top.png", "../res/tex/dirt.png"}, // GRASS
-        {"../res/tex/dirt.png"}, // DIRT
-        {"../res/tex/stone.png"}, // STONE
-        {"../res/tex/oak_log_side.png", "../res/tex/oak_log_top.png"}, // OAK_LOG
-        {"../res/tex/oak_planks.png"}, // OAK_PLANKS
-        {"../res/tex/flower.png"}, // FLOWER
-        {"../res/tex/Tux.png"}, // TUX
+        {"res/tex/test.png"}, // EMPTY
+        {"res/tex/grass_side.png", "res/tex/grass_top.png", "res/tex/dirt.png"}, // GRASS
+        {"res/tex/dirt.png"}, // DIRT
+        {"res/tex/stone.png"}, // STONE
+        {"res/tex/oak_log_side.png", "res/tex/oak_log_top.png"}, // OAK_LOG
+        {"res/tex/oak_planks.png"}, // OAK_PLANKS
+        {"res/tex/flower.png"}, // FLOWER
+        {"res/tex/Tux.png"}, // TUX
     };
     const bool block_transparent[] {
         true, // EMPTY

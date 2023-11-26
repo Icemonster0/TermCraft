@@ -4,8 +4,15 @@ namespace tc {
 
 // Texture:
 
-Texture::Texture(const std::string path) {
-    unsigned char *data = stbi_load(path.c_str(), &size.x, &size.y, &real_channels, channels);
+Texture::Texture(const std::string relative_path) {
+    #ifdef BUILD_PATH
+        std::string full_path = BUILD_PATH;
+    #else
+        std::string full_path = ".";
+    #endif
+    full_path.append("/").append(relative_path);
+
+    unsigned char *data = stbi_load(full_path.c_str(), &size.x, &size.y, &real_channels, channels);
 
     if (!data) {
         pixels.emplace_back();

@@ -23,7 +23,7 @@ namespace tex {
 
 class Texture {
 public:
-    Texture(const std::string path);
+    Texture(const std::string relative_path);
 
     glm::vec4 sample(const glm::vec2 tex_coord) const;
 

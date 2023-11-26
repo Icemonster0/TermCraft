@@ -11,8 +11,6 @@ Render::Render(int p_X_size, int p_Y_size) : X_size(p_X_size), Y_size(p_Y_size) 
 }
 
 void Render::render(mesh m) {
-
-
     clear_buffers();
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);

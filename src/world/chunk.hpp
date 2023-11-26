@@ -14,6 +14,10 @@ namespace chunk_size {
     const int width = 16;
     const int height = 256;
     const int depth = 16;
+
+    const float inv_width = 1.0f / width;
+    const float inv_height = 1.0f / height;
+    const float inv_depth = 1.0f / depth;
 } /* end of namespace chunk_size */
 
 class Chunk {

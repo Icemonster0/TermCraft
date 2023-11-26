@@ -124,30 +124,6 @@ void World::highlight_block(glm::ivec3 coord) {
     get_block(coord)->is_highlighted = true;
 
     highlighted_block = coord;
-    // block &old_block = *get_block(highlighted_block);
-    // for (tri &triangle : old_block.block_mesh->tri_list) {
-    //     triangle.is_highlighted = false;
-    // }
-    // block &new_block = *get_block(coord);
-    // for (tri &triangle : new_block.block_mesh->tri_list) {
-    //     triangle.is_highlighted = true;
-    // }
-    //
-    // std::optional<glm::ivec2> coord_chunk = get_chunk_coord_of_block(coord);
-    // std::optional<glm::ivec2> highlighted_block_chunk = get_chunk_coord_of_block(highlighted_block);
-    //
-    // if (coord_chunk.has_value() && highlighted_block_chunk.has_value() &&
-    //     glm::all(glm::equal(coord_chunk.value(), highlighted_block_chunk.value()))) {
-    //
-    //     remesh_chunk(coord_chunk.value());
-    // } else {
-    //     if (coord_chunk.has_value()) remesh_chunk(coord_chunk.value());
-    //     if (highlighted_block_chunk.has_value()) remesh_chunk(highlighted_block_chunk.value());
-    // }
-    //
-    // remesh_world();
-    //
-    // highlighted_block = coord;
 }
 
 int World::get_ground_height_at(glm::ivec2 coord) {
@@ -228,7 +204,7 @@ size_t World::estimate_memory_usage() {
 // private:
 
 std::optional<glm::ivec2> World::get_chunk_coord_of_block(glm::ivec3 coord) {
-    glm::ivec2 chunk_coord {coord.x / chunk_size::width, coord.z / chunk_size::depth};
+    glm::ivec2 chunk_coord {coord.x * chunk_size::inv_width, coord.z * chunk_size::inv_depth};
 
     if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
         glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))))

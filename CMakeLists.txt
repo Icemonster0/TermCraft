@@ -3,6 +3,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 project(TermCraft VERSION 1.0)
 
+set(BUILD_PATH ${CMAKE_CURRENT_BINARY_DIR})
+message("BUILD_PATH is ${BUILD_PATH}")
+add_compile_definitions(BUILD_PATH="${BUILD_PATH}")
+
+file(COPY res/ DESTINATION res)
+
 add_library(libs_module
     src/engine.cpp
     src/render/render.cpp
