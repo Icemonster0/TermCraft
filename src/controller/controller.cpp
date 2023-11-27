@@ -2,21 +2,35 @@
 
 namespace tc {
 
+#define GRAVITY 9.81f
+#define ACCELERATION 30.0f
+#define AIR_ACCELERATION 1.0f
+#define BRAKE_FACTOR 10.0f
+#define AIR_BRAKE_FACTOR 0.1f
+#define MAX_NORMAL_SPEED 3.0f
+#define MAX_SPRINT_SPEED 10.0f
+#define MAX_CROUCH_SPEED 1.0f
+#define JUMP_STRENGTH 5.0f
+#define TERMINAL_FALLING_VELOCITY 50.0f
+#define NORMAL_HEIGHT 1.62f
+#define CROUCH_HEIGHT 1.50f
+#define VELOCITY_TERMINATOR 0.1f
+
 // public:
 
 Controller::Controller(glm::vec3 p_pos,
                        float p_aspect,
-                       float p_height,
                        float p_interact_range,
-                       float p_move_speed,
-                       float p_look_sensitivity,
                        World *p_world_ptr) :
                        pos(p_pos),
                        old_pos({-1.0f}),
-                       height(p_height),
+                       velocity({0.0f}),
+                       flying(true),
+                       crouching(false),
+                       sprinting(false),
+                       is_on_ground(false),
+                       height(NORMAL_HEIGHT),
                        interact_range(p_interact_range),
-                       move_speed(p_move_speed),
-                       look_sensitivity(p_look_sensitivity),
                        world_ptr(p_world_ptr),
                        active_block_type(block_type::GRASS) {
 
@@ -46,8 +60,11 @@ void Controller::input_event(char key) {
 
 void Controller::simulation_step(float delta_time) {
     old_looked_at_block = looked_at_block;
+    old_pos = pos;
 
-    evaluate_inputs(delta_time);
+    simulate(delta_time);
+    evaluate_misc_inputs(delta_time);
+
     input_state.time_step(delta_time);
 
     if (looked_at_block != old_looked_at_block) {
@@ -62,8 +79,9 @@ void Controller::update_aspect(float value) {
     camera.calc_VP_matrix();
 }
 
-void Controller::get_params(glm::vec3 *pos_ptr, glm::vec2 *look_ptr) {
+void Controller::get_params(glm::vec3 *pos_ptr, glm::vec3 *velocity_ptr, glm::vec2 *look_ptr) {
     *pos_ptr = pos;
+    *velocity_ptr = velocity;
     *look_ptr = glm::vec2(camera.yaw, camera.pitch);
 }
 
@@ -73,6 +91,80 @@ block_type::Block_Type Controller::get_active_block_type() {
 
 // private:
 
+void Controller::simulate(float delta_time) {
+    glm::vec2 dir {
+        (input_state.get_key('d') ? 1.0f : 0.0f) - (input_state.get_key('a') ? 1.0f : 0.0f),
+        (input_state.get_key('w') ? 1.0f : 0.0f) - (input_state.get_key('s') ? 1.0f : 0.0f)
+    };
+    bool moving = glm::any(glm::notEqual(dir, glm::vec2(0.0f)));
+
+    if (moving) dir = glm::normalize(dir);
+    dir = dir.x * camera.get_right_vector().xz() + dir.y * camera.get_h_forward_vector().xz();
+
+    float vertical_dir = (input_state.get_key('c') ? 1.0f : 0.0f) - (input_state.get_key(' ') ? 1.0f : 0.0f);
+    bool vertically_moving = vertical_dir != 0.0f;
+
+    if (!flying) {
+        if (input_state.get_key('c')) {
+            toggle_crouch();
+        }
+
+        if (is_block_solid(pos)) {
+            if (moving) {
+                velocity += glm::vec3(dir.x, 0.0f, dir.y) * ACCELERATION * delta_time;
+            } else {
+                velocity.x = glm::mix(velocity.x, 0.0f, BRAKE_FACTOR * delta_time);
+                velocity.z = glm::mix(velocity.z, 0.0f, BRAKE_FACTOR * delta_time);
+            }
+
+            if (input_state.get_key(' ')) {
+                velocity.y = -JUMP_STRENGTH * (crouching ? 0.5f : 1.0f);
+                is_on_ground = false;
+            } else {
+                velocity.y = 0.0f;
+                is_on_ground = true;
+            }
+        }
+        else {
+            if (moving) {
+                velocity += glm::vec3(dir.x, 0.0f, dir.y) * AIR_ACCELERATION * delta_time;
+            } else {
+                velocity.x = glm::mix(velocity.x, 0.0f, AIR_BRAKE_FACTOR * delta_time);
+                velocity.z = glm::mix(velocity.z, 0.0f, AIR_BRAKE_FACTOR * delta_time);
+            }
+
+            velocity.y += GRAVITY * delta_time;
+        }
+    }
+    else { // if (flying)
+        if (moving) {
+            velocity += glm::vec3(dir.x, 0.0f, dir.y) * ACCELERATION * delta_time;
+        } else {
+            velocity.x = glm::mix(velocity.x, 0.0f, BRAKE_FACTOR * delta_time);
+            velocity.z = glm::mix(velocity.z, 0.0f, BRAKE_FACTOR * delta_time);
+        }
+        if (vertically_moving) {
+            velocity.y += vertical_dir * ACCELERATION * delta_time;
+        } else {
+            velocity.y = glm::mix(velocity.y, 0.0f, BRAKE_FACTOR * delta_time);
+        }
+    }
+
+    const float max_horizontal_speed = sprinting ? MAX_SPRINT_SPEED : (crouching ? MAX_CROUCH_SPEED : MAX_NORMAL_SPEED);
+    if (velocity.x*velocity.x + velocity.z*velocity.z > max_horizontal_speed*max_horizontal_speed) {
+        glm::vec2 new_velocity = glm::normalize(velocity.xz()) * max_horizontal_speed;
+        velocity = glm::vec3(new_velocity.x, velocity.y, new_velocity.y);
+    }
+
+    const float max_vertical_speed = flying ? max_horizontal_speed : TERMINAL_FALLING_VELOCITY;
+    velocity.y = glm::clamp(velocity.y, -max_vertical_speed, max_vertical_speed);
+
+    if (glm::all(glm::lessThan(glm::abs(velocity), glm::vec3(VELOCITY_TERMINATOR))))
+        velocity = glm::vec3(0.0f);
+
+    move(velocity * delta_time);
+}
+
 void Controller::register_input_keys() {
     // movement
     input_state.add_key('w');
@@ -80,9 +172,11 @@ void Controller::register_input_keys() {
     input_state.add_key('s');
     input_state.add_key('d');
 
-    // fly / jump / crouch
+    // fly / jump / walk / crouch / sprint
     input_state.add_key(' ');
     input_state.add_key('c');
+    input_state.add_single_event_key('x');
+    input_state.add_single_event_key('p');
 
     // look
     input_state.add_key('i');
@@ -106,36 +200,26 @@ void Controller::register_input_keys() {
     input_state.add_single_event_key('9');
 }
 
-void Controller::evaluate_inputs(float delta_time) {
-    // movement
+void Controller::evaluate_misc_inputs(float delta_time) {
 
-    if (input_state.get_key('w'))
-        move(camera.get_h_forward_vector() * move_speed * delta_time);
-    if (input_state.get_key('a'))
-        move(-camera.get_right_vector() * move_speed * delta_time);
-    if (input_state.get_key('s'))
-        move(-camera.get_h_forward_vector() * move_speed * delta_time);
-    if (input_state.get_key('d'))
-        move(camera.get_right_vector() * move_speed * delta_time);
+    // fly / walk, sprint / normal
 
-    // fly / jump / crouch
+    if (input_state.get_key('x'))
+        toggle_fly();
 
-    if (input_state.get_key(' '))
-        move(glm::vec3(0.0f, -1.0f, 0.0f) * move_speed * delta_time);
-
-    if (input_state.get_key('c'))
-        move(glm::vec3(0.0f, 1.0f, 0.0f) * move_speed * delta_time);
+    if (input_state.get_key('p'))
+        toggle_sprint();
 
     // look
 
     if (input_state.get_key('i'))
-        turn(glm::vec2(0.0f, look_sensitivity * delta_time));
+        turn(glm::vec2(0.0f, U.look_sensitivity * delta_time));
     if (input_state.get_key('k'))
-        turn(glm::vec2(0.0f, -look_sensitivity * delta_time));
+        turn(glm::vec2(0.0f, -U.look_sensitivity * delta_time));
     if (input_state.get_key('j'))
-        turn(glm::vec2(look_sensitivity * delta_time, 0.0f));
+        turn(glm::vec2(U.look_sensitivity * delta_time, 0.0f));
     if (input_state.get_key('l'))
-        turn(glm::vec2(-look_sensitivity * delta_time, 0.0f));
+        turn(glm::vec2(-U.look_sensitivity * delta_time, 0.0f));
 
     // interact
 
@@ -176,7 +260,6 @@ void Controller::evaluate_inputs(float delta_time) {
 }
 
 void Controller::move(glm::vec3 dir) {
-    old_pos = pos;
     pos += dir;
     camera.pos = pos + glm::vec3(0.0f, -height, 0.0f);
 
@@ -261,5 +344,57 @@ void Controller::calc_looked_at_block(bool adjacent) {
 
     looked_at_block = std::optional<glm::ivec3> {};
 }
+
+void Controller::toggle_fly() {
+    if (flying) {
+        flying = false;
+        input_state.set_single_event('c', true);
+    } else {
+        flying = true;
+        is_on_ground = false;
+        crouching = false;
+        height = NORMAL_HEIGHT;
+        input_state.set_single_event('c', false);
+    }
+}
+
+void Controller::toggle_crouch() {
+    if (crouching) {
+        crouching = false;
+        height = NORMAL_HEIGHT;
+    } else {
+        sprinting = false;
+        crouching = true;
+        height = CROUCH_HEIGHT;
+    }
+}
+
+void Controller::toggle_sprint() {
+    if (sprinting) {
+        sprinting = false;
+    } else {
+        crouching = false;
+        sprinting = true;
+        height = NORMAL_HEIGHT;
+    }
+}
+
+bool Controller::is_block_solid(glm::vec3 sample_point) {
+    return block_type::block_collidable[world_ptr->get_block(sample_point)->type];
+}
+
+#undef GRAVITY
+#undef ACCELERATION
+#undef AIR_ACCELERATION
+#undef BRAKE_FACTOR
+#undef AIR_BRAKE_FACTOR
+#undef MAX_NORMAL_SPEED
+#undef MAX_SPRINT_SPEED
+#undef MAX_CROUCH_SPEED
+#undef JUMP_STRENGTH
+#undef TERMINAL_FALLING_VELOCITY
+#undef NORMAL_HEIGHT
+#undef CROUCH_HEIGHT
+#undef VELOCITY_TERMINATOR
 
 } /* end of namespace tc */

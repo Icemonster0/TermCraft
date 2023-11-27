@@ -19,10 +19,7 @@ Engine::Engine() {
     glm::ivec2 center = world.get_world_center();
     controller = Controller {glm::vec3(center.x+0.5f, world.get_ground_height_at(center), center.y+0.5f), // spawn position
                              static_cast<float>(X_size) / static_cast<float>(Y_size), // aspect
-                             1.62f, // height (eye level)
                              10.0f, // interact range
-                             10.0f, // move speed (blocks per second)
-                             40.0f, // look sensitivity (degrees per second)
                              &world}; // world pointer
 
     /* Player position needs to be known for optimized world meshing. */
@@ -32,7 +29,7 @@ Engine::Engine() {
 int Engine::run() {
     if (!U.cursor_visible) system_catch_error("tput civis", 5);
     system_catch_error("stty -echo cbreak", 6);
-    system_catch_error("tput clear", 7);
+    // system_catch_error("tput clear", 7);
 
     input_thread = thread(&Engine::input_loop, this);
     render_thread = thread(&Engine::render_loop, this);
@@ -96,8 +93,9 @@ string Engine::debug_info_string() {
     int time_of_day_hours = (int)floor(time_of_day * 24);
 
     glm::vec3 pos;
+    glm::vec3 velocity;
     glm::vec2 look;
-    controller.get_params(&pos, &look);
+    controller.get_params(&pos, &velocity, &look);
 
     float est_memory = (float)world.estimate_memory_usage() / 1000000.0f;
 
@@ -111,6 +109,7 @@ string Engine::debug_info_string() {
     ss << "in-game time: "  << setfill('0') << setw(2) << time_of_day_hours << ":"
        << setw(2) << floor((time_of_day*24.0f - time_of_day_hours) * 60) << "\n";
     ss << "coords: " << pos.x << " " << pos.y << " " << pos.z << "\n";
+    ss << "velocity: " << velocity.x << " " << velocity.y << " " << velocity.z << "\n";
     ss << "yaw: " << look.x << " deg\n";
     ss << "pitch: " << look.y << " deg\n";
     ss << "tris: " << n_tris << "\n";

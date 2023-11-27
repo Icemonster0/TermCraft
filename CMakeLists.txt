@@ -28,6 +28,7 @@ add_library(libs_module
 )
 
 target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)
+#target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3 -pg)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libs_module pthread)

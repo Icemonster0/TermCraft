@@ -6,7 +6,7 @@ namespace tc {
 struct key_state {
     key_state(char p_key, bool p_is_single_event)
       : key(p_key), is_single_event(p_is_single_event),
-        time_left(KEY_TIMEOUT_DURATION), active(false) {
+        time_left(0.0f), active(false) {
     }
 
     key_state() {}

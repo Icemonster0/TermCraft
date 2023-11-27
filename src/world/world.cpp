@@ -204,11 +204,18 @@ size_t World::estimate_memory_usage() {
 // private:
 
 std::optional<glm::ivec2> World::get_chunk_coord_of_block(glm::ivec3 coord) {
-    glm::ivec2 chunk_coord {coord.x * chunk_size::inv_width, coord.z * chunk_size::inv_depth};
+    // printf("> ");
+    // fflush(stdout);
+    glm::ivec2 chunk_coord {floor(coord.x * chunk_size::inv_width), floor(coord.z * chunk_size::inv_depth)};
 
-    if (glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
-        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0))))
-         return std::optional<glm::ivec2> {chunk_coord};
+    if (chunk_coord.x < chunks.size() &&
+        glm::all(glm::lessThan(chunk_coord, glm::ivec2(chunks.size(), chunks[chunk_coord.x].size()))) &&
+        glm::all(glm::greaterThanEqual(chunk_coord, glm::ivec2(0, 0)))) {
+
+        // printf("chunk: %d %d  block: %d %d %d\n", chunk_coord.x, chunk_coord.y, coord.x, coord.y, coord.z);
+        // fflush(stdout);
+        return std::optional<glm::ivec2> {chunk_coord};
+    }
     else return std::optional<glm::ivec2> {};
 }
 

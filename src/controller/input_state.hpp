@@ -1,10 +1,12 @@
 #ifndef INPUT_STATE_HPP
 #define INPUT_STATE_HPP
 
-#define KEY_TIMEOUT_DURATION 0.1f
 #include "key_state.hpp"
 
 #include <vector>
+#include <algorithm>
+
+#define KEY_TIMEOUT_DURATION 0.1f
 
 namespace tc {
 
@@ -25,22 +27,21 @@ public:
     }
 
     void activate_key(char c) {
-        for (auto &key : key_states) {
-            if (key.key == c) {
-                key.active = true;
-                key.time_left = KEY_TIMEOUT_DURATION;
-                return;
-            }
+        auto i = std::find_if(key_states.begin(), key_states.end(), [c](key_state k) {return k.key == c;});
+        if (i != key_states.end()) {
+            key_state &key = (*i);
+            key.active = true;
+            key.time_left = KEY_TIMEOUT_DURATION;
         }
     }
 
     bool get_key(char c) {
-        for (auto &key : key_states) {
-            if (key.key == c) {
-                return key.active;
-            }
+        auto i = std::find_if(key_states.begin(), key_states.end(), [c](key_state k) {return k.key == c;});
+        if (i != key_states.end()) {
+            return (*i).active;
+        } else {
+            return false;
         }
-        return false;
     }
 
     void add_key(char c) {
@@ -51,10 +52,19 @@ public:
         key_states.emplace_back(c, true);
     }
 
+    void set_single_event(char c, bool value) {
+        auto i = std::find_if(key_states.begin(), key_states.end(), [c](key_state k) {return k.key == c;});
+        if (i != key_states.end()) {
+            (*i).is_single_event = value;
+        }
+    }
+
 private:
     std::vector<key_state> key_states;
 };
 
 } /* end of namespace tc */
+
+#undef KEY_TIMEOUT_DURATION
 
 #endif /* end of include guard: INPUT_STATE_HPP */

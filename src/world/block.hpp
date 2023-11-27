@@ -67,6 +67,16 @@ namespace block_type {
         X_PLANES, // FLOWER
         X_PLANES, // TUX
     };
+    const bool block_collidable[] {
+        false, // EMPTY
+        true, // GRASS
+        true, // DIRT
+        true, // STONE
+        true, // OAK_LOG
+        true, // OAK_PLANKS
+        false, // FLOWER
+        false, // TUX
+    };
     const char block_initial[] {
         ' ', // EMPTY
         'G', // GRASS
