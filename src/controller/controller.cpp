@@ -4,7 +4,7 @@ namespace tc {
 
 #define GRAVITY 9.81f
 #define ACCELERATION 10.0f
-#define AIR_ACCELERATION 2.0f
+#define AIR_ACCELERATION 0.5f
 #define MAX_NORMAL_SPEED 7.0f
 #define MAX_SPRINT_SPEED 15.0f
 #define MAX_CROUCH_SPEED 1.5f
@@ -127,11 +127,15 @@ void Controller::simulate(float delta_time) {
         ) * delta_time, glm::vec3(0.0f), glm::vec3(1.0f))
     );
 
-    // apply gravity
+    // apply gravity and jump / crouch
     if (!flying) {
-        if (!is_on_ground) {
-            velocity.y += GRAVITY * delta_time;
+        if (input_state.get_key('c')) {
+            toggle_crouch();
         }
+        if (input_state.get_key(' ') && is_on_ground) {
+            velocity.y -= JUMP_STRENGTH * (crouching ? 0.5f : 1.0f);
+        }
+        velocity.y += GRAVITY * delta_time;
         velocity.y = glm::clamp(velocity.y, -max_vertical_speed, max_vertical_speed);
     }
 
@@ -139,81 +143,49 @@ void Controller::simulate(float delta_time) {
     if (glm::all(glm::lessThan(glm::abs(velocity), glm::vec3(VELOCITY_TERMINATOR))))
         velocity = glm::vec3(0.0f);
 
-    // solve collisions (dirty, but works)
-    glm::vec3 delta_pos = velocity * delta_time;
-    // glm::vec3 move_fac {-1.0f};
-    // glm::bvec3 collide {false};
-    const glm::vec3 new_pos = pos + delta_pos;
-    const glm::ivec3 dir_sign = glm::sign(delta_pos);
+    // solve collisions
+    const float collision_margin = 0.01f;
+    glm::vec3 start_pos = pos;
+    glm::vec3 end_pos = pos + velocity * delta_time;
 
-    // const float global_step = 0.1f;
-    // const float step = glm::length(delta_pos) / global_step;
-    // if (step > 0.0f) {
-    //     for (float fac = 0.0f; fac <= 1.0f; fac += step) {
-    //         const glm::vec3 point = pos + delta_pos * fac;
-    //         if (is_block_solid(point)) {
-    //             if (!collide.x && (int)point.x != (int)pos.x) {
-    //                 move_fac.x = delta_pos.x * fac;
-    //                 collide.x = true;
-    //             }
-    //             if (!collide.y && (int)point.y != (int)pos.y) {
-    //                 move_fac.y = delta_pos.y * fac;
-    //                 collide.y = true;
-    //             }
-    //             if (!collide.z && (int)point.z != (int)pos.z) {
-    //                 move_fac.z = delta_pos.z * fac;
-    //                 collide.z = true;
-    //             }
-    //         }
-    //     }
-    // }
-    // for (float x = pos.x; x < new_pos.x; )
+    /* By default, the player is not on the ground. If they are, it is
+     * detected in the following section. */
+    is_on_ground = false;
 
-    // printf("\n                                   ");
-    // for (int x = int(pos.x); x != int(new_pos.x); x += dir_sign.x) {
-    //     if (is_block_solid(glm::vec3(x, pos.yz()))) {
-    //         printf("\rhello x\n");
-    //         velocity.x = 0.0f;
-    //         delta_pos.x = x + (dir_sign.x == 1 ? 0.99f : 0.01f) - pos.x;
-    //         // delta_pos.x = x + glm::clamp(float(dir_sign.x), 0.01f, 0.99f) - pos.x;
-    //         break;
-    //     }
-    // }
-    // for (int y = int(pos.y); y != int(new_pos.y); y += dir_sign.y) {
-    //     if (is_block_solid(glm::vec3(pos.x, y, pos.z))) {
-    //         printf("\rhello y\n");
-    //         velocity.y = 0.0f;
-    //         delta_pos.y = y + (dir_sign.y == 1 ? 0.99f : 0.01f) - pos.y;
-    //         // delta_pos.y = y + glm::clamp(float(dir_sign.y), 0.01f, 0.99f) - pos.y;
-    //         break;
-    //     }
-    // }
-    // for (int z = int(pos.z); z != int(new_pos.z); z += dir_sign.z) {
-    //     if (is_block_solid(glm::vec3(pos.xy(), z))) {
-    //         printf("\rhello z\n");
-    //         velocity.z = 0.0f;
-    //         delta_pos.z = z + (dir_sign.z == 1 ? 0.99f : 0.01f) - pos.z;
-    //         // delta_pos.z = z + glm::clamp(float(dir_sign.z), 0.01f, 0.99f) - pos.z;
-    //         break;
-    //     }
-    // }
+    if (!(U.noclip && flying)) {
+        for (int n = 0; n < 3; ++n) {
+            std::list<raycast_util::Intersection> intersections = raycast_util::calc_ray_voxel_intersections(start_pos, end_pos, collision_margin);
 
-    // if (collide.x) {
-    //     velocity.x = 0.0f;
-    //     delta_pos.x *= move_fac.x;
-    // }
-    // if (collide.y) {
-    //     velocity.y = 0.0f;
-    //     delta_pos.y *= move_fac.y;
-    // }
-    // if (collide.z) {
-    //     velocity.z = 0.0f;
-    //     delta_pos.z *= move_fac.z;
-    // }
+            bool collided = false;
+            for (auto i : intersections) {
+                if (block_type::block_collidable[world_ptr->get_block(i.block)->type]) {
+                    start_pos = i.pos;
+                    switch (i.axis) {
+                        case 'X':
+                            velocity.x = 0.0f;
+                            end_pos.x = i.pos.x;
+                            break;
+                        case 'Y':
+                            if (!flying && velocity.y > 0) {
+                                is_on_ground = true;
+                            }
+                            velocity.y = 0.0f;
+                            end_pos.y = i.pos.y;
+                            break;
+                        case 'Z':
+                            velocity.z = 0.0f;
+                            end_pos.z = i.pos.z;
+                            break;
+                    }
+                    collided = true;
+                    break;
+                }
+            }
+            if (!collided) break;
+        }
+    }
 
-    // printf("\n%f\n%f\n%f\n", delta_pos.y);
-
-    move(delta_pos);
+    move(end_pos - pos);
 }
 
 void Controller::register_input_keys() {
@@ -336,19 +308,12 @@ void Controller::calc_looked_at_block(bool adjacent) {
     const glm::vec3 start = camera.pos;
     const glm::vec3 end = start + dir * interact_range;
 
-    std::list<raycast_util::Intersection> intersections = raycast_util::calc_ray_voxel_intersections(start, end);
+    std::list<raycast_util::Intersection> intersections = raycast_util::calc_ray_voxel_intersections(start, end, 0.0f);
 
     for (auto i : intersections) {
         if (world_ptr->get_block(i.block)->type != block_type::EMPTY) {
-            if (adjacent) {
-                looked_at_block = std::optional<glm::ivec3> {
-                    i.block - glm::ivec3(glm::sign(dir)) * ((i.axis == 'X') ? glm::ivec3(1, 0, 0) : ((i.axis == 'Y') ? glm::ivec3(0, 1, 0) : glm::ivec3(0, 0, 1)))
-                };
-                return;
-            } else {
-                looked_at_block = std::optional<glm::ivec3> {i.block};
-                return;
-            }
+            looked_at_block = std::optional<glm::ivec3> {i.block - (adjacent ? i.block_offset : glm::ivec3(0.0f))};
+            return;
         }
     }
 

@@ -13,6 +13,7 @@ struct user_settings {
     int fps = 24;
     float fov = 70.0f;
     float look_sensitivity = 40.0f;
+    bool noclip = false;
 
     bool fixed_window_size = false;
     int width = 80;

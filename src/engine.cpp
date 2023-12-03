@@ -1,5 +1,6 @@
 #include "engine.hpp"
 
+
 using namespace std;
 
 namespace tc {
@@ -103,11 +104,12 @@ string Engine::debug_info_string() {
 
     ss << "Debug info\n";
 
+    ss << std::fixed << std::setprecision(2);
     ss << "fps: " << static_cast<int>(fps) << "\n";
     ss << "screen: " << X_size << "x" << Y_size << "\n";
     ss << "running time: " << global_time << "s\n";
     ss << "in-game time: "  << setfill('0') << setw(2) << time_of_day_hours << ":"
-       << setw(2) << floor((time_of_day*24.0f - time_of_day_hours) * 60) << "\n";
+       << setw(2) << (int)floor((time_of_day*24.0f - time_of_day_hours) * 60) << "\n";
     ss << "coords: " << pos.x << " " << pos.y << " " << pos.z << "\n";
     ss << "velocity: " << velocity.x << " " << velocity.y << " " << velocity.z << "\n";
     ss << "yaw: " << look.x << " deg\n";

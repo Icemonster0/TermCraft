@@ -2,14 +2,14 @@
 
 namespace tc::raycast_util {
 
-Intersection::Intersection(glm::vec3 p_pos, glm::ivec3 p_block, char p_axis)
-    : pos(p_pos), block(p_block), axis(p_axis) {
+Intersection::Intersection(glm::vec3 p_pos, glm::ivec3 p_block, glm::ivec3 p_block_offset, char p_axis)
+    : pos(p_pos), block(p_block), block_offset(p_block_offset), axis(p_axis) {
 }
 
-std::list<Intersection> calc_ray_voxel_intersections(const glm::vec3 start, const glm::vec3 end) {
+std::list<Intersection> calc_ray_voxel_intersections(const glm::vec3 start, const glm::vec3 end, const float margin) {
     const glm::vec3 ray = end - start;
     const float ray_length = glm::length(ray);
-    const glm::vec ray_dir = ray / ray_length;
+    const glm::vec3 ray_dir = (ray_length == 0.0f) ? (glm::vec3(0.0f)) : (ray / ray_length);
     const glm::ivec3 dir_sign = glm::sign(ray_dir);
 
     const float inv_denom_x = 1.0f / ray.x;
@@ -41,30 +41,36 @@ std::list<Intersection> calc_ray_voxel_intersections(const glm::vec3 start, cons
     std::list<Intersection> intersections;
 
     float length = 0.0f;
-    while (length <= ray_length) {
+    while (true) {
         if (next_step_x < next_step_y && next_step_x < next_step_z) {
             length += next_step_x;
+            if (length > ray_length) break;
             next_step_y -= next_step_x;
             next_step_z -= next_step_x;
             next_step_x = full_step_x;
-            block += dir_sign * glm::ivec3(1, 0, 0);
-            intersections.emplace_back(start + ray_dir * length, block, 'X');
+            const glm::ivec3 block_offset = dir_sign * glm::ivec3(1, 0, 0);
+            block += block_offset;
+            intersections.emplace_back(start + ray_dir * length - margin * glm::vec3(block_offset), block, block_offset, 'X');
         }
         else if (next_step_y < next_step_x && next_step_y < next_step_z) {
             length += next_step_y;
+            if (length > ray_length) break;
             next_step_x -= next_step_y;
             next_step_z -= next_step_y;
             next_step_y = full_step_y;
-            block += dir_sign * glm::ivec3(0, 1, 0);
-            intersections.emplace_back(start + ray_dir * length, block, 'Y');
+            const glm::ivec3 block_offset = dir_sign * glm::ivec3(0, 1, 0);
+            block += block_offset;
+            intersections.emplace_back(start + ray_dir * length - margin * glm::vec3(block_offset), block, block_offset, 'Y');
         }
         else {
             length += next_step_z;
+            if (length > ray_length) break;
             next_step_x -= next_step_z;
             next_step_y -= next_step_z;
             next_step_z = full_step_z;
-            block += dir_sign * glm::ivec3(0, 0, 1);
-            intersections.emplace_back(start + ray_dir * length, block, 'Z');
+            const glm::ivec3 block_offset = dir_sign * glm::ivec3(0, 0, 1);
+            block += block_offset;
+            intersections.emplace_back(start + ray_dir * length - margin * glm::vec3(block_offset), block, block_offset, 'Z');
         }
     }
 

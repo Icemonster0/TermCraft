@@ -41,8 +41,9 @@ It is recommended to turn off the delay on repeat keys in the system settings (p
 
 `w` `a` `s` `d`: Movement  
 `i` `j` `k` `l`: Look/Turn  
-`space`: fly up  
-`c`: fly down  
+`space`: jump / fly up  
+`c`: toggle crouch / fly down  
+`x`: toggle between walk and fly  
 `e`: break block  
 `f`: place block  
 `1`-`9`: select block in hand  
@@ -113,6 +114,7 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 | `--disable-textures` | Use flat colors instead of textures |
 | `--fixed-window-size` | Enable the `width` and `height` settings (if not set: automatic window size) |
 | `--help` | Display a similar help message to these tables and exit |
+| `--noclip` | When in fly mode, disable collisions (not in walk mode, so that you don't fall through the ground) |
 
 ### License
 TermCraft is licensed under the [MIT License](LICENSE). Thanks to lewing@isc.tamu.edu Larry Ewing and The GIMP for the tux easteregg!

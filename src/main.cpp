@@ -27,6 +27,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_setting<float>("start-time", 10.0f, "Starting time of day (in 24-hour clock)");
     clom.register_setting<float>("time-scale", 60.0f, "Speed up factor of time of day (1 = real life scale; 60 (default) = 24 in game hours hours last 24 real life minutes)");
     clom.register_setting<float>("look-sensitivity", 40.0f, "Look/turn speed in degrees per second");
+    clom.register_flag("--noclip", "When flying, disable collisions");
 
     clom.generate_user_hint("TermCraft");
     clom.process_cl_options(argc, argv);
@@ -59,6 +60,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.start_time = clom.get_setting_value<float>("start-time");
     U.time_scale = clom.get_setting_value<float>("time-scale");
     U.look_sensitivity = clom.get_setting_value<float>("look-sensitivity");
+    U.noclip = clom.is_flag_set("--noclip");
 }
 
 int main(int argc, char const *argv[]) {
