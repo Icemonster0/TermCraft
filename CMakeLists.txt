@@ -22,6 +22,7 @@ add_library(libs_module
     src/controller/camera.cpp
     src/world/world.cpp
     src/world/mesh_util.cpp
+    src/world/raycast_util.cpp
     src/world/block.cpp
     src/world/chunk.cpp
     src/stb.cpp

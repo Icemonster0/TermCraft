@@ -7,10 +7,12 @@
 #include "input_state.hpp"
 #include "../world/world.hpp"
 #include "../world/block.hpp"
+#include "../world/raycast_util.hpp"
 #include "../user_settings.hpp"
 
 #include <algorithm>
 #include <optional>
+#include <list>
 
 namespace tc {
 

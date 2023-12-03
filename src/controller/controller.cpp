@@ -3,18 +3,16 @@
 namespace tc {
 
 #define GRAVITY 9.81f
-#define ACCELERATION 30.0f
-#define AIR_ACCELERATION 1.0f
-#define BRAKE_FACTOR 10.0f
-#define AIR_BRAKE_FACTOR 0.1f
-#define MAX_NORMAL_SPEED 3.0f
-#define MAX_SPRINT_SPEED 10.0f
-#define MAX_CROUCH_SPEED 1.0f
+#define ACCELERATION 10.0f
+#define AIR_ACCELERATION 2.0f
+#define MAX_NORMAL_SPEED 7.0f
+#define MAX_SPRINT_SPEED 15.0f
+#define MAX_CROUCH_SPEED 1.5f
 #define JUMP_STRENGTH 5.0f
 #define TERMINAL_FALLING_VELOCITY 50.0f
 #define NORMAL_HEIGHT 1.62f
 #define CROUCH_HEIGHT 1.50f
-#define VELOCITY_TERMINATOR 0.1f
+#define VELOCITY_TERMINATOR 0.01f
 
 // public:
 
@@ -92,77 +90,130 @@ block_type::Block_Type Controller::get_active_block_type() {
 // private:
 
 void Controller::simulate(float delta_time) {
-    glm::vec2 dir {
-        (input_state.get_key('d') ? 1.0f : 0.0f) - (input_state.get_key('a') ? 1.0f : 0.0f),
-        (input_state.get_key('w') ? 1.0f : 0.0f) - (input_state.get_key('s') ? 1.0f : 0.0f)
+    glm::vec3 dir {
+       (input_state.get_key('d') ? 1.0f : 0.0f) - (input_state.get_key('a') ? 1.0f : 0.0f),
+       (input_state.get_key('c') ? 1.0f : 0.0f) - (input_state.get_key(' ') ? 1.0f : 0.0f),
+       (input_state.get_key('w') ? 1.0f : 0.0f) - (input_state.get_key('s') ? 1.0f : 0.0f)
     };
-    bool moving = glm::any(glm::notEqual(dir, glm::vec2(0.0f)));
 
+    // vertical movement
+    dir.y = flying ? dir.y : 0.0f;
+
+    const bool moving = glm::any(glm::notEqual(dir, glm::vec3(0.0f)));
     if (moving) dir = glm::normalize(dir);
-    dir = dir.x * camera.get_right_vector().xz() + dir.y * camera.get_h_forward_vector().xz();
-
-    float vertical_dir = (input_state.get_key('c') ? 1.0f : 0.0f) - (input_state.get_key(' ') ? 1.0f : 0.0f);
-    bool vertically_moving = vertical_dir != 0.0f;
-
-    if (!flying) {
-        if (input_state.get_key('c')) {
-            toggle_crouch();
-        }
-
-        if (is_block_solid(pos)) {
-            if (moving) {
-                velocity += glm::vec3(dir.x, 0.0f, dir.y) * ACCELERATION * delta_time;
-            } else {
-                velocity.x = glm::mix(velocity.x, 0.0f, BRAKE_FACTOR * delta_time);
-                velocity.z = glm::mix(velocity.z, 0.0f, BRAKE_FACTOR * delta_time);
-            }
-
-            if (input_state.get_key(' ')) {
-                velocity.y = -JUMP_STRENGTH * (crouching ? 0.5f : 1.0f);
-                is_on_ground = false;
-            } else {
-                velocity.y = 0.0f;
-                is_on_ground = true;
-            }
-        }
-        else {
-            if (moving) {
-                velocity += glm::vec3(dir.x, 0.0f, dir.y) * AIR_ACCELERATION * delta_time;
-            } else {
-                velocity.x = glm::mix(velocity.x, 0.0f, AIR_BRAKE_FACTOR * delta_time);
-                velocity.z = glm::mix(velocity.z, 0.0f, AIR_BRAKE_FACTOR * delta_time);
-            }
-
-            velocity.y += GRAVITY * delta_time;
-        }
-    }
-    else { // if (flying)
-        if (moving) {
-            velocity += glm::vec3(dir.x, 0.0f, dir.y) * ACCELERATION * delta_time;
-        } else {
-            velocity.x = glm::mix(velocity.x, 0.0f, BRAKE_FACTOR * delta_time);
-            velocity.z = glm::mix(velocity.z, 0.0f, BRAKE_FACTOR * delta_time);
-        }
-        if (vertically_moving) {
-            velocity.y += vertical_dir * ACCELERATION * delta_time;
-        } else {
-            velocity.y = glm::mix(velocity.y, 0.0f, BRAKE_FACTOR * delta_time);
-        }
-    }
+    dir = dir.x * camera.get_right_vector()
+        + dir.y * glm::vec3(0.0f, 1.0f, 0.0f)
+        + dir.z * camera.get_h_forward_vector();
 
     const float max_horizontal_speed = sprinting ? MAX_SPRINT_SPEED : (crouching ? MAX_CROUCH_SPEED : MAX_NORMAL_SPEED);
-    if (velocity.x*velocity.x + velocity.z*velocity.z > max_horizontal_speed*max_horizontal_speed) {
-        glm::vec2 new_velocity = glm::normalize(velocity.xz()) * max_horizontal_speed;
-        velocity = glm::vec3(new_velocity.x, velocity.y, new_velocity.y);
+    const float max_vertical_speed = flying ? max_horizontal_speed : TERMINAL_FALLING_VELOCITY;
+    const float horizontal_acceleration = (flying || is_on_ground) ? ACCELERATION : AIR_ACCELERATION;
+    const float vertical_acceleration = flying ? ACCELERATION : GRAVITY;
+
+    glm::vec3 target_speed {
+        dir.x * max_horizontal_speed,
+        flying ? (dir.y * max_vertical_speed) : velocity.y,
+        dir.z * max_horizontal_speed
+    };
+
+    // apply player movement acceleration
+    velocity = glm::mix (
+        velocity,
+        target_speed,
+        glm::clamp(glm::vec3(
+            horizontal_acceleration,
+            vertical_acceleration,
+            horizontal_acceleration
+        ) * delta_time, glm::vec3(0.0f), glm::vec3(1.0f))
+    );
+
+    // apply gravity
+    if (!flying) {
+        if (!is_on_ground) {
+            velocity.y += GRAVITY * delta_time;
+        }
+        velocity.y = glm::clamp(velocity.y, -max_vertical_speed, max_vertical_speed);
     }
 
-    const float max_vertical_speed = flying ? max_horizontal_speed : TERMINAL_FALLING_VELOCITY;
-    velocity.y = glm::clamp(velocity.y, -max_vertical_speed, max_vertical_speed);
-
+    // velocity termination
     if (glm::all(glm::lessThan(glm::abs(velocity), glm::vec3(VELOCITY_TERMINATOR))))
         velocity = glm::vec3(0.0f);
 
-    move(velocity * delta_time);
+    // solve collisions (dirty, but works)
+    glm::vec3 delta_pos = velocity * delta_time;
+    // glm::vec3 move_fac {-1.0f};
+    // glm::bvec3 collide {false};
+    const glm::vec3 new_pos = pos + delta_pos;
+    const glm::ivec3 dir_sign = glm::sign(delta_pos);
+
+    // const float global_step = 0.1f;
+    // const float step = glm::length(delta_pos) / global_step;
+    // if (step > 0.0f) {
+    //     for (float fac = 0.0f; fac <= 1.0f; fac += step) {
+    //         const glm::vec3 point = pos + delta_pos * fac;
+    //         if (is_block_solid(point)) {
+    //             if (!collide.x && (int)point.x != (int)pos.x) {
+    //                 move_fac.x = delta_pos.x * fac;
+    //                 collide.x = true;
+    //             }
+    //             if (!collide.y && (int)point.y != (int)pos.y) {
+    //                 move_fac.y = delta_pos.y * fac;
+    //                 collide.y = true;
+    //             }
+    //             if (!collide.z && (int)point.z != (int)pos.z) {
+    //                 move_fac.z = delta_pos.z * fac;
+    //                 collide.z = true;
+    //             }
+    //         }
+    //     }
+    // }
+    // for (float x = pos.x; x < new_pos.x; )
+
+    // printf("\n                                   ");
+    // for (int x = int(pos.x); x != int(new_pos.x); x += dir_sign.x) {
+    //     if (is_block_solid(glm::vec3(x, pos.yz()))) {
+    //         printf("\rhello x\n");
+    //         velocity.x = 0.0f;
+    //         delta_pos.x = x + (dir_sign.x == 1 ? 0.99f : 0.01f) - pos.x;
+    //         // delta_pos.x = x + glm::clamp(float(dir_sign.x), 0.01f, 0.99f) - pos.x;
+    //         break;
+    //     }
+    // }
+    // for (int y = int(pos.y); y != int(new_pos.y); y += dir_sign.y) {
+    //     if (is_block_solid(glm::vec3(pos.x, y, pos.z))) {
+    //         printf("\rhello y\n");
+    //         velocity.y = 0.0f;
+    //         delta_pos.y = y + (dir_sign.y == 1 ? 0.99f : 0.01f) - pos.y;
+    //         // delta_pos.y = y + glm::clamp(float(dir_sign.y), 0.01f, 0.99f) - pos.y;
+    //         break;
+    //     }
+    // }
+    // for (int z = int(pos.z); z != int(new_pos.z); z += dir_sign.z) {
+    //     if (is_block_solid(glm::vec3(pos.xy(), z))) {
+    //         printf("\rhello z\n");
+    //         velocity.z = 0.0f;
+    //         delta_pos.z = z + (dir_sign.z == 1 ? 0.99f : 0.01f) - pos.z;
+    //         // delta_pos.z = z + glm::clamp(float(dir_sign.z), 0.01f, 0.99f) - pos.z;
+    //         break;
+    //     }
+    // }
+
+    // if (collide.x) {
+    //     velocity.x = 0.0f;
+    //     delta_pos.x *= move_fac.x;
+    // }
+    // if (collide.y) {
+    //     velocity.y = 0.0f;
+    //     delta_pos.y *= move_fac.y;
+    // }
+    // if (collide.z) {
+    //     velocity.z = 0.0f;
+    //     delta_pos.z *= move_fac.z;
+    // }
+
+    // printf("\n%f\n%f\n%f\n", delta_pos.y);
+
+    move(delta_pos);
 }
 
 void Controller::register_input_keys() {
@@ -285,60 +336,19 @@ void Controller::calc_looked_at_block(bool adjacent) {
     const glm::vec3 start = camera.pos;
     const glm::vec3 end = start + dir * interact_range;
 
-    glm::vec3 diff = end - start;
-    float interact_range_squared = interact_range * interact_range;
+    std::list<raycast_util::Intersection> intersections = raycast_util::calc_ray_voxel_intersections(start, end);
 
-    glm::ivec3 block = start;
-    const glm::ivec3 dir_sign = glm::sign(dir);
-    glm::ivec3 block_step {0};
-
-    glm::ivec3 next_border {};
-
-    for (int i = 0; i < 100; ++i) {
-        if (world_ptr->get_block(block)->type != block_type::EMPTY) {
+    for (auto i : intersections) {
+        if (world_ptr->get_block(i.block)->type != block_type::EMPTY) {
             if (adjacent) {
-                looked_at_block = std::optional<glm::ivec3> {block - block_step};
+                looked_at_block = std::optional<glm::ivec3> {
+                    i.block - glm::ivec3(glm::sign(dir)) * ((i.axis == 'X') ? glm::ivec3(1, 0, 0) : ((i.axis == 'Y') ? glm::ivec3(0, 1, 0) : glm::ivec3(0, 0, 1)))
+                };
                 return;
             } else {
-                looked_at_block = std::optional<glm::ivec3> {block};
+                looked_at_block = std::optional<glm::ivec3> {i.block};
                 return;
             }
-        }
-
-        glm::bvec3 is_block_negative = glm::lessThan(glm::sign(block), glm::ivec3(0));
-        next_border.x = block.x + std::clamp(dir_sign.x, 0 - is_block_negative.x, 1 - is_block_negative.x);
-        next_border.y = block.y + std::clamp(dir_sign.y, 0 - is_block_negative.y, 1 - is_block_negative.y);
-        next_border.z = block.z + std::clamp(dir_sign.z, 0 - is_block_negative.z, 1 - is_block_negative.z);
-
-        float intersect_x_fac = (next_border.x - start.x) / (end.x - start.x);
-        glm::ivec2 intersect_x {
-            start.y + (end.y - start.y) * intersect_x_fac,
-            start.z + (end.z - start.z) * intersect_x_fac
-        };
-        float intersect_y_fac = (next_border.y - start.y) / (end.y - start.y);
-        glm::ivec2 intersect_y {
-            start.x + (end.x - start.x) * intersect_y_fac,
-            start.z + (end.z - start.z) * intersect_y_fac
-        };
-        float intersect_z_fac = (next_border.z - start.z) / (end.z - start.z);
-        glm::ivec2 intersect_z {
-            start.x + (end.x - start.x) * intersect_z_fac,
-            start.y + (end.y - start.y) * intersect_z_fac
-        };
-
-        if (intersect_x == block.yz()) {
-            block_step = glm::ivec3 {1, 0, 0} * dir_sign;
-        } else if (intersect_y == block.xz()) {
-            block_step = glm::ivec3 {0, 1, 0} * dir_sign;
-        } else if (intersect_z == block.xy()) {
-            block_step = glm::ivec3 {0, 0, 1} * dir_sign;
-        }
-
-        block += block_step;
-
-        glm::vec3 diff = glm::vec3(block) - start;
-        if ((diff.x*diff.x + diff.y*diff.y + diff.z*diff.z) > interact_range_squared) {
-            break;
         }
     }
 
