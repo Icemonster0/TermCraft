@@ -27,6 +27,9 @@ public:
     void simulation_step(float delta_time);
     void update_aspect(float value);
     void get_params(glm::vec3 *pos_ptr, glm::vec3 *velocity_ptr, glm::vec2 *look_ptr);
+    bool is_flying();
+    bool is_sprinting();
+    bool is_crouching();
     block_type::Block_Type get_active_block_type();
 
 private:

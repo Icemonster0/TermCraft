@@ -21,9 +21,9 @@ Controller::Controller(glm::vec3 p_pos,
                        float p_interact_range,
                        World *p_world_ptr) :
                        pos(p_pos),
-                       old_pos({-1.0f}),
-                       velocity({0.0f}),
-                       flying(true),
+                       old_pos(-1.0f),
+                       velocity(0.0f),
+                       flying(false),
                        crouching(false),
                        sprinting(false),
                        is_on_ground(false),
@@ -81,6 +81,18 @@ void Controller::get_params(glm::vec3 *pos_ptr, glm::vec3 *velocity_ptr, glm::ve
     *pos_ptr = pos;
     *velocity_ptr = velocity;
     *look_ptr = glm::vec2(camera.yaw, camera.pitch);
+}
+
+bool Controller::is_flying() {
+    return flying;
+}
+
+bool Controller::is_sprinting() {
+    return sprinting;
+}
+
+bool Controller::is_crouching() {
+    return crouching;
 }
 
 block_type::Block_Type Controller::get_active_block_type() {

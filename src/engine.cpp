@@ -71,7 +71,7 @@ void Engine::render_loop() {
 
         update_window_size();
         controller.simulation_step(delta_time);
-        render.set_params(X_size, Y_size, global_time, time_of_day, controller.get_V_matrix(), controller.get_VP_matrix(), controller.get_active_block_type());
+        render.set_params(X_size, Y_size, global_time, time_of_day, controller.get_V_matrix(), controller.get_VP_matrix(), controller.get_active_block_type(), controller.is_flying(), controller.is_sprinting(), controller.is_crouching());
         if (U.debug_info) render.set_debug_info(debug_info_string());
 
         system_catch_error("tput cup 0 0", 4);

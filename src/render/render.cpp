@@ -34,7 +34,7 @@ void Render::set_debug_info(std::string debug_info) {
     }
 }
 
-void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, float p_time_of_day, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type) {
+void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, float p_time_of_day, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type, bool p_flying, bool p_sprinting, bool p_crouching) {
     X_size = p_X_size;
     Y_size = p_Y_size;
     global_time = p_global_time;
@@ -43,6 +43,9 @@ void Render::set_params(int p_X_size, int p_Y_size, float p_global_time, float p
     VP = p_VP;
     V = p_V;
     active_block_type = p_active_block_type;
+    flying = p_flying;
+    sprinting = p_sprinting;
+    crouching = p_crouching;
 }
 
 void Render::get_params(int *n_tris_ptr, int *n_active_tris_ptr) {
@@ -198,8 +201,8 @@ void Render::rasterize(mesh *m) {
                             + b2 * triangle.vertices[2].pos.z;
 
                     // interpolate alpha
-                    const Texture_Set *tex_set = (triangle.block_ptr->type < 0 ||
-                                                  triangle.block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
+                    const Texture_Set *tex_set = ((int)triangle.block_ptr->type < 0 ||
+                                                  (int)triangle.block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
                                                   &block_type::block_texture[0] :
                                                   &block_type::block_texture[triangle.block_ptr->type];
                     float a = U.disable_textures ?
@@ -279,29 +282,37 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
     }
 
     // Construct HUD
+    const int offset = 3; // has to be at least 2
     // block selector
-    for (int i = 1; i < std::extent<decltype(block_type::block_color)>::value && Y_size-2 - i >= 0; ++i) {
+    for (int i = 1; i < std::extent<decltype(block_type::block_color)>::value && Y_size - offset - i >= 0; ++i) {
         std::string font_style = string {"\x1b[1"}
                                  .append((i == active_block_type) ? ";7m" : "m")
                                  .append(draw_util::auto_color_string(draw_util::FG,  glm::vec3(1.0f)));
         std::string middle_part = string{}
                                   .append(U.color_mode == "ASCII" ?
                                       string {block_type::block_initial[i]} :
-                                      draw_util::auto_color_string(draw_util::BG,  block_type::block_color[i]).append(" ")
+                                      draw_util::auto_color_string(draw_util::BG, block_type::block_color[i]).append(" ")
                                   )
                                   .append(draw_util::ansi_clear_string());
-        hud_buf.buf[0][Y_size-2 - i] = string{}
-                                       .append(font_style)
-                                       .append(to_string(i));
-        hud_buf.buf[1][Y_size-2 - i] = string{}
-                                       .append(font_style)
-                                       .append("[");
-        hud_buf.buf[2][Y_size-2 - i] = middle_part;
-        hud_buf.buf[3][Y_size-2 - i] = middle_part;
-        hud_buf.buf[4][Y_size-2 - i] = string{}
-                                       .append(font_style)
-                                       .append("]");
+        hud_buf.buf[0][Y_size - offset - i] = string{}
+                                            .append(font_style)
+                                            .append(to_string(i));
+        hud_buf.buf[1][Y_size - offset - i] = string{}
+                                            .append(font_style)
+                                            .append("[");
+        hud_buf.buf[2][Y_size - offset - i] = middle_part;
+        hud_buf.buf[3][Y_size - offset - i] = middle_part;
+        hud_buf.buf[4][Y_size - offset - i] = string{}
+                                            .append(font_style)
+                                            .append("]");
     }
+    // controller state indicators
+    string indicator_style = string{}.append(draw_util::auto_color_string(draw_util::FG, glm::vec3(0.0f)))
+                                     .append(draw_util::auto_color_string(draw_util::BG, glm::vec3(1.0f)))
+                                     .append("\x1b[1m");
+    if (flying)    hud_buf.buf[1][Y_size - offset + 1] = string {indicator_style}.append("X");
+    if (sprinting) hud_buf.buf[2][Y_size - offset + 1] = string {indicator_style}.append("P");
+    if (crouching) hud_buf.buf[3][Y_size - offset + 1] = string {indicator_style}.append("C");
 }
 
 void Render::draw_fbuf() {
