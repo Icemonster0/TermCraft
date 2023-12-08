@@ -28,6 +28,7 @@ struct user_settings {
 
     bool debug_info = false;
     bool bad_normals = false;
+    bool hide_hud = false;
 
     float start_time = 10.0f;
     float time_scale = 60.0f;

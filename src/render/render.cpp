@@ -15,7 +15,7 @@ void Render::render(mesh m) {
     execute_vertex_shader(&m, vert_shaders::VERT_camera);
     rasterize(&m);
     execute_fragment_and_post_shaders(frag_shaders::FRAG_shaded, post_shaders::POST_vignette);
-    construct_hud();
+    if (!U.hide_hud) construct_hud();
     draw_fbuf();
 }
 
