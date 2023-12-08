@@ -33,7 +33,7 @@ public:
 
     void render(mesh m);
     void set_debug_info(std::string debug_info);
-    void set_params(int p_X_size, int p_Y_size, float p_global_time, float p_time_of_day, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type);
+    void set_params(int p_X_size, int p_Y_size, float p_global_time, float p_time_of_day, glm::mat4 p_V, glm::mat4 p_VP, block_type::Block_Type p_active_block_type, bool p_flying, bool p_crouching, bool p_sprinting);
     void get_params(int *n_tris_ptr, int *n_active_tris_ptr);
 
 private:
@@ -43,6 +43,7 @@ private:
     void rasterize(mesh *m);
     void execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment, glm::vec3, float, float),
                                            glm::vec3 (*post_shader)(const buffer<glm::vec3>*, glm::ivec2, glm::ivec2, float));
+    void construct_hud();
     void draw_fbuf();
 
     int X_size;
@@ -54,6 +55,8 @@ private:
     glm::mat4 VP = glm::mat4 {};
     glm::mat4 V = glm::mat4 {};
     block_type::Block_Type active_block_type {};
+
+    bool flying, crouching, sprinting;
 
     int n_tris = 0;
     int n_active_tris = 0;
