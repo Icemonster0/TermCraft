@@ -28,8 +28,13 @@ add_library(libs_module
     src/stb.cpp
 )
 
-target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)
-#target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3 -pg)
+# use this for valgrind: -pg
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang"))
+    message("Darwin Clang detected")
+    target_compile_options(libs_module BEFORE PUBLIC -Xpreprocessor -fopenmp -O3)
+else()
+    target_compile_options(libs_module BEFORE PUBLIC -fopenmp -O3)
+endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libs_module pthread)
