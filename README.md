@@ -1,8 +1,7 @@
-# TermCraft - WIP
+# TermCraft
 A 3D Minecraft clone running in the terminal.
 
-## Work in progress
-This is an early version of the project. [Many features](doc/TODO.md) are still missing.
+This is quite a minimal implementation and [many features](doc/TODO.md) are still planned.
 
 | House | Tux Shrine |
 |:-----:|:----------:|
