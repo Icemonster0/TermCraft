@@ -75,17 +75,34 @@ float cc_signed_area(glm::vec2 a, glm::vec2 b, glm::vec2 c) {
 }
 
 bool is_tri_in_NDC(tri t) {
-    glm::vec3 a = t.vertices[0].pos;
-    glm::vec3 b = t.vertices[1].pos;
-    glm::vec3 c = t.vertices[2].pos;
+    const glm::vec3 a = t.vertices[0].pos;
+    const glm::vec3 b = t.vertices[1].pos;
+    const glm::vec3 c = t.vertices[2].pos;
 
     /* If no plane (NDC box side) exists which every vertex is outside of,
-     * the triangle is in NDC space. */
+     * the triangle is in NDC space.
+     * Refrased:
+     * If for every plane there is at least one vertex inside of that plane,
+     * the triangle is in NDC space.
+     * Note that this is only an approximation. */
     return (
         (abs(a.x) < 1 || abs(b.x) < 1 || abs(c.x) < 1) &&
         (abs(a.y) < 1 || abs(b.y) < 1 || abs(c.y) < 1) &&
         (abs(a.z) < 1 || abs(b.z) < 1 || abs(c.z) < 1)
     );
+    // return (
+    //     (a.x <  1 || b.x <  1 || c.x <  1) &&
+    //     (a.x > -1 || b.x > -1 || c.x > -1) &&
+    //     (a.y <  1 || b.y <  1 || c.y <  1) &&
+    //     (a.y > -1 || b.y > -1 || c.y > -1) &&
+    //     (a.z <  1 || b.z <  1 || c.z <  1) &&
+    //     (a.z > -1 || b.z > -1 || c.z > -1)
+    // );
+    // return (
+    //     (glm::all(glm::lessThan(a, glm::vec3(1.0f))) && glm::all(glm::greaterThan(a, glm::vec3(-1.0f)))) ||
+    //     (glm::all(glm::lessThan(b, glm::vec3(1.0f))) && glm::all(glm::greaterThan(b, glm::vec3(-1.0f)))) ||
+    //     (glm::all(glm::lessThan(c, glm::vec3(1.0f))) && glm::all(glm::greaterThan(c, glm::vec3(-1.0f))))
+    // );
 }
 
 } /* end of namespace tc::draw_util */

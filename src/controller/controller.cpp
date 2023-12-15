@@ -13,6 +13,7 @@ namespace tc {
 #define NORMAL_HEIGHT 1.62f
 #define CROUCH_HEIGHT 1.50f
 #define VELOCITY_TERMINATOR 0.01f
+#define TURN_ACCELERATION 0.05f
 
 // public:
 
@@ -29,8 +30,10 @@ Controller::Controller(glm::vec3 p_pos,
                        is_on_ground(false),
                        height(NORMAL_HEIGHT),
                        interact_range(p_interact_range),
-                       world_ptr(p_world_ptr),
-                       active_block_type(block_type::GRASS) {
+                       turning_direction(0.0f),
+                       turning_speed_fac(0.0f),
+                       active_block_type(block_type::GRASS),
+                       world_ptr(p_world_ptr) {
 
     camera = Camera {U.fov, // fov
                      p_aspect, // aspect ratio
@@ -209,11 +212,11 @@ void Controller::register_input_keys() {
 
     // fly / jump / walk / crouch / sprint
     input_state.add_key(' ');
-    input_state.add_key('c');
+    input_state.add_single_event_key('c');
     input_state.add_single_event_key('x');
     input_state.add_single_event_key('p');
 
-    // look
+    // look / turn
     input_state.add_key('i');
     input_state.add_key('k');
     input_state.add_key('j');
@@ -245,16 +248,16 @@ void Controller::evaluate_misc_inputs(float delta_time) {
     if (input_state.get_key('p'))
         toggle_sprint();
 
-    // look
+    // look / turn
 
-    if (input_state.get_key('i'))
-        turn(glm::vec2(0.0f, U.look_sensitivity * delta_time));
-    if (input_state.get_key('k'))
-        turn(glm::vec2(0.0f, -U.look_sensitivity * delta_time));
-    if (input_state.get_key('j'))
-        turn(glm::vec2(U.look_sensitivity * delta_time, 0.0f));
-    if (input_state.get_key('l'))
-        turn(glm::vec2(-U.look_sensitivity * delta_time, 0.0f));
+    turning_direction.x = (input_state.get_key('j') ? 1.0f : 0.0f) - (input_state.get_key('l') ? 1.0f : 0.0f);
+    turning_direction.y = (input_state.get_key('i') ? 1.0f : 0.0f) - (input_state.get_key('k') ? 1.0f : 0.0f);
+    bool is_turning = glm::any(glm::notEqual(turning_direction, glm::vec2(0.0f)));
+
+    float target_speed = is_turning ? 1.0f : 0.0f;
+    turning_speed_fac = glm::mix(turning_speed_fac, target_speed, TURN_ACCELERATION);
+
+    turn(turning_direction * turning_speed_fac * U.look_sensitivity * delta_time);
 
     // interact
 
@@ -383,5 +386,6 @@ bool Controller::is_block_solid(glm::vec3 sample_point) {
 #undef NORMAL_HEIGHT
 #undef CROUCH_HEIGHT
 #undef VELOCITY_TERMINATOR
+#undef TURN_ACCELERATION
 
 } /* end of namespace tc */

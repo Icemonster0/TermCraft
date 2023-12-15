@@ -53,6 +53,8 @@ private:
     bool is_on_ground;
     float height;
     float interact_range;
+    glm::vec2 turning_direction;
+    float turning_speed_fac;
 
     block_type::Block_Type active_block_type;
     std::optional<glm::ivec3> looked_at_block;

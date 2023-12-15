@@ -26,7 +26,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_setting<int>("world-size", 10, "World x and z width in chunks");
     clom.register_setting<float>("start-time", 10.0f, "Starting time of day (in 24-hour clock)");
     clom.register_setting<float>("time-scale", 60.0f, "Speed up factor of time of day (1 = real life scale; 60 (default) = 24 in game hours hours last 24 real life minutes)");
-    clom.register_setting<float>("look-sensitivity", 40.0f, "Look/turn speed in degrees per second");
+    clom.register_setting<float>("look-sensitivity", 90.0f, "Look/turn speed in degrees per second");
     clom.register_flag("--noclip", "When flying, disable collisions");
     clom.register_flag("--hide-hud", "Disable the HUD");
 

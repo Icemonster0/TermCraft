@@ -112,7 +112,7 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 
             // screen transform
             for (vertex &v : triangle.vertices) {
-                v.screenpos = v.pos * 0.5f + 0.5f;
+                v.screenpos = v.pos.xy() * 0.5f + 0.5f;
                 v.screenpos.x *= X_size;
                 v.screenpos.y *= Y_size;
             }
@@ -134,12 +134,6 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 }
 
 void Render::rasterize(mesh *m) {
-    // std::sort(m->tri_list.begin(), m->tri_list.end(), [](tri a, tri b) {
-    //     float depth_a = (a.vertices[0].pos.z + a.vertices[1].pos.z + a.vertices[2].pos.z) / 3.0f;
-    //     float depth_b = (b.vertices[0].pos.z + b.vertices[1].pos.z + b.vertices[2].pos.z) / 3.0f;
-    //     return depth_a > depth_b;
-    // });
-
     #pragma omp parallel for schedule(static)
     for (tri &triangle : m->tri_list) {
 
@@ -202,8 +196,8 @@ void Render::rasterize(mesh *m) {
                             + b2 * triangle.vertices[2].pos.z;
 
                     // interpolate alpha
-                    const Texture_Set *tex_set = (triangle.block_ptr->type < 0 ||
-                                                  triangle.block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
+                    const Texture_Set *tex_set = ((int)triangle.block_ptr->type < 0 ||
+                                                  (int)triangle.block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
                                                   &block_type::block_texture[0] :
                                                   &block_type::block_texture[triangle.block_ptr->type];
                     float a = U.disable_textures ?
@@ -263,7 +257,6 @@ void Render::execute_fragment_and_post_shaders(glm::vec3 (*frag_shader)(fragment
 
             // Programmable Post Processing Shader
             fbuf.buf[x][y] = post_shader(&fbuf, {x, y}, {X_size, Y_size}, global_time);
-
 
             // debug info
             if (U.debug_info) {

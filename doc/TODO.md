@@ -17,6 +17,7 @@ and work in progress tasks with **bold**.
 - Fix triangle overlap / gap issue
 
 ## Done
+- ~~View acceleration~~
 - ~~Add walk controller~~
 - ~~Add global resource paths~~
 - ~~Day-night cycle~~
