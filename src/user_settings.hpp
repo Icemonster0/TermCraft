@@ -6,32 +6,32 @@
 #include <string>
 
 struct user_settings {
-    bool cursor_visible = false;
+    bool cursor_visible;
 
-    int world_size = 10;
+    int world_size;
 
-    int fps = 24;
-    float fov = 70.0f;
-    float look_sensitivity = 90.0f;
-    bool noclip = false;
+    int fps;
+    float fov;
+    float look_sensitivity;
+    bool noclip;
 
-    bool fixed_window_size = false;
-    int width = 80;
-    int height = 24;
+    bool fixed_window_size;
+    int width;
+    int height;
 
-    std::string color_mode = "FULL";
-    bool disable_textures = false;
+    std::string color_mode;
+    bool disable_textures;
 
-    glm::vec3 sky_color = {0.486f, 0.882f, 1.0f};
-    float render_distance = 100.0f;
-    float fog = 0.5f;
+    glm::vec3 sky_color;
+    float render_distance;
+    float fog;
 
-    bool debug_info = false;
-    bool bad_normals = false;
-    bool hide_hud = false;
+    bool debug_info;
+    bool bad_normals;
+    bool hide_hud;
 
-    float start_time = 10.0f;
-    float time_scale = 60.0f;
+    float start_time;
+    float time_scale;
 };
 
 /* This object needs to be declared in main.cpp */
