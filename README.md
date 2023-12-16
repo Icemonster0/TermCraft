@@ -43,6 +43,7 @@ It is recommended to turn off the delay on repeat keys in the system settings (p
 `space`: jump / fly up  
 `c`: toggle crouch / fly down  
 `x`: toggle between walk and fly  
+`p`: toggle sprint  
 `e`: break block  
 `f`: place block  
 `1`-`9`: select block in hand  
