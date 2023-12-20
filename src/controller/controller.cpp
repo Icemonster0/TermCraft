@@ -159,7 +159,7 @@ void Controller::simulate(float delta_time) {
         velocity = glm::vec3(0.0f);
 
     // solve collisions
-    const float collision_margin = 0.01f;
+    const float collision_margin = 0.001f;
     glm::vec3 start_pos = pos;
     glm::vec3 end_pos = pos + velocity * delta_time;
 

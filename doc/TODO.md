@@ -2,8 +2,9 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- Optimize get_block and get_chunk
-- Fix view clipping
+- Fix block in a corner not getting updated
+- Fix incorrect depth when clipped
+- Add proper error messages
 - Better world generation
 - Add tree generation
 - Add water
@@ -15,8 +16,10 @@ and work in progress tasks with **bold**.
 - Replace null_block with a better solution
 - Use an input library for simultaneous key press support
 - Fix triangle overlap / gap issue
+- Optimize get_block and get_chunk
 
 ## Done
+- ~~Fix view clipping~~
 - ~~View acceleration~~
 - ~~Add walk controller~~
 - ~~Add global resource paths~~

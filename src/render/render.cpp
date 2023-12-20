@@ -17,6 +17,12 @@ void Render::render(mesh m) {
     execute_fragment_and_post_shaders(frag_shaders::FRAG_shaded, post_shaders::POST_vignette);
     if (!U.hide_hud) construct_hud();
     draw_fbuf();
+    // for (tri &t : m.tri_list) {
+    //     printf("---\n");
+    //     printf("%f %f %f\n", t.vertices[0].pos.x, t.vertices[0].pos.y, t.vertices[0].pos.z);
+    //     printf("%f %f %f\n", t.vertices[1].pos.x, t.vertices[1].pos.y, t.vertices[1].pos.z);
+    //     printf("%f %f %f\n", t.vertices[2].pos.x, t.vertices[2].pos.y, t.vertices[2].pos.z);
+    // }
 }
 
 void Render::set_debug_info(std::string debug_info) {
@@ -87,14 +93,26 @@ void Render::execute_vertex_shader(mesh *m, void (*vert_shader)(vertex*, glm::ma
 
             /* Depth Division
              * pre-divides w too so that we can simply multiply in perspective
-             * correction (for performance; following OpenGL spec) */
+             * correction (for performance; following OpenGL spec)
+             *
+             * First, we make shure w isn't 0 or less, which is neccessary
+             * since we don't have proper triangle clipping. */
+            const float w_grad_start = -1.0f;
+            const float w_grad_end = 0.001f;
+            const float w_epsilon = 0.0001f;
+            if (v.pos.w < w_grad_start) {
+                v.pos.w = w_epsilon;
+            } else if (v.pos.w < w_grad_end) {
+                v.pos.w = ((v.pos.w - w_grad_start) / (w_grad_end - w_grad_start)) * (w_grad_end - w_epsilon) + w_epsilon;
+            }
+
             v.pos = glm::vec4(v.pos.xyz(), 1.0f) / v.pos.w;
         }
 
         /* View Clipping and Backface Culling
-         * If the triangle doesn't touch NDC space (enough)
+         * If the triangle doesn't touch NDC space
          * or is facing away from the camera,
-         * it is (usually) marked for death. */
+         * it is marked for death. */
         triangle.view_normal = triangle.calc_normal();
 
         bool backfacing = glm::sign(triangle.view_normal.z) >= 0;

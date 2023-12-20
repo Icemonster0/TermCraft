@@ -95,8 +95,8 @@ private:
     }
 
     static glm::vec3 face_color(fragment f) {
-        return (f.triangle->block_ptr->type < 0 ||
-                f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_color)>::value) ?
+        return ((int)f.triangle->block_ptr->type < 0 ||
+                (int)f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_color)>::value) ?
                 block_type::block_color[0] :
                 block_type::block_color[f.triangle->block_ptr->type];
     }
@@ -106,10 +106,10 @@ private:
     }
 
     static glm::vec3 sample_face_texture(fragment f) {
-        const Texture_Set *tex_set = (f.triangle->block_ptr->type < 0 ||
-                                     f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
-                                     &block_type::block_texture[0] :
-                                     &block_type::block_texture[f.triangle->block_ptr->type];
+        const Texture_Set *tex_set = ((int)f.triangle->block_ptr->type < 0 ||
+                                      (int)f.triangle->block_ptr->type >= std::extent<decltype(block_type::block_texture)>::value) ?
+                                      &block_type::block_texture[0] :
+                                      &block_type::block_texture[f.triangle->block_ptr->type];
         return glm::vec3 {tex_set->sample(
             interp_tex_coord(f),
             f.triangle->block_side_index

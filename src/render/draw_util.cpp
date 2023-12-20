@@ -86,23 +86,13 @@ bool is_tri_in_NDC(tri t) {
      * the triangle is in NDC space.
      * Note that this is only an approximation. */
     return (
-        (abs(a.x) < 1 || abs(b.x) < 1 || abs(c.x) < 1) &&
-        (abs(a.y) < 1 || abs(b.y) < 1 || abs(c.y) < 1) &&
-        (abs(a.z) < 1 || abs(b.z) < 1 || abs(c.z) < 1)
+        (a.x <  1 || b.x <  1 || c.x <  1) &&
+        (a.x > -1 || b.x > -1 || c.x > -1) &&
+        (a.y <  1 || b.y <  1 || c.y <  1) &&
+        (a.y > -1 || b.y > -1 || c.y > -1) &&
+        (a.z <  1 || b.z <  1 || c.z <  1) &&
+        (a.z >  0 || b.z >  0 || c.z >  0)
     );
-    // return (
-    //     (a.x <  1 || b.x <  1 || c.x <  1) &&
-    //     (a.x > -1 || b.x > -1 || c.x > -1) &&
-    //     (a.y <  1 || b.y <  1 || c.y <  1) &&
-    //     (a.y > -1 || b.y > -1 || c.y > -1) &&
-    //     (a.z <  1 || b.z <  1 || c.z <  1) &&
-    //     (a.z > -1 || b.z > -1 || c.z > -1)
-    // );
-    // return (
-    //     (glm::all(glm::lessThan(a, glm::vec3(1.0f))) && glm::all(glm::greaterThan(a, glm::vec3(-1.0f)))) ||
-    //     (glm::all(glm::lessThan(b, glm::vec3(1.0f))) && glm::all(glm::greaterThan(b, glm::vec3(-1.0f)))) ||
-    //     (glm::all(glm::lessThan(c, glm::vec3(1.0f))) && glm::all(glm::greaterThan(c, glm::vec3(-1.0f))))
-    // );
 }
 
 } /* end of namespace tc::draw_util */
