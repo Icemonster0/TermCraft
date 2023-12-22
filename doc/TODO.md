@@ -4,7 +4,6 @@ and work in progress tasks with **bold**.
 
 - Fix block in a corner not getting updated
 - Fix incorrect depth when clipped
-- Add proper error messages
 - Better world generation
 - Add tree generation
 - Add water
@@ -19,6 +18,7 @@ and work in progress tasks with **bold**.
 - Optimize get_block and get_chunk
 
 ## Done
+- ~~Add proper error messages~~
 - ~~Fix view clipping~~
 - ~~View acceleration~~
 - ~~Add walk controller~~

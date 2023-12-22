@@ -55,8 +55,9 @@ It is recommended to turn off the delay on repeat keys in the system settings (p
 
 ### Error Codes
 When TermCraft exits or crashes in a controlled manner, it will print the following message:  
-`Engine exited with return value x`.  
-Here are all possible values for `x` and the associated errors.
+`Engine exited with code x`.  
+Additionally, if there was an error, a message will be printed containing details about the error and sometimes a possible solution as well.  
+Here are all error messages associated with the values for `x`.
 
 | Code | Error | Possible Solution |
 | ---- | ----- | -------- |

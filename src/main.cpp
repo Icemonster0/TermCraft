@@ -65,13 +65,27 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.hide_hud = clom.is_flag_set("--hide-hud");
 }
 
+void print_error_message(int result) {
+    switch (result) {
+        case  2: printf("Error: Failed to get terminal size and/or open pipe with `popen(\"tput cols; tput lines\", \"r\"))`. You might need to use the flag `--fixed-window-size`.\n"); break;
+        case  4: printf("Error: Failed to set cursor to position zero (command: `tput cup 0 0`).\n"); break;
+        case  5: printf("Error: Failed to make cursor invisible (command: `tput civis`). You might need to use the flag `--cursor-visible`.\n"); break;
+        case  6: printf("Error: Input setup failed (command: `stty -echo cbreak`).\n"); break;
+        case  7: printf("Error: Failed to clear the terminal window (command: `tput clear`).\n"); break;
+        case  8: printf("Error: Failed to reset cursor to normal mode (command: `tput cnorm`). You might need to use the flag `--cursor-visible`.\n"); break;
+        case  9: printf("Error: Failed to reset input to normal mode (command: `stty echo -cbreak`).\n"); break;
+        case 10: printf("Error: Failed to read terminal size from pipe with `fscanf(...)`. You might need to use the flag `--fixed-window-size`.\n"); break;
+    }
+}
+
 int main(int argc, char const *argv[]) {
 
     process_command_line_options(argc, argv);
 
     tc::Engine engine {};
     int result = engine.run();
-    printf("Engine exited with return value %d\n", result);
+    printf("Engine exited with code %d\n", result);
+    print_error_message(result);
 
     return result;
 }
