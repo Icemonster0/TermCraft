@@ -9,8 +9,7 @@ void World::generate(int seed, glm::ivec2 size) {
     int percent = 0;
     printf("Generating World... (Initializing)\n");
 
-    srand(seed);
-
+    // initialize
     for (int i = 0; i < size.x; ++i) {
         chunks.emplace_back();
         for (int j = 0; j < size.y; ++j) {
@@ -20,17 +19,18 @@ void World::generate(int seed, glm::ivec2 size) {
 
     const int half_chunk_height = chunk_size::height / 2;
 
+    // generate terrain
     #pragma omp parallel for schedule(static)
     for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
         for (int y = 0; y < chunk_size::height; ++y) {
             for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
                 block &b = *get_block({x, y, z});
 
-                float mountainity = glm::perlin(glm::vec2 {(float)x/120.0f, (float)z/120.0f}) * 0.5f + 0.5f;
+                float mountainity = glm::clamp(glm::perlin(glm::vec3 {(float)x/120.0f, (float)z/120.0f, (float)seed*123.123f}) * 0.6f + 0.5f + glm::perlin(glm::vec3 {(float)x/3.0f, (float)z/3.0f, (float)seed*456.456f}) * 0.02f, 0.0f, 1.0f);
 
-                int grass_height = (glm::perlin(glm::vec2 {(float)x/20.0f, (float)z/20.0f}) * 0.5f + 0.5f) * mountainity * 30 + half_chunk_height;
-                int dirt_height = grass_height - 1;
-                int stone_height = dirt_height - 5;
+                int grass_height = (glm::perlin(glm::vec3 {(float)x/20.0f, (float)z/20.0f, (float)seed*689.689f}) * 0.5f + 0.5f) * mountainity * 30 + half_chunk_height;
+                int dirt_height = grass_height - (mountainity > 0.45 ? 0 : 1);
+                int stone_height = grass_height - int((0.7f - mountainity) * 5);
 
                 if (y >= chunk_size::height - stone_height) {
                     b.type = block_type::STONE;
@@ -52,6 +52,26 @@ void World::generate(int seed, glm::ivec2 size) {
             fflush(stdout);
         }
     }
+
+    // scatter vegetation
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution x_dis(0, size.x * chunk_size::width);
+    std::uniform_int_distribution z_dis(0, size.y * chunk_size::depth);
+    std::uniform_real_distribution<float> f_dis(0.0f, 1.0f);
+    const int max_plants = size.x * chunk_size::width * size.y * chunk_size::depth / 100;
+    for (int i = 0; i < max_plants; ++i) {
+        glm::ivec3 block;
+        block.x = x_dis(gen);
+        block.z = z_dis(gen);
+        block.y = get_ground_height_at(block.xz());
+        if (f_dis(gen) < 0.01f) {
+            get_block(block + glm::ivec3(0, -1, 0))->type = block_type::TUX;
+        }
+        else if (get_block(block)->type == block_type::GRASS) {
+            get_block(block + glm::ivec3(0, -1, 0))->type = block_type::FLOWER;
+        }
+    }
+
     printf("\n");
 }
 

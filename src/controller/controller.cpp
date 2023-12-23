@@ -8,7 +8,7 @@ namespace tc {
 #define MAX_NORMAL_SPEED 7.0f
 #define MAX_SPRINT_SPEED 15.0f
 #define MAX_CROUCH_SPEED 1.5f
-#define JUMP_STRENGTH 5.0f
+#define JUMP_STRENGTH 4.9f
 #define TERMINAL_FALLING_VELOCITY 50.0f
 #define NORMAL_HEIGHT 1.62f
 #define CROUCH_HEIGHT 1.50f

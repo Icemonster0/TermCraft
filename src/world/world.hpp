@@ -6,6 +6,7 @@
 #include "chunk.hpp"
 #include "block.hpp"
 #include "../render/mesh.hpp"
+#include "../render/draw_util.hpp"
 #include "mesh_util.hpp"
 
 #include <cstdlib>

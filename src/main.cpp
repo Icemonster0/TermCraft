@@ -29,6 +29,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_setting<float>("look-sensitivity", 90.0f, "Look/turn speed in degrees per second");
     clom.register_flag("--noclip", "When flying, disable collisions");
     clom.register_flag("--hide-hud", "Disable the HUD");
+    clom.register_setting<int>("seed", 0, "World generation seed");
 
     clom.generate_user_hint("TermCraft");
     clom.process_cl_options(argc, argv);
@@ -63,6 +64,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.look_sensitivity = clom.get_setting_value<float>("look-sensitivity");
     U.noclip = clom.is_flag_set("--noclip");
     U.hide_hud = clom.is_flag_set("--hide-hud");
+    U.seed = clom.get_setting_value<int>("seed");
 }
 
 void print_error_message(int result) {

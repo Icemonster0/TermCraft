@@ -8,6 +8,8 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <random>
+#include <limits>
 
 using namespace std;
 
@@ -31,6 +33,12 @@ bool is_point_in_triangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3
 float cc_signed_area(glm::vec2 a, glm::vec2 b, glm::vec2 c);
 
 bool is_tri_in_NDC(tri t);
+
+int rotl32(int n, char k);
+int three_input_random(int x, int y, int z);
+glm::vec3 random_vector(glm::ivec3 seed);
+float perlin_noise(glm::vec3 p, int seed);
+float fractal_perlin_noise(glm::vec3 p, float scale, int octaves, float roughness, float lacunarity, int seed);
 
 // interpolations
 template <typename T> static T square_interp(T x) {

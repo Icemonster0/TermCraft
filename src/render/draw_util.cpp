@@ -95,4 +95,105 @@ bool is_tri_in_NDC(tri t) {
     );
 }
 
+/* following two functions from: https://stackoverflow.com/questions/71420930/random-number-generator-with-3-inputs */
+int rotl32(int n, char k) {
+    int a = n << k;
+    int b = n >> (32 - k);
+    return a | b;
+}
+int three_input_random(int x, int y, int z) {
+    int a = x;
+    int b = y;
+    int c = z;
+
+    b ^= rotl32(a + c, 7);
+    c ^= rotl32(b + a, 9);
+    a ^= rotl32(c + b, 18);
+    b ^= rotl32(a + c, 7);
+    c ^= rotl32(b + a, 9);
+    a ^= rotl32(c + b, 18);
+    b ^= rotl32(a + c, 7);
+    c ^= rotl32(b + a, 9);
+    a ^= rotl32(c + b, 18);
+
+    return a + b + c + x + y + z;
+}
+glm::vec3 random_vector(glm::ivec3 seed) {
+    std::mt19937 gen(three_input_random(seed.x, seed.y, seed.z));
+    std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+    glm::vec3 v;
+    v.x = dis(gen);
+    v.y = dis(gen);
+    v.z = dis(gen);
+    return glm::normalize(v);
+}
+float perlin_noise(glm::vec3 p, int seed) {
+    // determine 8 corners of voxel
+    const glm::ivec3 tlf {int(p.x),   int(p.y),   int(p.z)};
+    const glm::ivec3 trf {int(p.x)+1, int(p.y),   int(p.z)};
+    const glm::ivec3 blf {int(p.x),   int(p.y)+1, int(p.z)};
+    const glm::ivec3 brf {int(p.x)+1, int(p.y)+1, int(p.z)};
+    const glm::ivec3 tlb {int(p.x),   int(p.y),   int(p.z)+1};
+    const glm::ivec3 trb {int(p.x)+1, int(p.y),   int(p.z)+1};
+    const glm::ivec3 blb {int(p.x),   int(p.y)+1, int(p.z)+1};
+    const glm::ivec3 brb {int(p.x)+1, int(p.y)+1, int(p.z)+1};
+
+    // generate random vectors for each corner
+    const glm::vec3 tlf_vec {random_vector(glm::ivec3(seed) + tlf)};
+    const glm::vec3 trf_vec {random_vector(glm::ivec3(seed) + trf)};
+    const glm::vec3 blf_vec {random_vector(glm::ivec3(seed) + blf)};
+    const glm::vec3 brf_vec {random_vector(glm::ivec3(seed) + brf)};
+    const glm::vec3 tlb_vec {random_vector(glm::ivec3(seed) + tlb)};
+    const glm::vec3 trb_vec {random_vector(glm::ivec3(seed) + trb)};
+    const glm::vec3 blb_vec {random_vector(glm::ivec3(seed) + blb)};
+    const glm::vec3 brb_vec {random_vector(glm::ivec3(seed) + brb)};
+
+    // calculate value for each corner
+    const float tlf_val {glm::dot(p - glm::vec3(tlf), tlf_vec)};
+    const float trf_val {glm::dot(p - glm::vec3(trf), trf_vec)};
+    const float blf_val {glm::dot(p - glm::vec3(blf), blf_vec)};
+    const float brf_val {glm::dot(p - glm::vec3(brf), brf_vec)};
+    const float tlb_val {glm::dot(p - glm::vec3(tlb), tlb_vec)};
+    const float trb_val {glm::dot(p - glm::vec3(trb), trb_vec)};
+    const float blb_val {glm::dot(p - glm::vec3(blb), blb_vec)};
+    const float brb_val {glm::dot(p - glm::vec3(brb), brb_vec)};
+
+    // interpolate the values
+    const glm::vec3 smooth_coord {
+        square_interp(glm::fract(p.x)),
+        square_interp(glm::fract(p.y)),
+        square_interp(glm::fract(p.z)),
+    };
+    const float val = glm::mix(
+        glm::mix( // front
+            glm::mix(tlf_val, trf_val, smooth_coord.x), // top
+            glm::mix(blf_val, brf_val, smooth_coord.x), // bottom
+            smooth_coord.y
+        ),
+        glm::mix( // back
+            glm::mix(tlb_val, trb_val, smooth_coord.x), // top
+            glm::mix(blb_val, brb_val, smooth_coord.x), // bottom
+            smooth_coord.y
+        ),
+        smooth_coord.z
+    );
+
+    return val;
+}
+float fractal_perlin_noise(glm::vec3 p, float scale, int octaves, float roughness, float lacunarity, int seed) {
+    float size = scale;
+    float amp = 1.0f;
+    float amp_sum = amp;
+    float val = 0.0f;
+    for (int o = 0; o < octaves; ++o) {
+        val += perlin_noise(p * size, seed + o) * amp;
+        amp_sum += amp;
+        size *= lacunarity;
+        amp *= roughness;
+    }
+    val /= amp_sum;
+    return val;
+}
+
 } /* end of namespace tc::draw_util */

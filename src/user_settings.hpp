@@ -9,6 +9,7 @@ struct user_settings {
     bool cursor_visible;
 
     int world_size;
+    int seed;
 
     int fps;
     float fov;
