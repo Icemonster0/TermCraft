@@ -24,6 +24,7 @@ namespace block_type {
         STONE,
         OAK_LOG,
         OAK_PLANKS,
+        OAK_LEAVES,
         FLOWER,
         TUX,
     };
@@ -34,6 +35,7 @@ namespace block_type {
         glm::vec3 {0.60f, 0.60f, 0.60f}, // STONE
         glm::vec3 {0.19f, 0.12f, 0.07f}, // OAK_LOG
         glm::vec3 {0.74f, 0.55f, 0.43f}, // OAK_PLANKS
+        glm::vec3 {0.03f, 0.25f, 0.09f}, // OAK_LEAVES
         glm::vec3 {1.00f, 0.10f, 0.10f}, // FLOWER
         glm::vec3 {1.00f, 1.00f, 1.00f}, // TUX
     };
@@ -44,6 +46,7 @@ namespace block_type {
         {"res/tex/stone.png"}, // STONE
         {"res/tex/oak_log_side.png", "res/tex/oak_log_top.png"}, // OAK_LOG
         {"res/tex/oak_planks.png"}, // OAK_PLANKS
+        {"res/tex/oak_leaves.png"}, // OAK_LEAVES
         {"res/tex/flower.png"}, // FLOWER
         {"res/tex/Tux.png"}, // TUX
     };
@@ -54,6 +57,7 @@ namespace block_type {
         false, // STONE
         false, // OAK_LOG
         false, // OAK_PLANKS
+        true, // OAK_LEAVES
         true, // FLOWER
         true, // TUX
     };
@@ -64,6 +68,7 @@ namespace block_type {
         SOLID_BLOCK, // STONE
         SOLID_BLOCK, // OAK_LOG
         SOLID_BLOCK, // OAK_PLANKS
+        SOLID_BLOCK, // OAK_LEAVES
         X_PLANES, // FLOWER
         X_PLANES, // TUX
     };
@@ -74,6 +79,7 @@ namespace block_type {
         true, // STONE
         true, // OAK_LOG
         true, // OAK_PLANKS
+        true,  // OAK_LEAVES
         false, // FLOWER
         false, // TUX
     };
@@ -82,8 +88,9 @@ namespace block_type {
         'G', // GRASS
         'D', // DIRT
         'S', // STONE
-        'L', // OAK_LOG
+        'W', // OAK_LOG
         'P', // OAK_PLANKS
+        'L', // OAK_LEAVES
         'F', // FLOWER
         'T', // TUX
     };

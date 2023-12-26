@@ -68,7 +68,12 @@ void World::generate(int seed, glm::ivec2 size) {
             get_block(block + glm::ivec3(0, -1, 0))->type = block_type::TUX;
         }
         else if (get_block(block)->type == block_type::GRASS) {
-            get_block(block + glm::ivec3(0, -1, 0))->type = block_type::FLOWER;
+            if (f_dis(gen) < 0.1f) {
+                place_tree(block, false);
+            }
+            else {
+                get_block(block + glm::ivec3(0, -1, 0))->type = block_type::FLOWER;
+            }
         }
     }
 
@@ -285,6 +290,42 @@ void World::block_update_simulation(glm::ivec3 coord) {
     if (block_below->type == block_type::GRASS &&
         !block_type::block_transparent[block_current->type]) {
         block_below->type = block_type::DIRT;
+    }
+}
+
+void World::place_tree(glm::ivec3 coord, bool updates) {
+    const int height = 3; // height of the trunk
+
+    static std::vector<glm::ivec3> leaves {
+        {-2,-height-1,-2}, {-2,-height-1,-1}, {-2,-height-1, 0}, {-2,-height-1, 1}, {-2,-height-1, 2},
+        {-1,-height-1,-2}, {-1,-height-1,-1}, {-1,-height-1, 0}, {-1,-height-1, 1}, {-1,-height-1, 2},
+        { 0,-height-1,-2}, { 0,-height-1,-1},                    { 0,-height-1, 1}, { 0,-height-1, 2},
+        { 1,-height-1,-2}, { 1,-height-1,-1}, { 1,-height-1, 0}, { 1,-height-1, 1}, { 1,-height-1, 2},
+        { 2,-height-1,-2}, { 2,-height-1,-1}, { 2,-height-1, 0}, { 2,-height-1, 1}, { 2,-height-1, 2},
+
+        {-2,-height-2,-2}, {-2,-height-2,-1}, {-2,-height-2, 0}, {-2,-height-2, 1}, {-2,-height-2, 2},
+        {-1,-height-2,-2}, {-1,-height-2,-1}, {-1,-height-2, 0}, {-1,-height-2, 1}, {-1,-height-2, 2},
+        { 0,-height-2,-2}, { 0,-height-2,-1},                    { 0,-height-2, 1}, { 0,-height-2, 2},
+        { 1,-height-2,-2}, { 1,-height-2,-1}, { 1,-height-2, 0}, { 1,-height-2, 1}, { 1,-height-2, 2},
+        { 2,-height-2,-2}, { 2,-height-2,-1}, { 2,-height-2, 0}, { 2,-height-2, 1}, { 2,-height-2, 2},
+
+                           {-1,-height-3,-1}, {-1,-height-3, 0}, {-1,-height-3, 1},
+                           { 0,-height-3,-1},                    { 0,-height-3, 1},
+                           { 1,-height-3,-1}, { 1,-height-3, 0}, { 1,-height-3, 1},
+
+                                              {-1,-height-4, 0},
+                           { 0,-height-4,-1}, { 0,-height-4, 0}, { 0,-height-4, 1},
+                                              { 1,-height-4, 0},
+    };
+
+    for (glm::ivec3 c {coord + glm::ivec3(0,-1,0)}; c.y >= coord.y-height-3; --c.y) {
+        get_block(c)->type = block_type::OAK_LOG;
+        if (updates) update_block(c);
+    }
+
+    for (glm::ivec3 c : leaves) {
+        get_block(coord + c)->type = block_type::OAK_LEAVES;
+        if (updates) update_block(coord + c);
     }
 }
 
