@@ -104,7 +104,7 @@ string Engine::debug_info_string() {
     ss << "Debug info\n";
 
     ss << std::fixed << std::setprecision(2);
-    ss << "fps: " << static_cast<int>(fps) << "\n";
+    ss << "fps: " << static_cast<int>(fps) << " / " << U.fps << "\n";
     ss << "screen: " << X_size << "x" << Y_size << "\n";
     ss << "running time: " << global_time << "s\n";
     ss << "in-game time: "  << setfill('0') << setw(2) << time_of_day_hours << ":"
