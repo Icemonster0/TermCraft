@@ -17,12 +17,6 @@ void Render::render(mesh m) {
     execute_fragment_and_post_shaders(frag_shaders::FRAG_shaded, post_shaders::POST_vignette);
     if (!U.hide_hud) construct_hud();
     draw_fbuf();
-    // for (tri &t : m.tri_list) {
-    //     printf("---\n");
-    //     printf("%f %f %f\n", t.vertices[0].pos.x, t.vertices[0].pos.y, t.vertices[0].pos.z);
-    //     printf("%f %f %f\n", t.vertices[1].pos.x, t.vertices[1].pos.y, t.vertices[1].pos.z);
-    //     printf("%f %f %f\n", t.vertices[2].pos.x, t.vertices[2].pos.y, t.vertices[2].pos.z);
-    // }
 }
 
 void Render::set_debug_info(std::string debug_info) {

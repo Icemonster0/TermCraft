@@ -64,13 +64,17 @@ void World::generate(int seed, glm::ivec2 size) {
         block.x = x_dis(gen);
         block.z = z_dis(gen);
         block.y = get_ground_height_at(block.xz());
+        // Tuxes
         if (f_dis(gen) < 0.01f) {
             get_block(block + glm::ivec3(0, -1, 0))->type = block_type::TUX;
         }
         else if (get_block(block)->type == block_type::GRASS) {
+            // Trees
             if (f_dis(gen) < 0.1f) {
-                place_tree(block, false);
+                int tree_seed = glm::perlin(glm::vec3(block.x*2, block.z*2, (float)seed*77.0f+777.777f)) * 5000;
+                place_tree(block, false, tree_seed);
             }
+            // Flowers
             else {
                 get_block(block + glm::ivec3(0, -1, 0))->type = block_type::FLOWER;
             }
@@ -293,39 +297,65 @@ void World::block_update_simulation(glm::ivec3 coord) {
     }
 }
 
-void World::place_tree(glm::ivec3 coord, bool updates) {
-    const int height = 3; // height of the trunk
+void World::place_tree(glm::ivec3 coord, bool updates, int seed) {
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution dis(0, 3);
 
-    static std::vector<glm::ivec3> leaves {
-        {-2,-height-1,-2}, {-2,-height-1,-1}, {-2,-height-1, 0}, {-2,-height-1, 1}, {-2,-height-1, 2},
-        {-1,-height-1,-2}, {-1,-height-1,-1}, {-1,-height-1, 0}, {-1,-height-1, 1}, {-1,-height-1, 2},
-        { 0,-height-1,-2}, { 0,-height-1,-1},                    { 0,-height-1, 1}, { 0,-height-1, 2},
-        { 1,-height-1,-2}, { 1,-height-1,-1}, { 1,-height-1, 0}, { 1,-height-1, 1}, { 1,-height-1, 2},
-        { 2,-height-1,-2}, { 2,-height-1,-1}, { 2,-height-1, 0}, { 2,-height-1, 1}, { 2,-height-1, 2},
+    const int height = 2 + dis(gen); // height of the trunk: random(2, 5)
 
-        {-2,-height-2,-2}, {-2,-height-2,-1}, {-2,-height-2, 0}, {-2,-height-2, 1}, {-2,-height-2, 2},
-        {-1,-height-2,-2}, {-1,-height-2,-1}, {-1,-height-2, 0}, {-1,-height-2, 1}, {-1,-height-2, 2},
-        { 0,-height-2,-2}, { 0,-height-2,-1},                    { 0,-height-2, 1}, { 0,-height-2, 2},
-        { 1,-height-2,-2}, { 1,-height-2,-1}, { 1,-height-2, 0}, { 1,-height-2, 1}, { 1,-height-2, 2},
-        { 2,-height-2,-2}, { 2,-height-2,-1}, { 2,-height-2, 0}, { 2,-height-2, 1}, { 2,-height-2, 2},
+    static std::vector<glm::ivec3> const leaves {
+                    {-2,-1,-1}, {-2,-1, 0}, {-2,-1, 1},
+        {-1,-1,-2}, {-1,-1,-1}, {-1,-1, 0}, {-1,-1, 1}, {-1,-1, 2},
+        { 0,-1,-2}, { 0,-1,-1},             { 0,-1, 1}, { 0,-1, 2},
+        { 1,-1,-2}, { 1,-1,-1}, { 1,-1, 0}, { 1,-1, 1}, { 1,-1, 2},
+                    { 2,-1,-1}, { 2,-1, 0}, { 2,-1, 1},
 
-                           {-1,-height-3,-1}, {-1,-height-3, 0}, {-1,-height-3, 1},
-                           { 0,-height-3,-1},                    { 0,-height-3, 1},
-                           { 1,-height-3,-1}, { 1,-height-3, 0}, { 1,-height-3, 1},
+                    {-2,-2,-1}, {-2,-2, 0}, {-2,-2, 1},
+        {-1,-2,-2}, {-1,-2,-1}, {-1,-2, 0}, {-1,-2, 1}, {-1,-2, 2},
+        { 0,-2,-2}, { 0,-2,-1},             { 0,-2, 1}, { 0,-2, 2},
+        { 1,-2,-2}, { 1,-2,-1}, { 1,-2, 0}, { 1,-2, 1}, { 1,-2, 2},
+                    { 2,-2,-1}, { 2,-2, 0}, { 2,-2, 1},
 
-                                              {-1,-height-4, 0},
-                           { 0,-height-4,-1}, { 0,-height-4, 0}, { 0,-height-4, 1},
-                                              { 1,-height-4, 0},
+                                {-1,-3, 0},
+                    { 0,-3,-1},             { 0,-3, 1},
+                                { 1,-3, 0},
+
+                                {-1,-4, 0},
+                    { 0,-4,-1}, { 0,-4, 0}, { 0,-4, 1},
+                                { 1,-4, 0},
     };
 
+    static std::vector<glm::ivec3> const maybe_leaves {
+        {-2,-1,-2},                                     {-2,-1, 2},
+        { 2,-1,-2},                                     { 2,-1, 2},
+
+        {-2,-2,-2},                                     {-2,-2, 2},
+        { 2,-2,-2},                                     { 2,-2, 2},
+
+                    {-1,-3,-1},             {-1,-3, 1},
+                    { 1,-3,-1},             { 1,-3, 1},
+    };
+
+    // Trunk
     for (glm::ivec3 c {coord + glm::ivec3(0,-1,0)}; c.y >= coord.y-height-3; --c.y) {
         get_block(c)->type = block_type::OAK_LOG;
         if (updates) update_block(c);
     }
 
+    // Guaranteed leaves
     for (glm::ivec3 c : leaves) {
-        get_block(coord + c)->type = block_type::OAK_LEAVES;
-        if (updates) update_block(coord + c);
+        const glm::ivec3 block = coord + c + glm::ivec3(0, -height, 0);
+        get_block(block)->type = block_type::OAK_LEAVES;
+        if (updates) update_block(block);
+    }
+
+    // Random leaves
+    for (glm::ivec3 c : maybe_leaves) {
+        if (dis(gen) < 2) { // 50% chance
+            const glm::ivec3 block = coord + c + glm::ivec3(0, -height, 0);
+            get_block(block)->type = block_type::OAK_LEAVES;
+            if (updates) update_block(block);
+        }
     }
 }
 
