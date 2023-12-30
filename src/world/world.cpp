@@ -5,8 +5,8 @@ namespace tc {
 // public:
 
 void World::generate(int seed, glm::ivec2 size) {
-    int progress = 0;
-    int percent = 0;
+    int terrain_progress = 0;
+    int terrain_percent = 0;
     printf("Generating World... (Initializing)\n");
 
     // initialize
@@ -46,18 +46,67 @@ void World::generate(int seed, glm::ivec2 size) {
 
         #pragma omp critical
         {
-            progress++;
-            percent = float(progress) / float(size.x * chunk_size::width - 1) * 100;
-            printf("\rGenerating World... %d%%", percent);
+            terrain_progress++;
+            terrain_percent = float(terrain_progress) / float(size.x * chunk_size::width - 1) * 100;
+            printf("\rGenerating Terrain... %d%%", terrain_percent);
             fflush(stdout);
         }
     }
+    printf("\n");
 
-    // scatter vegetation
     std::mt19937 gen(seed);
     std::uniform_int_distribution x_dis(0, size.x * chunk_size::width);
+    std::uniform_int_distribution y_dis(0, chunk_size::height);
     std::uniform_int_distribution z_dis(0, size.y * chunk_size::depth);
     std::uniform_real_distribution<float> f_dis(0.0f, 1.0f);
+    std::uniform_real_distribution<float> norm_dis(-1.0f, 1.0f);
+
+    // carve caves
+    if (!U.no_caves) {
+        std::mt19937 cave_gen(seed);
+        const int max_caves = size.x * chunk_size::width * size.y * chunk_size::depth / 1000;
+        for (int i = 0; i < max_caves; ++i) {
+            glm::vec3 current {x_dis(cave_gen), y_dis(cave_gen), z_dis(cave_gen)};
+            glm::vec3 current_dir = glm::normalize(glm::vec3(norm_dis(cave_gen), norm_dis(cave_gen), norm_dis(cave_gen)));
+            glm::vec3 next;
+            glm::vec3 next_dir;
+
+            // create curve (generate splines)
+            const int cave_length = (f_dis(cave_gen) + 0.2f) * 20.0f;
+            std::vector<Spline> splines;
+            for (int j = 0; j < cave_length; ++j) {
+                next = current + current_dir * (f_dis(cave_gen) + 0.3f) * 15.0f;
+                next_dir = glm::normalize(current_dir + glm::vec3(norm_dis(cave_gen), norm_dis(cave_gen), norm_dis(cave_gen)));
+                splines.emplace_back(current, current + current_dir * f_dis(cave_gen), next, next - next_dir * f_dis(cave_gen));
+                current = next;
+                current_dir = next_dir;
+            }
+
+            // carve out spheres along the curve
+            const int subdivs = 10;
+            const float radius = (f_dis(cave_gen) + 0.5f) * 5.0f;
+            for (Spline spline : splines) {
+                for (int j = 0; j < subdivs; ++j) {
+                    float t = (float)j / (float)subdivs;
+                    glm::vec3 p = spline.sample(t);
+
+                    for (int x = -radius; x <= radius; ++x) {
+                        for (int y = -radius; y <= radius; ++y) {
+                            for (int z = -radius; z <= radius; ++z) {
+                                if (x*x + y*y + z*z <= radius*radius) {
+                                    get_block({p.x + x, p.y + y, p.z + z})->type = block_type::EMPTY;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            printf("\rGenerating Caves... %d%%", int((float)i / (float)max_caves * 100.0f));
+        }
+        printf("\n");
+    }
+
+    // scatter vegetation
     const int max_plants = size.x * chunk_size::width * size.y * chunk_size::depth / 100;
     for (int i = 0; i < max_plants; ++i) {
         glm::ivec3 block;
@@ -79,8 +128,8 @@ void World::generate(int seed, glm::ivec2 size) {
                 get_block(block + glm::ivec3(0, -1, 0))->type = block_type::FLOWER;
             }
         }
+        printf("\rGenerating Plants... %d%%", int((float)i / (float)max_plants * 100.0f));
     }
-
     printf("\n");
 }
 

@@ -116,6 +116,7 @@ Here are all parameters you can pass to TermCraft in the command line. Note that
 | `--fixed-window-size` | Enable the `width` and `height` settings (if not set: automatic window size) |
 | `--help` | Display a similar help message to these tables and exit |
 | `--hide-hud` | Disable the HUD (inventory and controller state indicators) |
+| `--no-caves` | Disable cave generation (slightly improves performance) |
 | `--noclip` | When in fly mode, disable collisions (not in walk mode, so that you don't fall through the ground) |
 
 ### License

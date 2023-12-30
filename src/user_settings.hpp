@@ -10,6 +10,7 @@ struct user_settings {
 
     int world_size;
     int seed;
+    bool no_caves;
 
     int fps;
     float fov;

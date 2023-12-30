@@ -8,6 +8,7 @@
 #include "../render/mesh.hpp"
 #include "../render/draw_util.hpp"
 #include "mesh_util.hpp"
+#include "spline.hpp"
 
 #include <cstdlib>
 #include <cstdio>

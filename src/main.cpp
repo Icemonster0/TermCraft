@@ -15,7 +15,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_flag("--fixed-window-size", "Enable the width and height settings (if not set: automatic window size)");
     clom.register_setting<int>("width", 80, "Window width (if --fixed-window-size is set)");
     clom.register_setting<int>("height", 24, "Window height (if --fixed-window-size is set)");
-    clom.register_setting<std::string>("color-mode", "FULL", "FULL: rgb color;\nCOMPAT: bw color (if FULL is not supported)");
+    clom.register_setting<std::string>("color-mode", "FULL", "FULL: rgb color\nCOMPAT: bw color (if FULL is not supported)\nASCII: bw as ascii art (for fun)");
     clom.register_setting<std::string>("sky-color", "0x7ce1ff", "Hex code of sky color (it says std::string, but is actually hexadecimal int, eg. 0x7ce1ff)");
     clom.register_setting<float>("render-distance", 100, "Render distance in blocks");
     clom.register_setting<float>("fog", 0.5f, "Fog factor (0.0 to 1.0)");
@@ -30,6 +30,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     clom.register_flag("--noclip", "When flying, disable collisions");
     clom.register_flag("--hide-hud", "Disable the HUD");
     clom.register_setting<int>("seed", 0, "World generation seed");
+    clom.register_flag("--no-caves", "Disable cave generation");
 
     clom.generate_user_hint("TermCraft");
     clom.process_cl_options(argc, argv);
@@ -65,6 +66,7 @@ void process_command_line_options(int argc, char const *argv[]) {
     U.noclip = clom.is_flag_set("--noclip");
     U.hide_hud = clom.is_flag_set("--hide-hud");
     U.seed = clom.get_setting_value<int>("seed");
+    U.no_caves = clom.is_flag_set("--no-caves");
 }
 
 void print_error_message(int result) {

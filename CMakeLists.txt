@@ -25,6 +25,7 @@ add_library(libs_module
     src/world/raycast_util.cpp
     src/world/block.cpp
     src/world/chunk.cpp
+    src/world/spline.cpp
     src/stb.cpp
 )
 

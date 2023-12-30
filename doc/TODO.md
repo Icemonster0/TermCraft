@@ -2,11 +2,11 @@
 Todo list, from *urgent* to *would be nice*. Mark done tasks with ~~strikethrough~~
 and work in progress tasks with **bold**.
 
-- Make trees more random
 - Fix block in a corner not getting updated
 - Fix incorrect depth when clipped
 - Add water
 - Add cave generation
+- Add erosion
 - Tall grass
 - Light levels
 - Menu / gui and world saving / loading
@@ -17,6 +17,7 @@ and work in progress tasks with **bold**.
 - Optimize get_block and get_chunk
 
 ## Done
+- ~~Make trees more random~~
 - ~~Add tree generation~~
 - ~~Better world generation~~
 - ~~Add proper error messages~~
