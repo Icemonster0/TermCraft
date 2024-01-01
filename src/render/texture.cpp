@@ -16,7 +16,7 @@ Texture::Texture(const std::string relative_path) {
 
     if (!data) {
         pixels.emplace_back();
-        pixels[0].emplace_back(1.0f, 0.0f, 1.0f);
+        pixels[0].emplace_back(1.0f, 0.0f, 1.0f); // magenta for missing textures
         alpha.emplace_back();
         alpha[0].emplace_back(1.0f);
         size = {1, 1};

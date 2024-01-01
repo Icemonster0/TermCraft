@@ -122,6 +122,7 @@ void World::generate(int seed, glm::ivec2 size) {
             if (f_dis(gen) < 0.1f) {
                 int tree_seed = glm::perlin(glm::vec3(block.x*2, block.z*2, (float)seed*77.0f+777.777f)) * 5000;
                 place_tree(block, false, tree_seed);
+                get_block(block)->type = block_type::DIRT;
             }
             // Flowers
             else {
@@ -412,18 +413,18 @@ void World::remesh_block(glm::ivec3 coord) {
     block &b = *get_block(coord);
     b.block_mesh = std::make_unique<mesh>();
 
-    // store in array which neighbors exist
-    bool neighbors[3][3][3];
-    for (int x = 0; x < 3; ++x) {
-        for (int y = 0; y < 3; ++y) {
-            for (int z = 0; z < 3; ++z) {
-                neighbors[x][y][z] = !block_type::block_transparent[get_block(coord + glm::ivec3(x-1, y-1, z-1))->type];
+    if (b.type != block_type::EMPTY) {
+        // store in array which neighbors exist
+        bool neighbors[3][3][3];
+        for (int x = 0; x < 3; ++x) {
+            for (int y = 0; y < 3; ++y) {
+                for (int z = 0; z < 3; ++z) {
+                    neighbors[x][y][z] = !block_type::block_transparent[get_block(coord + glm::ivec3(x-1, y-1, z-1))->type];
+                }
             }
         }
-    }
 
-    // generate faces
-    if (b.type != block_type::EMPTY) {
+        // generate faces
         if (block_type::block_shape[b.type] == block_type::SOLID_BLOCK) {
             if (!neighbors[0][1][1]) { // left
                 b.block_mesh->append(mesh_util::left_plane (neighbors, &b));
@@ -456,6 +457,18 @@ void World::remesh_chunk(glm::ivec2 coord) {
     chunk.chunk_mesh = mesh {};
 
     if (chunk.loaded) {
+
+        int mesh_size = 0;
+        for (int x = 0; x < chunk_size::width; ++x) {
+            for (int y = 0; y < chunk_size::height; ++y) {
+                for (int z = 0; z < chunk_size::depth; ++z) {
+                    mesh_size += chunk.blocks[x][y][z].block_mesh->tri_list.size();
+                }
+            }
+        }
+
+        chunk.chunk_mesh.tri_list.reserve(mesh_size);
+
         // combining all block's meshes
         for (int x = 0; x < chunk_size::width; ++x) {
             for (int y = 0; y < chunk_size::height; ++y) {
@@ -471,6 +484,15 @@ void World::remesh_chunk(glm::ivec2 coord) {
 
 void World::remesh_world() {
     world_mesh = mesh {};
+
+    int mesh_size = 0;
+    for (int x = 0; x < chunks.size(); ++x) {
+        for (int z = 0; z < chunks[x].size(); ++z) {
+            mesh_size += chunks[x][z].chunk_mesh.tri_list.size();
+        }
+    }
+
+    world_mesh.tri_list.reserve(mesh_size);
 
     for (int x = 0; x < chunks.size(); ++x) {
         for (int z = 0; z < chunks[x].size(); ++z) {

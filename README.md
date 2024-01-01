@@ -84,7 +84,7 @@ The biggest factors affecting performance are:
 
 - Render distance (parameter `render-distance`)
 - Viewport size (parameters `--fixed-window-size`, `width`, `height`)
-- World size (parameter `world-size`)
+- Caves (parameter `--no-caves`)
 
 ---
 

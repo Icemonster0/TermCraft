@@ -13,6 +13,7 @@ void mesh::append(mesh m) {
 
 mesh mesh::transform(glm::mat4 M) {
     mesh m;
+    m.tri_list.reserve(tri_list.size());
     for (tri t : tri_list) {
         for (vertex &v : t.vertices) {
             v.pos = M * v.pos;

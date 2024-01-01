@@ -14,7 +14,6 @@ struct mesh {
     mesh();
 
     void append(mesh m);
-
     mesh transform(glm::mat4 M);
 
     std::vector<tri> tri_list;
