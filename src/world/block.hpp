@@ -104,6 +104,7 @@ public:
 
     block_type::Block_Type type;
     bool is_highlighted;
+    char sky_light;
     std::unique_ptr<mesh> block_mesh;
 };
 

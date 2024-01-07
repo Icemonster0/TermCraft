@@ -5,6 +5,8 @@ namespace tc {
 // public:
 
 void World::generate(int seed, glm::ivec2 size) {
+    const int world_area = size.x * chunk_size::width * size.y * chunk_size::depth;
+
     int terrain_progress = 0;
     int terrain_percent = 0;
     printf("Generating World... (Initializing)\n");
@@ -19,11 +21,10 @@ void World::generate(int seed, glm::ivec2 size) {
 
     const int half_chunk_height = chunk_size::height / 2;
 
-    // generate terrain
     #pragma omp parallel for schedule(static)
-    for (int x = 0; x < chunks.size() * chunk_size::width; ++x) {
+    for (int x = 0; x < size.x * chunk_size::width; ++x) {
         for (int y = 0; y < chunk_size::height; ++y) {
-            for (int z = 0; z < chunks[x / chunk_size::width].size() * chunk_size::depth; ++z) {
+            for (int z = 0; z < size.y * chunk_size::depth; ++z) {
                 block &b = *get_block({x, y, z});
 
                 float mountainity = glm::clamp(glm::perlin(glm::vec3 {(float)x/120.0f, (float)z/120.0f, (float)seed*123.123f}) * 0.6f + 0.5f + glm::perlin(glm::vec3 {(float)x/3.0f, (float)z/3.0f, (float)seed*456.456f}) * 0.02f, 0.0f, 1.0f);
@@ -64,7 +65,7 @@ void World::generate(int seed, glm::ivec2 size) {
     // carve caves
     if (!U.no_caves) {
         std::mt19937 cave_gen(seed);
-        const int max_caves = size.x * chunk_size::width * size.y * chunk_size::depth / 1000;
+        const int max_caves = world_area / 1000;
         for (int i = 0; i < max_caves; ++i) {
             glm::vec3 current {x_dis(cave_gen), y_dis(cave_gen), z_dis(cave_gen)};
             glm::vec3 current_dir = glm::normalize(glm::vec3(norm_dis(cave_gen), norm_dis(cave_gen), norm_dis(cave_gen)));
@@ -107,7 +108,7 @@ void World::generate(int seed, glm::ivec2 size) {
     }
 
     // scatter vegetation
-    const int max_plants = size.x * chunk_size::width * size.y * chunk_size::depth / 100;
+    const int max_plants = world_area / 100;
     for (int i = 0; i < max_plants; ++i) {
         glm::ivec3 block;
         block.x = x_dis(gen);
@@ -130,6 +131,26 @@ void World::generate(int seed, glm::ivec2 size) {
             }
         }
         printf("\rGenerating Plants... %d%%", int((float)i / (float)max_plants * 100.0f));
+    }
+    printf("\n");
+
+    // calculate light levels
+    int light_progress = 0;
+    #pragma omp parallel for schedule(static)
+    for (int x = 0; x < size.x * chunk_size::width; ++x) {
+        for (int z = 0; z < size.y * chunk_size::depth; ++z) {
+            update_sky_light_in_column({x, z});
+
+            #pragma omp critical
+            {
+                light_progress++;
+            }
+        }
+        #pragma omp critical
+        {
+            printf("\rCalculating Light Levels... %d%%", int(float(light_progress) / float(world_area) * 100.0f));
+            fflush(stdout);
+        }
     }
     printf("\n");
 }
@@ -329,6 +350,8 @@ void World::update_block(glm::ivec3 coord) {
         remesh_chunk(chunk_coord + glm::ivec2(0,  1));
 
     remesh_world();
+
+    update_sky_light_in_column(coord.xz());
 }
 
 void World::block_update_simulation(glm::ivec3 coord) {
@@ -405,6 +428,33 @@ void World::place_tree(glm::ivec3 coord, bool updates, int seed) {
             const glm::ivec3 block = coord + c + glm::ivec3(0, -height, 0);
             get_block(block)->type = block_type::OAK_LEAVES;
             if (updates) update_block(block);
+        }
+    }
+}
+
+void World::update_sky_light_in_column(glm::ivec2 coord) {
+    int light_level = 15;
+
+    for (int y = 0; y < chunk_size::height; ++y) {
+        block *b = get_block({coord.x, y, coord.y});
+
+        b->sky_light = light_level;
+
+        if (!block_type::block_transparent[b->type]) {
+            bool decrease_light = true;
+            for (int i = -1; i < 2; ++i) {
+                for (int j = -1; j < 2; ++j) {
+                    if (block_type::block_transparent[get_block({coord.x + i, y, coord.y + j})->type]) {
+                        decrease_light = false;
+                        i = 2;
+                        j = 2;
+                    }
+                }
+            }
+
+            if (decrease_light) {
+                light_level = max(light_level-1, 0);
+            }
         }
     }
 }

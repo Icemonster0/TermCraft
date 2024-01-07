@@ -34,7 +34,9 @@ struct frag_shaders {
         float ao = 1.0f - draw_util::square_interp(interp_ao(f));
         ao = ao * 0.3f + 0.7f;
 
-        float fac = glm::mix(0.1f, light, sky_brightness) * ao;
+        float shadow = float(sky_light(f)) / 18.0f + 0.166f;
+
+        float fac = glm::mix(0.1f, light, sky_brightness) * ao * shadow;
 
         float highlight = is_block_highlighted(f) ? 0.07f : 0.0f;
 
@@ -103,6 +105,10 @@ private:
 
     static bool is_block_highlighted(fragment f) {
         return f.triangle->block_ptr->is_highlighted;
+    }
+
+    static int sky_light(fragment f) {
+        return f.triangle->block_ptr->sky_light;
     }
 
     static glm::vec3 sample_face_texture(fragment f) {

@@ -40,6 +40,7 @@ private:
     void update_block(glm::ivec3 coord);
     void block_update_simulation(glm::ivec3 coord);
     void place_tree(glm::ivec3 coord, bool updates, int seed);
+    void update_sky_light_in_column(glm::ivec2 coord);
     void remesh_block(glm::ivec3 coord);
     void remesh_chunk(glm::ivec2 coord);
     void remesh_world();
