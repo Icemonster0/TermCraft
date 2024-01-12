@@ -1,11 +1,9 @@
 # TermCraft
 A 3D Minecraft clone running in the terminal.
 
-This is quite a minimal implementation and [many features](doc/TODO.md) are still planned.
-
-| House | Tux Shrine |
+| House | Tux Throne |
 |:-----:|:----------:|
-| ![Screenshot 1](doc/Screenshot.png) | ![Screenshot 2](doc/Screenshot_2.png) |
+| ![Screenshot 1](doc/House.png) | ![Screenshot 2](doc/Tux_Throne.png) |
 
 ---
 
