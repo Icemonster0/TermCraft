@@ -5,7 +5,6 @@ and work in progress tasks with **bold**.
 - Fix block in a corner not getting updated
 - Fix incorrect depth when clipped
 - Add water
-- Add cave generation
 - Add erosion
 - Tall grass
 - Light levels
@@ -17,6 +16,7 @@ and work in progress tasks with **bold**.
 - Optimize get_block and get_chunk
 
 ## Done
+- ~~Add cave generation~~
 - ~~Make trees more random~~
 - ~~Add tree generation~~
 - ~~Better world generation~~
